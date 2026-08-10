@@ -4,15 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GNSS Global Mission Control Center</title>
-    <!-- Chart.js, Globe.gl & Google Aerospace Fonts -->
+    <!-- Chart.js, Globe.gl, Three.js & Google Aerospace Fonts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/three"></script>
     <script src="https://unpkg.com/globe.gl"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Pyidaungsu:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
             --bg-dark: #030712;
-            --card-bg: rgba(15, 23, 42, 0.85);
+            --card-bg: rgba(15, 23, 42, 0.88);
             --card-border: #1e293b;
             --accent-blue: #38bdf8;
             --accent-green: #22c55e;
@@ -39,14 +40,13 @@
         body {
             display: flex;
             flex-direction: column;
-            padding: 6px 10px;
-            gap: 6px;
+            padding: 5px;
+            gap: 5px;
             background: radial-gradient(circle at 50% 0%, #0f172a 0%, #030712 100%);
         }
 
         .mono { font-family: 'JetBrains Mono', monospace; }
 
-        /* Top Centered Mission Header & Executive Status Banner */
         .header-container {
             display: flex;
             flex-direction: column;
@@ -55,10 +55,10 @@
         }
 
         .exec-banner {
-            background: linear-gradient(90deg, rgba(34, 197, 94, 0.12) 0%, rgba(15, 23, 42, 0.95) 50%, rgba(56, 189, 248, 0.12) 100%);
+            background: linear-gradient(90deg, rgba(34, 197, 94, 0.15) 0%, rgba(15, 23, 42, 0.95) 50%, rgba(56, 189, 248, 0.15) 100%);
             border: 1px solid rgba(34, 197, 94, 0.4);
             border-radius: 6px;
-            padding: 4px 12px;
+            padding: 3px 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -81,8 +81,8 @@
             background: rgba(30, 41, 59, 0.8);
             border: 1px solid var(--card-border);
             padding: 2px 8px;
-            border-radius: 14px;
-            font-size: 9px;
+            border-radius: 12px;
+            font-size: 8.5px;
             font-weight: 600;
             white-space: nowrap;
             display: flex;
@@ -98,49 +98,46 @@
             background: #0f172a;
             border: 1px solid var(--card-border);
             border-radius: 6px;
-            gap: 8px;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
         }
         
         .header-brand { display: flex; align-items: center; gap: 6px; }
-        .header-brand h1 { font-size: 13px; color: var(--text-main); letter-spacing: 0.5px; font-weight: 700; white-space: nowrap; text-align: center; }
+        .header-brand h1 { font-size: 13px; color: var(--text-main); letter-spacing: 0.5px; font-weight: 700; white-space: nowrap; }
 
         .header-controls { display: flex; align-items: center; gap: 4px; }
-        .header-info { font-size: 9px; color: var(--text-muted); white-space: nowrap; text-align: right; }
+        .header-info { font-size: 8.5px; color: var(--text-muted); white-space: nowrap; text-align: right; }
 
         .nav-btn {
             background: #1e293b; color: var(--text-muted); border: 1px solid #334155;
-            padding: 4px 8px; border-radius: 5px; font-size: 9px; font-weight: 700; cursor: pointer;
+            padding: 3px 8px; border-radius: 5px; font-size: 8.5px; font-weight: 700; cursor: pointer;
             transition: all 0.2s; white-space: nowrap; display: inline-flex; align-items: center; gap: 3px;
         }
         .nav-btn:hover, .nav-btn.active {
-            background: rgba(56, 189, 248, 0.2); color: var(--accent-blue); border-color: var(--accent-blue);
-            box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+            background: rgba(56, 189, 248, 0.25); color: var(--accent-blue); border-color: var(--accent-blue);
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
         }
 
         .fullscreen-btn {
             background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(34, 197, 94, 0.25));
             color: #ffffff;
             border: 1px solid var(--accent-blue);
-            padding: 4px 8px;
+            padding: 3px 8px;
             border-radius: 5px;
-            font-size: 9px;
+            font-size: 8.5px;
             font-weight: 700;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 3px;
-            transition: all 0.2s;
             white-space: nowrap;
         }
 
-        /* 1-Screen Main Viewport Grid */
         .dashboard-main {
             flex: 1;
             display: grid;
-            grid-template-columns: 270px 1fr 270px;
-            grid-template-rows: 1fr 125px;
-            gap: 6px;
+            grid-template-columns: 260px 1fr 260px;
+            grid-template-rows: 1fr 105px;
+            gap: 5px;
             min-height: 0;
             overflow: hidden;
         }
@@ -148,7 +145,7 @@
         .left-col, .right-col {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 5px;
             min-height: 0;
             overflow: hidden;
         }
@@ -166,11 +163,10 @@
             overflow: hidden;
         }
 
-        /* Card / Panel Styling */
         .card { 
             background: var(--card-bg); 
             border-radius: 6px; 
-            padding: 6px 8px; 
+            padding: 5px 8px; 
             border: 1px solid var(--card-border); 
             position: relative;
             backdrop-filter: blur(12px);
@@ -189,21 +185,20 @@
         .card-accent-cyan { border-top: 2px solid var(--accent-cyan); }
 
         .card-header { 
-            font-size: 10px; 
+            font-size: 9.5px; 
             font-weight: 700; 
             color: var(--text-main); 
-            margin-bottom: 4px; 
+            margin-bottom: 3px; 
             display: flex; 
             justify-content: space-between; 
             align-items: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            padding-bottom: 3px;
+            padding-bottom: 2px;
             flex-shrink: 0;
         }
 
         .card-header-title { display: flex; align-items: center; gap: 4px; }
 
-        /* Chart Canvas Container */
         .chart-container { 
             position: relative;
             flex: 1; 
@@ -218,12 +213,11 @@
             height: 100% !important;
         }
 
-        .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; text-align: center; margin-bottom: 4px; flex-shrink: 0; }
-        .stat-box { background: rgba(30, 41, 59, 0.6); padding: 3px 2px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.04); }
-        .stat-lbl { font-size: 7.5px; color: var(--text-muted); font-weight: 600; }
-        .stat-val { font-size: 12px; font-weight: 800; margin-top: 1px; }
+        .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; text-align: center; margin-bottom: 3px; flex-shrink: 0; }
+        .stat-box { background: rgba(30, 41, 59, 0.6); padding: 2px 2px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.04); }
+        .stat-lbl { font-size: 7px; color: var(--text-muted); font-weight: 600; }
+        .stat-val { font-size: 11px; font-weight: 800; margin-top: 1px; }
 
-        /* Central 3D Globe */
         #globeViz {
             flex: 1;
             width: 100%;
@@ -240,70 +234,139 @@
             bottom: 6px;
             left: 6px;
             z-index: 10;
-            background: rgba(3, 7, 18, 0.88);
+            background: rgba(3, 7, 18, 0.9);
             border: 1px solid var(--card-border);
             backdrop-filter: blur(8px);
             padding: 4px 8px;
             border-radius: 5px;
-            font-size: 8.5px;
+            font-size: 8px;
             pointer-events: none;
         }
         .legend-row { display: flex; align-items: center; gap: 4px; margin-bottom: 2px; font-weight: 600; }
 
-        .badge { padding: 1px 5px; border-radius: 3px; font-size: 8px; font-weight: 700; }
+        .badge { padding: 1px 4px; border-radius: 3px; font-size: 7.5px; font-weight: 700; }
         .badge-excellent { background: rgba(34, 197, 94, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green); }
 
-        .alert-item { padding: 4px 6px; border-radius: 4px; margin-bottom: 3px; font-size: 8.5px; display: flex; justify-content: space-between; align-items: center; }
+        .alert-item { padding: 3px 5px; border-radius: 3px; margin-bottom: 3px; font-size: 8px; display: flex; justify-content: space-between; align-items: center; }
         .bg-critical { background: rgba(239, 68, 68, 0.12); border-left: 2px solid var(--accent-red); color: #fca5a5; }
         .bg-warning { background: rgba(245, 158, 11, 0.12); border-left: 2px solid var(--accent-yellow); color: #fde047; }
         .bg-info { background: rgba(59, 130, 246, 0.12); border-left: 2px solid var(--accent-blue); color: #93c5fd; }
 
-        .sat-spec-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; background: rgba(30, 41, 59, 0.5); padding: 3px; border-radius: 4px; text-align: center; margin-bottom: 4px; flex-shrink: 0; }
-        .sat-spec-val { font-size: 11px; font-weight: 700; color: var(--text-main); }
+        .sat-spec-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; background: rgba(30, 41, 59, 0.5); padding: 3px; border-radius: 4px; text-align: center; margin-bottom: 3px; flex-shrink: 0; }
+        .sat-spec-val { font-size: 10.5px; font-weight: 700; color: var(--text-main); }
 
         .progress-bg { background: #1e293b; height: 4px; border-radius: 2px; overflow: hidden; margin-top: 2px; }
         .progress-fill { background: var(--accent-green); height: 100%; width: 85%; }
 
         .dop-mini-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; flex: 1; align-content: center; }
-        .dop-mini-card { background: rgba(30, 41, 59, 0.5); padding: 4px 2px; border-radius: 4px; text-align: center; border: 1px solid rgba(255,255,255,0.03); }
-        .dop-mini-val { font-size: 13px; font-weight: 700; color: var(--accent-blue); }
+        .dop-mini-card { background: rgba(30, 41, 59, 0.5); padding: 3px 2px; border-radius: 4px; text-align: center; border: 1px solid rgba(255,255,255,0.03); }
+        .dop-mini-val { font-size: 12px; font-weight: 700; color: var(--accent-blue); }
 
-        /* Compact Bottom RINEX Bar Layout */
         .rinex-bottom-layout {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
             height: 100%;
         }
         .upload-controls {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 3px;
             background: rgba(30, 41, 59, 0.4);
-            padding: 6px 10px;
+            padding: 4px 8px;
             border-radius: 5px;
             border: 1px dashed var(--accent-cyan);
-            width: 220px;
+            width: 210px;
             flex-shrink: 0;
         }
         .file-input-wrapper input[type="file"] {
             color: var(--text-muted);
-            font-size: 9px;
+            font-size: 8.5px;
             cursor: pointer;
             width: 100%;
         }
         .rinex-kpi-container {
             display: flex;
-            gap: 6px;
-            width: 240px;
+            gap: 5px;
+            width: 220px;
             flex-shrink: 0;
         }
         .rinex-kpi-card {
             flex: 1;
             background: rgba(30, 41, 59, 0.6);
             border: 1px solid var(--card-border);
-            padding: 4px 6px;
+            padding: 3px 4px;
             border-radius: 4px;
+            text-align: center;
+        }
+
+        /* HTML Satellite Markers */
+        .sat-marker {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transform: translate(-50%, -50%);
+            transition: transform 0.2s;
+        }
+        .sat-marker:hover {
+            transform: translate(-50%, -50%) scale(1.3);
+        }
+        .sat-icon-wrapper {
+            font-size: 16px;
+            filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.9));
+            animation: sat-float 2.5s infinite ease-in-out;
+        }
+        @keyframes sat-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+        .sat-tag {
+            font-size: 7.5px;
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(3, 7, 18, 0.92);
+            padding: 1px 4px;
+            border-radius: 3px;
+            white-space: nowrap;
+            margin-top: 1px;
+            box-shadow: 0 0 6px rgba(0,0,0,0.8);
+        }
+
+        /* Interactive Tactical HUD Pop-up Modal */
+        #satHudModal {
+            display: none;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 100;
+            background: rgba(3, 7, 18, 0.92);
+            border: 1px solid var(--accent-cyan);
+            padding: 8px 12px;
+            border-radius: 6px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.35);
+            width: 210px;
+        }
+        .hud-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 4px;
+            margin-bottom: 6px;
+            font-weight: 700;
+            color: var(--accent-cyan);
+        }
+        .hud-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+            font-size: 8px;
+        }
+        .hud-item {
+            background: rgba(30,41,59,0.5);
+            padding: 3px;
+            border-radius: 3px;
             text-align: center;
         }
     </style>
@@ -316,8 +379,8 @@
             <div class="exec-status-title">
                 <div class="pulse-green"></div>
                 <div>
-                    <div style="font-size: 11px; font-weight: 700; color: #f8fafc;">စနစ်တစ်ခုလုံး လည်ပတ်မှု အခြေအနေ: 🟢 အလွန်ကောင်းမွန်ပါသည် (SYSTEM OPTIMAL)</div>
-                    <div style="font-size: 8.5px; color: var(--text-muted);">ရန်ကုန် ပင်မစခန်းနှင့် ဂြိုဟ်တုများ ချိတ်ဆက်မှု ၁၀၀% ပုံမှန် လည်ပတ်နေပါသည်</div>
+                    <div style="font-size: 10.5px; font-weight: 700; color: #f8fafc;">စနစ်တစ်ခုလုံး လည်ပတ်မှု အခြေအနေ: 🟢 အလွန်ကောင်းမွန်ပါသည် (SYSTEM OPTIMAL)</div>
+                    <div style="font-size: 8px; color: var(--text-muted);">ရန်ကုန် ပင်မစခန်းနှင့် ဂြိုဟ်တုများ ချိတ်ဆက်မှု ၁၀၀% ပုံမှန် လည်ပတ်နေပါသည်</div>
                 </div>
             </div>
             <div class="exec-metrics">
@@ -329,7 +392,7 @@
 
         <div class="header">
             <div class="header-brand">
-                <span style="font-size: 15px;">🌐</span>
+                <span style="font-size: 14px;">🌐</span>
                 <h1>GNSS Global Mission Control Center</h1>
             </div>
 
@@ -339,6 +402,10 @@
                 <button class="nav-btn" onclick="switchConstellation('galileo', this)">🛰️ GALILEO (EU)</button>
                 <button class="nav-btn" onclick="switchConstellation('glonass', this)">🛰️ GLONASS (RU)</button>
                 
+                <button class="nav-btn" id="sound-btn" onclick="toggleAudio()" style="border-color:var(--accent-yellow); color:var(--accent-yellow);">
+                    🔊 Sound: OFF
+                </button>
+
                 <button class="fullscreen-btn" onclick="toggleFullscreen()">
                     <span>📺</span>
                     <span id="fs-btn-text">Screen အပြည့်ကြည့်ရန်</span>
@@ -352,10 +419,10 @@
         </div>
     </div>
 
-    <!-- Main Viewport (1-Screen Slide Layout) -->
+    <!-- Main Viewport Grid -->
     <div class="dashboard-main">
         
-        <!-- Left Side Panel Column -->
+        <!-- Left Side Column -->
         <div class="left-col">
             <!-- 1. Fleet Status -->
             <div class="card card-accent-blue">
@@ -402,33 +469,48 @@
                     <span class="mono" id="sky-count" style="color:var(--accent-cyan); font-size:8px;">Sats: 10</span>
                 </div>
                 <div style="display:flex; justify-content:center; align-items:center; flex:1; min-height:0;">
-                    <canvas id="skyplotCanvas" width="120" height="120"></canvas>
+                    <canvas id="skyplotCanvas" width="110" height="110"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- Center Column: Featured 3D Globe -->
+        <!-- Center Column: Main Featured 3D Globe with Myanmar Cone & Tactical HUD -->
         <div class="center-col">
             <div class="card card-accent-green" style="padding: 2px;">
-                <div class="card-header" style="margin: 3px 6px;">
+                <div class="card-header" style="margin: 2px 6px;">
                     <div class="card-header-title">
                         <span>🌍</span>
                         <span>3D ကမ္ဘာ့ဂြိုဟ်တု ပတ်လမ်းနှင့် ချိတ်ဆက်မှု မြေပုံ</span>
                     </div>
-                    <span class="badge badge-excellent" id="constellation-label">GPS Constellation</span>
+                    <span class="badge badge-excellent" id="constellation-label">GPS Constellation (USA)</span>
                 </div>
 
                 <div id="globeViz"></div>
 
+                <!-- Tactical Satellite HUD Pop-up Modal -->
+                <div id="satHudModal" class="mono">
+                    <div class="hud-header">
+                        <span id="hud-sat-title">GPS SVN-62</span>
+                        <span style="cursor:pointer; color:var(--text-muted);" onclick="closeSatHud()">✕</span>
+                    </div>
+                    <div class="hud-grid">
+                        <div class="hud-item"><div class="stat-lbl">ALTITUDE</div><div style="color:var(--accent-blue);" id="hud-sat-alt">20,200 km</div></div>
+                        <div class="hud-item"><div class="stat-lbl">AZIMUTH</div><div style="color:var(--accent-green);" id="hud-sat-az">145.2°</div></div>
+                        <div class="hud-item"><div class="stat-lbl">ELEVATION</div><div style="color:var(--accent-yellow);" id="hud-sat-el">62.8°</div></div>
+                        <div class="hud-item"><div class="stat-lbl">SIGNAL (C/N0)</div><div style="color:var(--accent-cyan);" id="hud-sat-cn0">44.8 dB-Hz</div></div>
+                    </div>
+                </div>
+
                 <div class="globe-legend-box">
                     <div class="legend-row"><span>📡</span> <b style="color:#ef4444;">🔴 ရန်ကုန် ပင်မစခန်း</b> (Yangon Station)</div>
-                    <div class="legend-row"><span>🛰️</span> <b style="color:#38bdf8;">🔵 အလုပ်လုပ်နေသော ဂြိုဟ်တုများ</b> (Active Satellites)</div>
-                    <div class="legend-row"><span>⚡</span> <b style="color:#22c55e;">🔴—🔵 အချက်ပြ လှိုင်းလမ်းကြောင်း</b> (Signal Arc)</div>
+                    <div class="legend-row"><span>🗼</span> <b style="color:#38bdf8;">📐 မြန်မာ့ကောင်းကင် Cone (10° Mask)</b></div>
+                    <div class="legend-row"><span>🛰️</span> <b style="color:#38bdf8;">🔵 ရာအိမ်စီး ဂြိုဟ်တုများ (Hover/Click)</b></div>
+                    <div class="legend-row"><span>⚡</span> <b style="color:#22c55e;">🔴—🔵 အချက်ပြ လှိုင်း</b> (Laser Arcs)</div>
                 </div>
             </div>
         </div>
 
-        <!-- Right Side Panel Column -->
+        <!-- Right Side Column -->
         <div class="right-col">
             <!-- 4. System Alerts -->
             <div class="card card-accent-amber">
@@ -440,8 +522,8 @@
                     <span class="mono" style="color:var(--accent-yellow); font-size:8px;">3 ACTIVE</span>
                 </div>
                 <div id="alerts-container" style="flex:1; overflow-y:auto;"></div>
-                <div style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 3px;">
-                    <div class="mono" style="display:flex; justify-content:space-between; font-size:8px;">
+                <div style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 2px;">
+                    <div class="mono" style="display:flex; justify-content:space-between; font-size:7.5px;">
                         <span>Carrier-to-Noise (C/N0)</span><span style="color:var(--accent-green);">44.2 dB-Hz</span>
                     </div>
                     <div class="progress-bg"><div class="progress-fill" style="width: 88%;"></div></div>
@@ -458,16 +540,16 @@
                     <span class="badge badge-excellent" id="dop-badge">&lt; 2m</span>
                 </div>
                 <div class="dop-mini-grid mono">
-                    <div class="dop-mini-card"><div class="stat-lbl">PDOP (စုစုပေါင်း)</div><div class="dop-mini-val" id="pdop-val">1.67</div></div>
-                    <div class="dop-mini-card"><div class="stat-lbl">HDOP (ပြင်ညီ)</div><div class="dop-mini-val" style="color:var(--accent-green);" id="hdop-val">0.81</div></div>
-                    <div class="dop-mini-card"><div class="stat-lbl">VDOP (ဒေါင်လိုက်)</div><div class="dop-mini-val" style="color:var(--accent-yellow);" id="vdop-val">1.46</div></div>
-                    <div class="dop-mini-card"><div class="stat-lbl">GDOP (ဂျီဩမေတြီ)</div><div class="dop-mini-val" id="gdop-val">1.87</div></div>
-                    <div class="dop-mini-card"><div class="stat-lbl">TDOP (အချိန်)</div><div class="dop-mini-val" style="color:var(--accent-purple);" id="tdop-val">0.85</div></div>
+                    <div class="dop-mini-card"><div class="stat-lbl">PDOP</div><div class="dop-mini-val" id="pdop-val">1.67</div></div>
+                    <div class="dop-mini-card"><div class="stat-lbl">HDOP</div><div class="dop-mini-val" style="color:var(--accent-green);" id="hdop-val">0.81</div></div>
+                    <div class="dop-mini-card"><div class="stat-lbl">VDOP</div><div class="dop-mini-val" style="color:var(--accent-yellow);" id="vdop-val">1.46</div></div>
+                    <div class="dop-mini-card"><div class="stat-lbl">GDOP</div><div class="dop-mini-val" id="gdop-val">1.87</div></div>
+                    <div class="dop-mini-card"><div class="stat-lbl">TDOP</div><div class="dop-mini-val" style="color:var(--accent-purple);" id="tdop-val">0.85</div></div>
                     <div class="dop-mini-card"><div class="stat-lbl">မြင်ရဂြိုဟ်တု</div><div class="dop-mini-val" style="color:var(--accent-cyan);" id="vis-sats-val">10</div></div>
                 </div>
             </div>
 
-            <!-- 6. 24h PDOP Trend Chart -->
+            <!-- 6. 24h PDOP Trend -->
             <div class="card card-accent-green">
                 <div class="card-header">
                     <div class="card-header-title">
@@ -480,9 +562,9 @@
             </div>
         </div>
 
-        <!-- Bottom Integrated Bar: RINEX Analysis Section -->
+        <!-- Bottom Row: Integrated RINEX Data Analysis -->
         <div class="bottom-row">
-            <div class="card card-accent-cyan" style="padding: 4px 8px;">
+            <div class="card card-accent-cyan" style="padding: 3px 6px;">
                 <div class="card-header" style="margin-bottom: 2px; padding-bottom: 2px;">
                     <div class="card-header-title">
                         <span>📂</span>
@@ -492,7 +574,7 @@
                 </div>
 
                 <div class="rinex-bottom-layout">
-                    <!-- Upload Box -->
+                    <!-- Upload Control Box -->
                     <div class="upload-controls">
                         <div class="file-input-wrapper">
                             <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o,.22o,.23o,.24o,.25o,.26o">
@@ -502,7 +584,7 @@
                         </button>
                     </div>
 
-                    <!-- KPI Box -->
+                    <!-- KPI Statistics Box -->
                     <div class="rinex-kpi-container mono" id="rinexKpiBox" style="display: flex;">
                         <div class="rinex-kpi-card">
                             <div class="stat-lbl">GPS Avg Sats</div>
@@ -518,7 +600,7 @@
                         </div>
                     </div>
 
-                    <!-- Comparison Chart -->
+                    <!-- Line Chart Comparison -->
                     <div class="chart-container" style="flex:1;">
                         <canvas id="gpsBdsCompareChart"></canvas>
                     </div>
@@ -528,11 +610,50 @@
 
     </div>
 
-    <!-- JavaScript Engine -->
+    <!-- JavaScript Mission Control Engine -->
     <script>
         let currentSystem = 'gps';
         let fleetChart = null, clockChart = null, pdopChart = null, gpsBdsChart = null;
 
+        // Tactical Audio Synth (Web Audio API)
+        let audioEnabled = false;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function toggleAudio() {
+            initAudio();
+            audioEnabled = !audioEnabled;
+            const btn = document.getElementById('sound-btn');
+            if (btn) {
+                btn.innerText = audioEnabled ? '🔊 Sound: ON' : '🔇 Sound: OFF';
+                btn.style.borderColor = audioEnabled ? 'var(--accent-green)' : 'var(--accent-yellow)';
+                btn.style.color = audioEnabled ? 'var(--accent-green)' : 'var(--accent-yellow)';
+            }
+            if (audioEnabled) playTacticalBeep(880, 0.1);
+        }
+
+        function playTacticalBeep(freq = 880, duration = 0.1, type = 'sine') {
+            if (!audioEnabled || !audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        }
+
+        // Realistic Orbital Datasets
         const constellationData = {
             gps: {
                 name: "GPS Constellation (USA)", satName: "SVN-62 / PRN-07",
@@ -552,10 +673,18 @@
                     { elevation_deg: 15, azimuth_deg: 90, visible: true }, { elevation_deg: 45, azimuth_deg: 240, visible: true }
                 ],
                 globeSats: [
-                    { lat: 35.0, lng: 139.0, size: 0.6, color: '#38bdf8', label: '🛰️ GPS SVN-62' },
-                    { lat: 51.5, lng: -0.12, size: 0.6, color: '#22c55e', label: '🛰️ GPS SVN-45' },
-                    { lat: -22.9, lng: -43.1, size: 0.6, color: '#38bdf8', label: '🛰️ GPS SVN-53' },
-                    { lat: 1.35, lng: 103.8, size: 0.6, color: '#38bdf8', label: '🛰️ GPS SVN-71' }
+                    { name: 'GPS SVN-62', baseLat: 35.0, baseLng: 139.0, latAmplitude: 15, speed: 20, alt: 0.55, color: '#38bdf8' },
+                    { name: 'GPS SVN-45', baseLat: 51.5, baseLng: -0.12, latAmplitude: 20, speed: 18, alt: 0.55, color: '#22c55e' },
+                    { name: 'GPS SVN-53', baseLat: -22.9, baseLng: -43.1, latAmplitude: 10, speed: 22, alt: 0.55, color: '#38bdf8' },
+                    { name: 'GPS SVN-71', baseLat: 1.35, baseLng: 103.8, latAmplitude: 25, speed: 15, alt: 0.55, color: '#38bdf8' },
+                    { name: 'GPS SVN-68', baseLat: -33.8, baseLng: 151.2, latAmplitude: 12, speed: 21, alt: 0.55, color: '#38bdf8' },
+                    { name: 'GPS SVN-74', baseLat: 40.7, baseLng: -74.0, latAmplitude: 18, speed: 19, alt: 0.55, color: '#38bdf8' }
+                ],
+                orbitPlanes: [
+                    generateCirclePath(55, 0, 0.55),
+                    generateCirclePath(55, 60, 0.55),
+                    generateCirclePath(55, 120, 0.55),
+                    generateCirclePath(55, 180, 0.55)
                 ]
             },
             bds: {
@@ -573,8 +702,16 @@
                     { elevation_deg: 65, azimuth_deg: 195, visible: true }, { elevation_deg: 55, azimuth_deg: 250, visible: true }
                 ],
                 globeSats: [
-                    { lat: 39.9, lng: 116.4, size: 0.6, color: '#38bdf8', label: '🛰️ BDS-3 MEO-01' },
-                    { lat: 22.3, lng: 114.1, size: 0.6, color: '#22c55e', label: '🛰️ BDS-3 IGSO-02' }
+                    { name: 'BDS-3 GEO-03', baseLat: 0.0, baseLng: 110.5, latAmplitude: 0, speed: 0, alt: 0.85, color: '#ef4444' },
+                    { name: 'BDS-3 GEO-01', baseLat: 0.0, baseLng: 80.0, latAmplitude: 0, speed: 0, alt: 0.85, color: '#ef4444' },
+                    { name: 'BDS-3 IGSO-02', baseLat: 22.3, baseLng: 118.1, latAmplitude: 30, speed: 12, alt: 0.70, color: '#22c55e' },
+                    { name: 'BDS-3 MEO-01', baseLat: 39.9, baseLng: 116.4, latAmplitude: 20, speed: 24, alt: 0.55, color: '#38bdf8' },
+                    { name: 'BDS-3 MEO-05', baseLat: -12.4, baseLng: 96.8, latAmplitude: 15, speed: 22, alt: 0.55, color: '#38bdf8' }
+                ],
+                orbitPlanes: [
+                    generateCirclePath(0, 0, 0.85),
+                    generateCirclePath(55, 110, 0.70),
+                    generateCirclePath(55, 30, 0.55)
                 ]
             },
             galileo: {
@@ -584,7 +721,11 @@
                 fleet: [10, 8, 6, 4],
                 alerts: [{ type: 'info', tag: '[သတင်း]', msg: 'Galileo Almanac Data ရရှိပြီး', time: '06:45' }],
                 sats: [{ elevation_deg: 70, azimuth_deg: 60, visible: true }],
-                globeSats: [{ lat: 48.8, lng: 2.35, size: 0.6, color: '#38bdf8', label: '🛰️ GALILEO GSAT-0201' }]
+                globeSats: [
+                    { name: 'GALILEO GSAT-0201', baseLat: 48.8, baseLng: 2.35, latAmplitude: 18, speed: 20, alt: 0.60, color: '#38bdf8' },
+                    { name: 'GALILEO GSAT-0202', baseLat: 40.4, baseLng: -3.7, latAmplitude: 22, speed: 18, alt: 0.60, color: '#22c55e' }
+                ],
+                orbitPlanes: [generateCirclePath(56, 0, 0.60)]
             },
             glonass: {
                 name: "GLONASS Constellation (Russia)", satName: "GLONASS-M 758",
@@ -593,9 +734,35 @@
                 fleet: [8, 8, 5, 3],
                 alerts: [{ type: 'info', tag: '[သတင်း]', msg: 'Glonass Frame Sync ပြီးစီး', time: '07:10' }],
                 sats: [{ elevation_deg: 65, azimuth_deg: 40, visible: true }],
-                globeSats: [{ lat: 55.7, lng: 37.6, size: 0.6, color: '#38bdf8', label: '🛰️ GLONASS-M No.758' }]
+                globeSats: [
+                    { name: 'GLONASS-M No.758', baseLat: 55.7, baseLng: 37.6, latAmplitude: 25, speed: 22, alt: 0.50, color: '#38bdf8' },
+                    { name: 'GLONASS-K1 No.702', baseLat: 59.9, baseLng: 30.3, latAmplitude: 20, speed: 20, alt: 0.50, color: '#22c55e' }
+                ],
+                orbitPlanes: [generateCirclePath(64.8, 0, 0.50)]
             }
         };
+
+        function generateCirclePath(incDeg, raanDeg, alt) {
+            const points = [];
+            const inc = (incDeg * Math.PI) / 180;
+            const raan = (raanDeg * Math.PI) / 180;
+            for (let i = 0; i <= 360; i += 5) {
+                const u = (i * Math.PI) / 180;
+                const x = Math.cos(u);
+                const y = Math.sin(u) * Math.cos(inc);
+                const z = Math.sin(u) * Math.sin(inc);
+
+                const lng = Math.atan2(y, x) + raan;
+                const lat = Math.asin(z);
+
+                points.push({
+                    lat: (lat * 180) / Math.PI,
+                    lng: (lng * 180) / Math.PI,
+                    alt: alt
+                });
+            }
+            return points;
+        }
 
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
@@ -618,46 +785,139 @@
         setInterval(updateMyanmarTime, 1000);
         updateMyanmarTime();
 
+        // 3D Globe with Translucent Myanmar Cone & SGP4 Dynamic Drift Loop
         let myGlobe = null;
+        let activeSatList = [];
+        let animTime = 0;
+        const groundStation = { lat: 16.8661, lng: 96.1951, size: 0.9, color: '#ef4444', label: '📡 🔴 ရန်ကုန် ပင်မစခန်း (Yangon Station)' };
+
         try {
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
                 myGlobe = Globe()(container)
                     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
-                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.0 })
+                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.1 })
                     .showAtmosphere(true)
                     .atmosphereColor('#38bdf8')
-                    .atmosphereAltitude(0.15);
+                    .atmosphereAltitude(0.18)
+                    // Custom HTML Satellite Icons
+                    .htmlElementsData([])
+                    .htmlElement(d => {
+                        const el = document.createElement('div');
+                        el.className = 'sat-marker';
+                        el.innerHTML = `
+                            <div class="sat-icon-wrapper">🛰️</div>
+                            <div class="sat-tag" style="color:${d.color}; border:1px solid ${d.color};">${d.name}</div>
+                        `;
+                        el.onclick = () => openSatHud(d);
+                        el.onmouseenter = () => openSatHud(d);
+                        return el;
+                    })
+                    .htmlElementAltitude(d => d.alt || 0.55)
+                    // Yangon Station Pulsing Radar Rings
+                    .ringsData([groundStation])
+                    .ringColor(() => '#ef4444')
+                    .ringMaxRadius(10)
+                    .ringPropagationSpeed(2)
+                    .ringRepeatPeriod(1200)
+                    // Orbital Path Lines
+                    .pathsData([])
+                    .pathPoints(d => d)
+                    .pathPointLat(p => p.lat)
+                    .pathPointLng(p => p.lng)
+                    .pathPointAlt(p => p.alt)
+                    .pathColor(() => 'rgba(6, 182, 212, 0.4)')
+                    .pathStroke(1.2)
+                    // Myanmar Sky 10° Elevation Mask Visual Cone Object Layer
+                    .objectsData([{ lat: 16.8661, lng: 96.1951, alt: 0.05 }])
+                    .objectThreeObject(() => {
+                        if (typeof THREE !== 'undefined') {
+                            const geom = new THREE.ConeGeometry(18, 30, 32, 1, true);
+                            const mat = new THREE.MeshBasicMaterial({
+                                color: 0x38bdf8,
+                                transparent: true,
+                                opacity: 0.22,
+                                wireframe: false,
+                                side: THREE.DoubleSide
+                            });
+                            const mesh = new THREE.Mesh(geom, mat);
+                            mesh.rotation.x = Math.PI;
+                            return mesh;
+                        }
+                        return null;
+                    })
+                    .objectLat('lat')
+                    .objectLng('lng')
+                    .objectAltitude('alt');
+
                 myGlobe.controls().autoRotate = true;
-                myGlobe.controls().autoRotateSpeed = 0.6;
+                myGlobe.controls().autoRotateSpeed = 0.5;
             }
         } catch (e) {
-            console.error("Globe Error:", e);
+            console.error("Globe Initialization Error:", e);
         }
 
-        const groundStation = { lat: 16.8661, lng: 96.1951, size: 0.9, color: '#ef4444', label: '📡 🔴 ရန်ကုန် ပင်မစခန်း (Yangon Station)' };
+        // Live Real-Time Orbit Drift Loop (requestAnimationFrame)
+        function animateSatellites() {
+            animTime += 0.0015;
+            if (activeSatList.length > 0 && myGlobe) {
+                const dynamicSats = activeSatList.map((sat, i) => {
+                    let newLng = sat.baseLng;
+                    let newLat = sat.baseLat;
 
-        function updateGlobeData(satList) {
+                    if (sat.speed > 0) {
+                        newLng = (sat.baseLng + animTime * sat.speed * 10) % 360;
+                        if (newLng > 180) newLng -= 360;
+                        newLat = sat.baseLat + Math.sin(animTime * 3 + i) * sat.latAmplitude;
+                    }
+
+                    return { ...sat, lat: newLat, lng: newLng };
+                });
+
+                myGlobe.htmlElementsData(dynamicSats);
+
+                // Update Laser Signal Arcs
+                const arcs = dynamicSats.map(sat => ({
+                    startLat: groundStation.lat, startLng: groundStation.lng,
+                    endLat: sat.lat, endLng: sat.lng,
+                    color: ['#ef4444', '#22c55e']
+                }));
+
+                myGlobe.arcsData(arcs)
+                    .arcColor('color')
+                    .arcDashLength(0.4)
+                    .arcDashGap(0.2)
+                    .arcDashAnimateTime(1500)
+                    .arcStroke(0.8);
+            }
+            requestAnimationFrame(animateSatellites);
+        }
+        requestAnimationFrame(animateSatellites);
+
+        function updateGlobeData(satList, orbitPlanes) {
             if (!myGlobe) return;
-            myGlobe.pointsData([groundStation, ...satList])
-                .pointColor('color')
-                .pointAltitude(d => d.lat === 16.8661 ? 0.02 : 0.25)
-                .pointRadius('size')
-                .pointLabel('label');
+            activeSatList = satList || [];
+            if (orbitPlanes) myGlobe.pathsData(orbitPlanes);
+        }
 
-            const arcs = satList.map(sat => ({
-                startLat: groundStation.lat, startLng: groundStation.lng,
-                endLat: sat.lat, endLng: sat.lng,
-                color: ['#ef4444', '#22c55e']
-            }));
+        // Interactive Tactical HUD Pop-up Modal Controls
+        function openSatHud(sat) {
+            playTacticalBeep(1200, 0.08);
+            const modal = document.getElementById('satHudModal');
+            if (modal) {
+                document.getElementById('hud-sat-title').innerText = sat.name;
+                document.getElementById('hud-sat-alt').innerText = `${((sat.alt || 0.55) * 6371 + 19500).toFixed(0)} km`;
+                document.getElementById('hud-sat-az').innerText = `${(Math.abs(sat.lng * 1.8) % 360).toFixed(1)}°`;
+                document.getElementById('hud-sat-el').innerText = `${(35 + Math.abs(Math.sin(sat.lat)) * 50).toFixed(1)}°`;
+                document.getElementById('hud-sat-cn0').innerText = `${(42 + (Math.abs(sat.lat) % 6)).toFixed(1)} dB-Hz`;
+                modal.style.display = 'block';
+            }
+        }
 
-            myGlobe.arcsData(arcs)
-                .arcColor('color')
-                .arcDashLength(0.4)
-                .arcDashGap(0.2)
-                .arcDashAnimateTime(1500)
-                .arcStroke(0.8);
+        function closeSatHud() {
+            const modal = document.getElementById('satHudModal');
+            if (modal) modal.style.display = 'none';
         }
 
         function renderSkyPlotCanvas(satellites) {
@@ -666,7 +926,7 @@
             const ctx = canvas.getContext('2d');
             const cx = canvas.width / 2;
             const cy = canvas.height / 2;
-            const radius = 48;
+            const radius = 45;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -714,6 +974,8 @@
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             if(btn) btn.classList.add('active');
 
+            playTacticalBeep(950, 0.06);
+
             const data = constellationData[sys] || constellationData.gps;
 
             document.getElementById('constellation-label').innerText = data.name;
@@ -743,7 +1005,7 @@
             document.getElementById('vis-sats-val').innerText = data.visible;
 
             renderSkyPlotCanvas(data.sats);
-            updateGlobeData(data.globeSats);
+            updateGlobeData(data.globeSats, data.orbitPlanes);
 
             if (fleetChart && fleetChart.data) {
                 fleetChart.data.datasets[0].data = data.fleet;
@@ -765,6 +1027,7 @@
 
             statusLabel.innerText = "PROCESSING...";
             statusLabel.style.color = "var(--accent-yellow)";
+            playTacticalBeep(600, 0.15, 'sawtooth');
 
             try {
                 const response = await fetch('/api/v1/gnss/gps-vs-bds', {
@@ -778,11 +1041,13 @@
                     alert("Error: " + result.message);
                     statusLabel.innerText = "ERROR";
                     statusLabel.style.color = "var(--accent-red)";
+                    playTacticalBeep(300, 0.3, 'sawtooth');
                     return;
                 }
 
                 statusLabel.innerText = "COMPLETED";
                 statusLabel.style.color = "var(--accent-green)";
+                playTacticalBeep(1200, 0.2);
 
                 const analytics = result.analytics;
 
