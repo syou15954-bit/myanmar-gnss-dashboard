@@ -171,7 +171,6 @@
             margin-bottom: 20px;
         }
 
-        /* Responsive layout for smaller screens */
         @media (max-width: 1200px) {
             .grid-top, .grid-bottom {
                 grid-template-columns: 1fr;
@@ -218,7 +217,20 @@
         .card-header-title { display: flex; align-items: center; gap: 6px; }
         .card-header-icon { font-size: 13px; }
 
-        .chart-container { flex: 1; position: relative; width: 100%; min-height: 140px; }
+        /* Fix Chart.js Canvas Collapse Issue */
+        .chart-container { 
+            position: relative;
+            flex: 1; 
+            width: 100%; 
+            min-height: 160px; 
+        }
+        .chart-container canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100% !important;
+            height: 100% !important;
+        }
 
         /* Stats Blocks */
         .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; text-align: center; margin-bottom: 6px; flex-shrink: 0; }
@@ -286,10 +298,6 @@
             padding: 10px 14px;
             border-radius: 6px;
             border: 1px dashed var(--accent-cyan);
-        }
-        .file-input-wrapper {
-            position: relative;
-            display: inline-block;
         }
         .file-input-wrapper input[type="file"] {
             color: var(--text-muted);
@@ -492,7 +500,7 @@
             </div>
         </div>
 
-        <!-- RINEX Observation Data Analysis & GPS vs BeiDou Comparison Section -->
+        <!-- RINEX Observation Data Analysis Section -->
         <div class="grid-analysis">
             <div class="card card-accent-cyan">
                 <div class="card-header">
@@ -503,7 +511,6 @@
                     <span class="mono" style="color:var(--accent-cyan); font-size:9px;" id="uploadStatus">READY</span>
                 </div>
 
-                <!-- File Upload & Controls -->
                 <div class="upload-controls">
                     <div class="file-input-wrapper">
                         <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o,.22o,.23o,.24o,.25o,.26o">
@@ -517,7 +524,6 @@
                     </span>
                 </div>
 
-                <!-- KPI Summary Cards -->
                 <div class="rinex-kpi-container mono" id="rinexKpiBox" style="display: none;">
                     <div class="rinex-kpi-card">
                         <div class="stat-lbl">GPS (G) Average Satellites</div>
@@ -533,8 +539,7 @@
                     </div>
                 </div>
 
-                <!-- Comparison Chart Container -->
-                <div class="chart-container" style="min-height: 200px;">
+                <div class="chart-container" style="min-height: 220px;">
                     <canvas id="gpsBdsCompareChart"></canvas>
                 </div>
             </div>
@@ -542,16 +547,14 @@
 
     </div>
 
-    <!-- JavaScript Mission Control Engine -->
+    <!-- JavaScript Engine -->
     <script>
         let currentSystem = 'gps';
-        let fleetChart, clockChart, pdopChart, gpsBdsChart;
+        let fleetChart = null, clockChart = null, pdopChart = null, gpsBdsChart = null;
 
-        // Dynamic Constellation Datasets
         const constellationData = {
             gps: {
-                name: "GPS Constellation (USA)",
-                satName: "SVN-62 / PRN-07",
+                name: "GPS Constellation (USA)", satName: "SVN-62 / PRN-07",
                 total: 31, active: 28, degraded: 2, offline: 1, visible: 10,
                 pdop: "1.67", hdop: "0.81", vdop: "1.46", gdop: "1.87", tdop: "0.85",
                 fleet: [12, 8, 7, 4],
@@ -561,16 +564,11 @@
                     { type: 'info', tag: '[သတင်း]', msg: 'GPS Orbit Data အသစ် ရယူပြီး', time: '07:30' }
                 ],
                 sats: [
-                    { elevation_deg: 75, azimuth_deg: 45, visible: true },
-                    { elevation_deg: 60, azimuth_deg: 120, visible: true },
-                    { elevation_deg: 40, azimuth_deg: 210, visible: true },
-                    { elevation_deg: 80, azimuth_deg: 310, visible: true },
-                    { elevation_deg: 25, azimuth_deg: 15, visible: true },
-                    { elevation_deg: 50, azimuth_deg: 160, visible: true },
-                    { elevation_deg: 35, azimuth_deg: 280, visible: true },
-                    { elevation_deg: 65, azimuth_deg: 340, visible: true },
-                    { elevation_deg: 15, azimuth_deg: 90, visible: true },
-                    { elevation_deg: 45, azimuth_deg: 240, visible: true }
+                    { elevation_deg: 75, azimuth_deg: 45, visible: true }, { elevation_deg: 60, azimuth_deg: 120, visible: true },
+                    { elevation_deg: 40, azimuth_deg: 210, visible: true }, { elevation_deg: 80, azimuth_deg: 310, visible: true },
+                    { elevation_deg: 25, azimuth_deg: 15, visible: true }, { elevation_deg: 50, azimuth_deg: 160, visible: true },
+                    { elevation_deg: 35, azimuth_deg: 280, visible: true }, { elevation_deg: 65, azimuth_deg: 340, visible: true },
+                    { elevation_deg: 15, azimuth_deg: 90, visible: true }, { elevation_deg: 45, azimuth_deg: 240, visible: true }
                 ],
                 globeSats: [
                     { lat: 35.0, lng: 139.0, size: 0.6, color: '#38bdf8', label: '🛰️ GPS SVN-62' },
@@ -580,8 +578,7 @@
                 ]
             },
             bds: {
-                name: "BEIDOU Constellation (China)",
-                satName: "BDS-3 MEO-01",
+                name: "BEIDOU Constellation (China)", satName: "BDS-3 MEO-01",
                 total: 56, active: 48, degraded: 5, offline: 3, visible: 14,
                 pdop: "1.35", hdop: "0.65", vdop: "1.18", gdop: "1.52", tdop: "0.71",
                 fleet: [18, 15, 15, 8],
@@ -591,80 +588,35 @@
                     { type: 'info', tag: '[သတင်း]', msg: 'BeiDou Ephemeris Data မွမ်းမံပြီး', time: '08:15' }
                 ],
                 sats: [
-                    { elevation_deg: 82, azimuth_deg: 30, visible: true },
-                    { elevation_deg: 70, azimuth_deg: 110, visible: true },
-                    { elevation_deg: 65, azimuth_deg: 195, visible: true },
-                    { elevation_deg: 55, azimuth_deg: 250, visible: true },
-                    { elevation_deg: 45, azimuth_deg: 320, visible: true },
-                    { elevation_deg: 35, azimuth_deg: 70, visible: true },
-                    { elevation_deg: 28, azimuth_deg: 140, visible: true },
-                    { elevation_deg: 75, azimuth_deg: 290, visible: true },
-                    { elevation_deg: 50, azimuth_deg: 15, visible: true },
-                    { elevation_deg: 60, azimuth_deg: 180, visible: true },
-                    { elevation_deg: 40, azimuth_deg: 220, visible: true },
-                    { elevation_deg: 30, azimuth_deg: 350, visible: true },
-                    { elevation_deg: 20, azimuth_deg: 100, visible: true },
-                    { elevation_deg: 68, azimuth_deg: 50, visible: true }
+                    { elevation_deg: 82, azimuth_deg: 30, visible: true }, { elevation_deg: 70, azimuth_deg: 110, visible: true },
+                    { elevation_deg: 65, azimuth_deg: 195, visible: true }, { elevation_deg: 55, azimuth_deg: 250, visible: true },
+                    { elevation_deg: 45, azimuth_deg: 320, visible: true }, { elevation_deg: 35, azimuth_deg: 70, visible: true },
+                    { elevation_deg: 28, azimuth_deg: 140, visible: true }, { elevation_deg: 75, azimuth_deg: 290, visible: true },
+                    { elevation_deg: 50, azimuth_deg: 15, visible: true }, { elevation_deg: 60, azimuth_deg: 180, visible: true }
                 ],
                 globeSats: [
                     { lat: 39.9, lng: 116.4, size: 0.6, color: '#38bdf8', label: '🛰️ BDS-3 MEO-01' },
                     { lat: 22.3, lng: 114.1, size: 0.6, color: '#22c55e', label: '🛰️ BDS-3 IGSO-02' },
-                    { lat: 13.7, lng: 100.5, size: 0.6, color: '#38bdf8', label: '🛰️ BDS-3 GEO-03' },
-                    { lat: -33.8, lng: 151.2, size: 0.6, color: '#38bdf8', label: '🛰️ BDS-3 MEO-05' }
+                    { lat: 13.7, lng: 100.5, size: 0.6, color: '#38bdf8', label: '🛰️ BDS-3 GEO-03' }
                 ]
             },
             galileo: {
-                name: "GALILEO Constellation (Europe)",
-                satName: "GSAT-0201",
+                name: "GALILEO Constellation (Europe)", satName: "GSAT-0201",
                 total: 28, active: 24, degraded: 3, offline: 1, visible: 8,
                 pdop: "1.92", hdop: "0.95", vdop: "1.67", gdop: "2.10", tdop: "0.92",
                 fleet: [10, 8, 6, 4],
-                alerts: [
-                    { type: 'critical', tag: '[သတိပေး]', msg: 'GSAT-0204 အချက်ပြစွမ်းအား ကျဆင်းမှုရှိ', time: '08:30' },
-                    { type: 'warning', tag: '[သတိပေး]', msg: 'ဥရောပ Ground Station ချိတ်ဆက်မှု နှောင့်နှေး', time: '08:00' },
-                    { type: 'info', tag: '[သတင်း]', msg: 'Galileo Almanac Data ရရှိပြီး', time: '06:45' }
-                ],
-                sats: [
-                    { elevation_deg: 70, azimuth_deg: 60, visible: true },
-                    { elevation_deg: 55, azimuth_deg: 140, visible: true },
-                    { elevation_deg: 45, azimuth_deg: 220, visible: true },
-                    { elevation_deg: 35, azimuth_deg: 300, visible: true },
-                    { elevation_deg: 60, azimuth_deg: 20, visible: true },
-                    { elevation_deg: 25, azimuth_deg: 170, visible: true },
-                    { elevation_deg: 80, azimuth_deg: 260, visible: true },
-                    { elevation_deg: 40, azimuth_deg: 330, visible: true }
-                ],
-                globeSats: [
-                    { lat: 48.8, lng: 2.35, size: 0.6, color: '#38bdf8', label: '🛰️ GALILEO GSAT-0201' },
-                    { lat: 40.4, lng: -3.7, size: 0.6, color: '#22c55e', label: '🛰️ GALILEO GSAT-0202' },
-                    { lat: 52.5, lng: 13.4, size: 0.6, color: '#38bdf8', label: '🛰️ GALILEO GSAT-0203' }
-                ]
+                alerts: [{ type: 'info', tag: '[သတင်း]', msg: 'Galileo Almanac Data ရရှိပြီး', time: '06:45' }],
+                sats: [{ elevation_deg: 70, azimuth_deg: 60, visible: true }],
+                globeSats: [{ lat: 48.8, lng: 2.35, size: 0.6, color: '#38bdf8', label: '🛰️ GALILEO GSAT-0201' }]
             },
             glonass: {
-                name: "GLONASS Constellation (Russia)",
-                satName: "GLONASS-M 758",
+                name: "GLONASS Constellation (Russia)", satName: "GLONASS-M 758",
                 total: 24, active: 22, degraded: 1, offline: 1, visible: 7,
                 pdop: "2.15", hdop: "1.10", vdop: "1.85", gdop: "2.35", tdop: "1.05",
                 fleet: [8, 8, 5, 3],
-                alerts: [
-                    { type: 'critical', tag: '[သတိပေး]', msg: 'GLONASS-M 755 နာရီတိကျမှု စစ်ဆေးနေဆဲ', time: '09:05' },
-                    { type: 'warning', tag: '[သတိပေး]', msg: 'မြောက်ဝင်ရိုးစွန်းဒေသ အချက်ပြနည်းပါး', time: '08:40' },
-                    { type: 'info', tag: '[သတင်း]', msg: 'Glonass Frame Sync ပြီးစီး', time: '07:10' }
-                ],
-                sats: [
-                    { elevation_deg: 65, azimuth_deg: 40, visible: true },
-                    { elevation_deg: 50, azimuth_deg: 130, visible: true },
-                    { elevation_deg: 42, azimuth_deg: 200, visible: true },
-                    { elevation_deg: 75, azimuth_deg: 310, visible: true },
-                    { elevation_deg: 30, azimuth_deg: 80, visible: true },
-                    { elevation_deg: 22, azimuth_deg: 160, visible: true },
-                    { elevation_deg: 58, azimuth_deg: 270, visible: true }
-                ],
-                globeSats: [
-                    { lat: 55.7, lng: 37.6, size: 0.6, color: '#38bdf8', label: '🛰️ GLONASS-M No.758' },
-                    { lat: 59.9, lng: 30.3, size: 0.6, color: '#22c55e', label: '🛰️ GLONASS-K1 No.702' },
-                    { lat: 55.0, lng: 82.9, size: 0.6, color: '#38bdf8', label: '🛰️ GLONASS-M No.759' }
-                ]
+                alerts: [{ type: 'info', tag: '[သတင်း]', msg: 'Glonass Frame Sync ပြီးစီး', time: '07:10' }],
+                sats: [{ elevation_deg: 65, azimuth_deg: 40, visible: true }],
+                globeSats: [{ lat: 55.7, lng: 37.6, size: 0.6, color: '#38bdf8', label: '🛰️ GLONASS-M No.758' }]
             }
         };
 
@@ -672,8 +624,6 @@
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().then(() => {
                     document.getElementById('fs-btn-text').innerText = "မူလအတိုင်း ပြန်ထားရန်";
-                }).catch(err => {
-                    alert(`Fullscreen အသုံးပြုမရပါ: ${err.message}`);
                 });
             } else {
                 if (document.exitFullscreen) {
@@ -734,8 +684,6 @@
             }
         }
         window.addEventListener('resize', updateGlobeDimensions);
-        const resizeObserver = new ResizeObserver(() => updateGlobeDimensions());
-        resizeObserver.observe(container);
 
         // Skyplot Canvas Renderer
         function renderSkyPlotCanvas(satellites) {
@@ -789,7 +737,7 @@
         function switchConstellation(sys, btn) {
             currentSystem = sys;
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            if(btn) btn.classList.add('active');
 
             const data = constellationData[sys] || constellationData.gps;
 
@@ -828,7 +776,6 @@
             }
         }
 
-        // RINEX Upload Engine Function
         async function uploadAndCompare() {
             const fileInput = document.getElementById('rinexFileInput');
             const statusLabel = document.getElementById('uploadStatus');
@@ -885,7 +832,6 @@
 
         function renderGpsBdsChart(timestamps, gpsCounts, bdsCounts) {
             const ctx = document.getElementById('gpsBdsCompareChart').getContext('2d');
-
             if (gpsBdsChart) gpsBdsChart.destroy();
 
             gpsBdsChart = new Chart(ctx, {
@@ -917,60 +863,49 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: true,
-                            labels: { color: '#f8fafc', font: { family: 'JetBrains Mono', size: 10 } }
-                        }
+                        legend: { display: true, labels: { color: '#f8fafc', font: { family: 'JetBrains Mono', size: 10 } } }
                     },
                     scales: {
-                        x: {
-                            ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 8 } },
-                            grid: { color: 'rgba(255, 255, 255, 0.05)' }
-                        },
-                        y: {
-                            ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 9 } },
-                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                            beginAtZero: true,
-                            title: { display: true, text: 'Visible Satellites Count', color: '#94a3b8', font: { size: 9 } }
-                        }
+                        x: { ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 8 } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+                        y: { ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 9 } }, grid: { color: 'rgba(255, 255, 255, 0.05)' }, beginAtZero: true }
                     }
                 }
             });
         }
 
-        // Initialize Charts
-        fleetChart = new Chart(document.getElementById('fleetChart'), {
-            type: 'bar',
-            data: {
-                labels: ['Block I', 'Block II', 'Block III', 'Block IV'],
-                datasets: [{ label: 'ဂြိုဟ်တု အရေအတွက်', data: constellationData.gps.fleet, backgroundColor: '#38bdf8' }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        // Initialize All Charts on DOM Load
+        window.addEventListener('DOMContentLoaded', () => {
+            fleetChart = new Chart(document.getElementById('fleetChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Block I', 'Block II', 'Block III', 'Block IV'],
+                    datasets: [{ label: 'ဂြိုဟ်တု အရေအတွက်', data: constellationData.gps.fleet, backgroundColor: '#38bdf8' }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            clockChart = new Chart(document.getElementById('clockChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['10:00', '14:00', '18:00', '22:00'],
+                    datasets: [{ label: 'Clock Error', data: [0.01, -0.02, 0.02, -0.01], borderColor: '#c084fc', borderWidth: 1.5, tension: 0.3 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            pdopChart = new Chart(document.getElementById('pdopChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'],
+                    datasets: [{ label: 'PDOP', data: [2.1, 1.9, 1.8, 3.5, 1.8, 1.7, 2.0], borderColor: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.1)', fill: true, tension: 0.3 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            renderGpsBdsChart(['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'], [10, 11, 12, 10, 11, 10], [18, 19, 21, 20, 19, 18]);
+
+            switchConstellation('gps', document.querySelector('.nav-btn.active'));
         });
-
-        clockChart = new Chart(document.getElementById('clockChart'), {
-            type: 'line',
-            data: {
-                labels: ['10:00', '14:00', '18:00', '22:00'],
-                datasets: [{ label: 'Clock Error', data: [0.01, -0.02, 0.02, -0.01], borderColor: '#c084fc', borderWidth: 1.5, tension: 0.3 }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-        });
-
-        pdopChart = new Chart(document.getElementById('pdopChart'), {
-            type: 'line',
-            data: {
-                labels: ['10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'],
-                datasets: [{ label: 'PDOP', data: [2.1, 1.9, 1.8, 3.5, 1.8, 1.7, 2.0], borderColor: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.1)', fill: true, tension: 0.3 }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-        });
-
-        // Initial RINEX Chart Placeholder
-        renderGpsBdsChart(['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'], [10, 11, 12, 10, 11, 10], [18, 19, 21, 20, 19, 18]);
-
-        // First Load Initial GPS
-        switchConstellation('gps', document.querySelector('.nav-btn.active'));
     </script>
 </body>
 </html>
