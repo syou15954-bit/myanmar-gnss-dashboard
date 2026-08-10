@@ -1,5 +1,7 @@
 fastapi
 uvicorn
-requests
-sgp4
-numpy
+georinex
+xarray
+netcdf4
+pandas
+python-multipart

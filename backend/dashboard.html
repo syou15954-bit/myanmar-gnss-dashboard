@@ -27,10 +27,11 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         html, body {
-            min-height: 100vh;
-            width: 100vw;
-            overflow-x: hidden;
-            overflow-y: auto;
+            min-height: 100vh !important;
+            height: auto !important;
+            width: 100%;
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
             background-color: var(--bg-dark); 
             color: #cbd5e1; 
             font-family: 'Pyidaungsu', -apple-system, sans-serif; 
@@ -142,6 +143,7 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
+            width: 100%;
         }
 
         /* Top Grid Layout - 3 Columns */
@@ -165,7 +167,15 @@
             display: grid;
             grid-template-columns: 1fr;
             gap: 8px;
-            min-height: 260px;
+            min-height: 280px;
+            margin-bottom: 20px;
+        }
+
+        /* Responsive layout for smaller screens */
+        @media (max-width: 1200px) {
+            .grid-top, .grid-bottom {
+                grid-template-columns: 1fr;
+            }
         }
 
         /* Card / Box Styling */
@@ -265,17 +275,17 @@
         .dop-mini-card { background: rgba(30, 41, 59, 0.5); padding: 6px 4px; border-radius: 5px; text-align: center; border: 1px solid rgba(255,255,255,0.03); }
         .dop-mini-val { font-size: 15px; font-weight: 700; color: var(--accent-blue); margin-top: 1px; }
 
-        /* Custom File Upload Styling */
+        /* File Upload Controls Styling */
         .upload-controls {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             background: rgba(30, 41, 59, 0.4);
-            padding: 8px 12px;
+            padding: 10px 14px;
             border-radius: 6px;
-            border: 1px dashed var(--accent-blue);
+            border: 1px dashed var(--accent-cyan);
         }
         .file-input-wrapper {
             position: relative;
@@ -284,19 +294,20 @@
         .file-input-wrapper input[type="file"] {
             color: var(--text-muted);
             font-size: 10px;
+            cursor: pointer;
         }
         .rinex-kpi-container {
             display: flex;
             gap: 10px;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             flex-wrap: wrap;
         }
         .rinex-kpi-card {
             flex: 1;
-            min-width: 140px;
+            min-width: 150px;
             background: rgba(30, 41, 59, 0.6);
             border: 1px solid var(--card-border);
-            padding: 6px 10px;
+            padding: 8px 12px;
             border-radius: 6px;
             text-align: center;
         }
@@ -314,7 +325,7 @@
             </div>
         </div>
         <div class="exec-metrics">
-            <div class="exec-pill">🎯 တည်နေရာတိကျမှု: <b style="color:var(--accent-green);">အလွန်မြင့်မား (< 1.5 မီတာ)</b></div>
+            <div class="exec-pill">🎯 တည်နေရာတိကျမှု: <b style="color:var(--accent-green);">အလွန်မြင့်မား (&lt; 1.5 မီတာ)</b></div>
             <div class="exec-pill">📡 အချက်ပြလှိုင်း: <b style="color:var(--accent-blue);">အားကောင်းပါသည်</b></div>
             <div class="exec-pill">🛰️ မြင်တွေ့ရသော ဂြိုဟ်တု: <b style="color:var(--accent-yellow);" id="banner-vis-sats">10 စီး</b></div>
         </div>
@@ -481,7 +492,7 @@
             </div>
         </div>
 
-        <!-- NEW: RINEX File Analysis & GPS vs BeiDou Comparison Section -->
+        <!-- RINEX Observation Data Analysis & GPS vs BeiDou Comparison Section -->
         <div class="grid-analysis">
             <div class="card card-accent-cyan">
                 <div class="card-header">
@@ -506,7 +517,7 @@
                     </span>
                 </div>
 
-                <!-- KPI Summary Cards (Hidden initially until upload) -->
+                <!-- KPI Summary Cards -->
                 <div class="rinex-kpi-container mono" id="rinexKpiBox" style="display: none;">
                     <div class="rinex-kpi-card">
                         <div class="stat-lbl">GPS (G) Average Satellites</div>
@@ -523,7 +534,7 @@
                 </div>
 
                 <!-- Comparison Chart Container -->
-                <div class="chart-container" style="min-height: 180px;">
+                <div class="chart-container" style="min-height: 200px;">
                     <canvas id="gpsBdsCompareChart"></canvas>
                 </div>
             </div>
@@ -536,7 +547,7 @@
         let currentSystem = 'gps';
         let fleetChart, clockChart, pdopChart, gpsBdsChart;
 
-        // Dynamic Constellation Datasets with Specific Country Alerts
+        // Dynamic Constellation Datasets
         const constellationData = {
             gps: {
                 name: "GPS Constellation (USA)",
@@ -782,7 +793,6 @@
 
             const data = constellationData[sys] || constellationData.gps;
 
-            // Update UI Labels and Stats
             document.getElementById('constellation-label').innerText = data.name;
             document.getElementById('total-sats').innerText = data.total;
             document.getElementById('active-sats').innerText = data.active;
@@ -792,7 +802,6 @@
             document.getElementById('sky-count').innerText = `Sats: ${data.visible}`;
             document.getElementById('sat-telemetry-name').innerText = data.satName;
 
-            // Dynamic Update Alerts
             const alertsContainer = document.getElementById('alerts-container');
             if (alertsContainer && data.alerts) {
                 alertsContainer.innerHTML = data.alerts.map(a => `
@@ -803,7 +812,6 @@
                 `).join('');
             }
 
-            // Update DOP Matrix
             document.getElementById('pdop-val').innerText = data.pdop;
             document.getElementById('hdop-val').innerText = data.hdop;
             document.getElementById('vdop-val').innerText = data.vdop;
@@ -811,18 +819,16 @@
             document.getElementById('tdop-val').innerText = data.tdop;
             document.getElementById('vis-sats-val').innerText = data.visible;
 
-            // Update Skyplot and 3D Globe
             renderSkyPlotCanvas(data.sats);
             updateGlobeData(data.globeSats);
 
-            // Update Fleet Chart Bar Data
             if (fleetChart) {
                 fleetChart.data.datasets[0].data = data.fleet;
                 fleetChart.update();
             }
         }
 
-        // RINEX File Upload & Comparison Engine
+        // RINEX Upload Engine Function
         async function uploadAndCompare() {
             const fileInput = document.getElementById('rinexFileInput');
             const statusLabel = document.getElementById('uploadStatus');
@@ -858,7 +864,6 @@
 
                 const analytics = result.analytics;
 
-                // Update KPI Cards
                 document.getElementById('rinexKpiBox').style.display = 'flex';
                 document.getElementById('avgGpsVal').innerText = analytics.sat_count.avg_gps + " Sats";
                 document.getElementById('avgBdsVal').innerText = analytics.sat_count.avg_bds + " Sats";
@@ -868,7 +873,6 @@
                     : 'N/A';
                 document.getElementById('bdsRatioVal').innerText = ratio + "x More Sats";
 
-                // Render Chart.js
                 renderGpsBdsChart(analytics.timestamps, analytics.sat_count.gps, analytics.sat_count.bds);
 
             } catch (err) {
