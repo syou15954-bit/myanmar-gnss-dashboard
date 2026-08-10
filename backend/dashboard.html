@@ -48,7 +48,7 @@
 
         .mono { font-family: 'JetBrains Mono', monospace; }
 
-        /* Top Executive Status Banner */
+        /* Banner & Header */
         .exec-banner {
             background: linear-gradient(90deg, rgba(34, 197, 94, 0.12) 0%, rgba(15, 23, 42, 0.95) 50%, rgba(56, 189, 248, 0.12) 100%);
             border: 1px solid rgba(34, 197, 94, 0.4);
@@ -86,7 +86,6 @@
             gap: 5px;
         }
 
-        /* Header Navigation Bar */
         .header { 
             display: flex; 
             justify-content: space-between; 
@@ -133,12 +132,8 @@
             white-space: nowrap;
             margin-left: 6px;
         }
-        .fullscreen-btn:hover {
-            background: rgba(56, 189, 248, 0.4);
-            box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
-        }
 
-        /* Dashboard Content Viewport Container */
+        /* Layout Grids */
         .dashboard-body {
             display: flex;
             flex-direction: column;
@@ -146,7 +141,6 @@
             width: 100%;
         }
 
-        /* Top Grid Layout - 3 Columns */
         .grid-top {
             display: grid;
             grid-template-columns: 290px 1fr 290px;
@@ -154,7 +148,6 @@
             min-height: 280px;
         }
 
-        /* Bottom Grid Layout - 4 Columns */
         .grid-bottom {
             display: grid;
             grid-template-columns: 280px 200px 1fr 1.2fr;
@@ -162,7 +155,6 @@
             min-height: 220px;
         }
 
-        /* Analysis Grid Layout - Full Width */
         .grid-analysis {
             display: grid;
             grid-template-columns: 1fr;
@@ -172,12 +164,9 @@
         }
 
         @media (max-width: 1200px) {
-            .grid-top, .grid-bottom {
-                grid-template-columns: 1fr;
-            }
+            .grid-top, .grid-bottom { grid-template-columns: 1fr; }
         }
 
-        /* Card / Box Styling */
         .card { 
             background: var(--card-bg); 
             border-radius: 8px; 
@@ -215,30 +204,21 @@
         }
 
         .card-header-title { display: flex; align-items: center; gap: 6px; }
-        .card-header-icon { font-size: 13px; }
 
-        /* Fix Chart.js Canvas Collapse Issue */
+        /* Fix Canvas Height Collapse */
         .chart-container { 
             position: relative;
-            flex: 1; 
             width: 100%; 
-            min-height: 160px; 
-        }
-        .chart-container canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100% !important;
-            height: 100% !important;
+            height: 160px !important; 
+            min-height: 160px;
+            flex-shrink: 0;
         }
 
-        /* Stats Blocks */
         .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; text-align: center; margin-bottom: 6px; flex-shrink: 0; }
         .stat-box { background: rgba(30, 41, 59, 0.6); padding: 5px 2px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.04); }
         .stat-lbl { font-size: 8px; color: var(--text-muted); font-weight: 600; }
         .stat-val { font-size: 14px; font-weight: 800; margin-top: 1px; }
 
-        /* Globe Container & Legend Box */
         #globeViz {
             flex: 1;
             width: 100%;
@@ -265,29 +245,24 @@
         }
         .legend-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; font-weight: 600; }
 
-        /* Quality Badges */
         .badge { padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; }
         .badge-excellent { background: rgba(34, 197, 94, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green); }
 
-        /* Alerts Table */
         .alert-item { padding: 6px 8px; border-radius: 5px; margin-bottom: 5px; font-size: 9px; display: flex; justify-content: space-between; align-items: center; }
         .bg-critical { background: rgba(239, 68, 68, 0.12); border-left: 3px solid var(--accent-red); color: #fca5a5; }
         .bg-warning { background: rgba(245, 158, 11, 0.12); border-left: 3px solid var(--accent-yellow); color: #fde047; }
         .bg-info { background: rgba(59, 130, 246, 0.12); border-left: 3px solid var(--accent-blue); color: #93c5fd; }
 
-        /* Telemetry Specifications */
         .sat-spec-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; background: rgba(30, 41, 59, 0.5); padding: 5px; border-radius: 5px; text-align: center; margin-bottom: 6px; flex-shrink: 0; }
         .sat-spec-val { font-size: 13px; font-weight: 700; color: var(--text-main); }
 
         .progress-bg { background: #1e293b; height: 5px; border-radius: 3px; overflow: hidden; margin-top: 3px; }
         .progress-fill { background: var(--accent-green); height: 100%; width: 85%; }
 
-        /* DOP Mini Matrix */
         .dop-mini-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; flex: 1; align-content: center; }
         .dop-mini-card { background: rgba(30, 41, 59, 0.5); padding: 6px 4px; border-radius: 5px; text-align: center; border: 1px solid rgba(255,255,255,0.03); }
         .dop-mini-val { font-size: 15px; font-weight: 700; color: var(--accent-blue); margin-top: 1px; }
 
-        /* File Upload Controls Styling */
         .upload-controls {
             display: flex;
             align-items: center;
@@ -323,7 +298,7 @@
 </head>
 <body>
 
-    <!-- Executive Status Banner -->
+    <!-- Banner -->
     <div class="exec-banner">
         <div class="exec-status-title">
             <div class="pulse-green"></div>
@@ -339,7 +314,7 @@
         </div>
     </div>
 
-    <!-- Header Navigation Bar -->
+    <!-- Header -->
     <div class="header">
         <div class="header-brand">
             <span style="font-size: 16px;">🌐</span>
@@ -364,15 +339,15 @@
         </div>
     </div>
 
-    <!-- Dashboard Main Viewport Container -->
+    <!-- Dashboard Content -->
     <div class="dashboard-body">
         
-        <!-- Top Grid Section -->
+        <!-- Top Grid -->
         <div class="grid-top">
             <div class="card card-accent-blue">
                 <div class="card-header">
                     <div class="card-header-title">
-                        <span class="card-header-icon">🛰️</span>
+                        <span>🛰️</span>
                         <span>ဂြိုဟ်တုများ တည်ရှိမှု အခြေအနေ</span>
                     </div>
                     <span class="mono" style="color:var(--accent-blue); font-size:9px;">LIVE</span>
@@ -386,11 +361,11 @@
                 <div class="chart-container"><canvas id="fleetChart"></canvas></div>
             </div>
 
-            <!-- 3D Globe Viewport -->
+            <!-- 3D Globe -->
             <div class="card card-accent-green" style="padding: 4px;">
                 <div class="card-header" style="margin: 4px;">
                     <div class="card-header-title">
-                        <span class="card-header-icon">🌍</span>
+                        <span>🌍</span>
                         <span>3D ကမ္ဘာ့ဂြိုဟ်တု ပတ်လမ်းနှင့် ချိတ်ဆက်မှု မြေပုံ</span>
                     </div>
                     <span class="badge badge-excellent" id="constellation-label">GPS Constellation</span>
@@ -399,23 +374,21 @@
                 <div id="globeViz"></div>
 
                 <div class="globe-legend-box">
-                    <div class="legend-row"><span style="font-size:11px;">📡</span> <b style="color:#ef4444;">🔴 ရန်ကုန် ပင်မစခန်း</b> (Yangon Ground Station)</div>
-                    <div class="legend-row"><span style="font-size:11px;">🛰️</span> <b style="color:#38bdf8;">🔵 အလုပ်လုပ်နေသော ဂြိုဟ်တုများ</b> (Active Satellites)</div>
-                    <div class="legend-row"><span style="font-size:11px;">⚡</span> <b style="color:#22c55e;">🔴—🔵 အချက်ပြ လှိုင်းလမ်းကြောင်း</b> (Signal Arc)</div>
+                    <div class="legend-row"><span>📡</span> <b style="color:#ef4444;">🔴 ရန်ကုန် ပင်မစခန်း</b> (Yangon Ground Station)</div>
+                    <div class="legend-row"><span>🛰️</span> <b style="color:#38bdf8;">🔵 အလုပ်လုပ်နေသော ဂြိုဟ်တုများ</b> (Active Satellites)</div>
+                    <div class="legend-row"><span>⚡</span> <b style="color:#22c55e;">🔴—🔵 အချက်ပြ လှိုင်းလမ်းကြောင်း</b> (Signal Arc)</div>
                 </div>
             </div>
 
             <div class="card card-accent-amber">
                 <div class="card-header">
                     <div class="card-header-title">
-                        <span class="card-header-icon">⚠️</span>
+                        <span>⚠️</span>
                         <span>စနစ် သတိပေးချက်များ</span>
                     </div>
                     <span class="mono" style="color:var(--accent-yellow); font-size:9px;">3 ACTIVE</span>
                 </div>
-                <div id="alerts-container">
-                    <!-- Dynamic Alerts will populate here -->
-                </div>
+                <div id="alerts-container"></div>
                 <div style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
                     <div class="card-header" style="border:none; padding:0; margin-bottom:4px;">
                         <span>📶 အချက်ပြ စွမ်းရည် ကြံ့ခိုင်မှု (Signal Integrity)</span>
@@ -428,12 +401,12 @@
             </div>
         </div>
 
-        <!-- Bottom Grid Section -->
+        <!-- Bottom Grid -->
         <div class="grid-bottom">
             <div class="card card-accent-purple">
                 <div class="card-header">
                     <div class="card-header-title">
-                        <span class="card-header-icon">📊</span>
+                        <span>📊</span>
                         <span>ဂြိုဟ်တု စက်ပစ္စည်း တိုင်းတာချက်</span>
                     </div>
                     <span class="mono" style="color:var(--accent-purple);" id="sat-telemetry-name">SVN-62</span>
@@ -458,12 +431,12 @@
             <div class="card card-accent-cyan">
                 <div class="card-header">
                     <div class="card-header-title">
-                        <span class="card-header-icon">🌌</span>
+                        <span>🌌</span>
                         <span>မိုးကုတ်စက်ဝိုင်း မြင်ကွင်း</span>
                     </div>
                     <span class="mono" id="sky-count" style="color:var(--accent-cyan);">Sats: 10</span>
                 </div>
-                <div style="display:flex; justify-content:center; align-items:center; flex:1; min-height:0;">
+                <div style="display:flex; justify-content:center; align-items:center; flex:1; min-height:140px;">
                     <canvas id="skyplotCanvas" width="140" height="140"></canvas>
                 </div>
             </div>
@@ -471,7 +444,7 @@
             <div class="card card-accent-blue">
                 <div class="card-header">
                     <div class="card-header-title">
-                        <span class="card-header-icon">🎯</span>
+                        <span>🎯</span>
                         <span>တည်နေရာ တိကျမှု ညွှန်းကိန်း (DOP)</span>
                     </div>
                     <span class="badge badge-excellent" id="dop-badge">အလွန်ကောင်းမွန် (&lt;2m)</span>
@@ -491,7 +464,7 @@
             <div class="card card-accent-green">
                 <div class="card-header">
                     <div class="card-header-title">
-                        <span class="card-header-icon">📈</span>
+                        <span>📈</span>
                         <span>၂၄ နာရီ တည်နေရာတိကျမှု မှတ်တမ်း</span>
                     </div>
                     <span class="mono" style="color:var(--text-muted); font-size:9px;">PDOP TREND</span>
@@ -500,12 +473,12 @@
             </div>
         </div>
 
-        <!-- RINEX Observation Data Analysis Section -->
+        <!-- RINEX Analysis Grid -->
         <div class="grid-analysis">
             <div class="card card-accent-cyan">
                 <div class="card-header">
                     <div class="card-header-title">
-                        <span class="card-header-icon">📂</span>
+                        <span>📂</span>
                         <span>RINEX Observation Data Analysis: GPS (G) vs BeiDou (C) နှိုင်းယှဉ်ချက်</span>
                     </div>
                     <span class="mono" style="color:var(--accent-cyan); font-size:9px;" id="uploadStatus">READY</span>
@@ -539,7 +512,7 @@
                     </div>
                 </div>
 
-                <div class="chart-container" style="min-height: 220px;">
+                <div class="chart-container" style="height: 220px !important;">
                     <canvas id="gpsBdsCompareChart"></canvas>
                 </div>
             </div>
@@ -589,15 +562,11 @@
                 ],
                 sats: [
                     { elevation_deg: 82, azimuth_deg: 30, visible: true }, { elevation_deg: 70, azimuth_deg: 110, visible: true },
-                    { elevation_deg: 65, azimuth_deg: 195, visible: true }, { elevation_deg: 55, azimuth_deg: 250, visible: true },
-                    { elevation_deg: 45, azimuth_deg: 320, visible: true }, { elevation_deg: 35, azimuth_deg: 70, visible: true },
-                    { elevation_deg: 28, azimuth_deg: 140, visible: true }, { elevation_deg: 75, azimuth_deg: 290, visible: true },
-                    { elevation_deg: 50, azimuth_deg: 15, visible: true }, { elevation_deg: 60, azimuth_deg: 180, visible: true }
+                    { elevation_deg: 65, azimuth_deg: 195, visible: true }, { elevation_deg: 55, azimuth_deg: 250, visible: true }
                 ],
                 globeSats: [
                     { lat: 39.9, lng: 116.4, size: 0.6, color: '#38bdf8', label: '🛰️ BDS-3 MEO-01' },
-                    { lat: 22.3, lng: 114.1, size: 0.6, color: '#22c55e', label: '🛰️ BDS-3 IGSO-02' },
-                    { lat: 13.7, lng: 100.5, size: 0.6, color: '#38bdf8', label: '🛰️ BDS-3 GEO-03' }
+                    { lat: 22.3, lng: 114.1, size: 0.6, color: '#22c55e', label: '🛰️ BDS-3 IGSO-02' }
                 ]
             },
             galileo: {
@@ -622,14 +591,12 @@
 
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().then(() => {
-                    document.getElementById('fs-btn-text').innerText = "မူလအတိုင်း ပြန်ထားရန်";
-                });
+                document.documentElement.requestFullscreen().catch(e => console.error(e));
+                document.getElementById('fs-btn-text').innerText = "မူလအတိုင်း ပြန်ထားရန်";
             } else {
                 if (document.exitFullscreen) {
-                    document.exitFullscreen().then(() => {
-                        document.getElementById('fs-btn-text').innerText = "Screen အပြည့်ကြည့်ရန်";
-                    });
+                    document.exitFullscreen();
+                    document.getElementById('fs-btn-text').innerText = "Screen အပြည့်ကြည့်ရန်";
                 }
             }
         }
@@ -637,24 +604,35 @@
         function updateMyanmarTime() {
             const now = new Date();
             const options = { timeZone: 'Asia/Yangon', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
-            document.getElementById('mmt-time').innerText = now.toLocaleTimeString('en-US', options) + ' MMT';
+            const timeEl = document.getElementById('mmt-time');
+            if (timeEl) timeEl.innerText = now.toLocaleTimeString('en-US', options) + ' MMT';
         }
         setInterval(updateMyanmarTime, 1000);
         updateMyanmarTime();
 
-        // 3D Globe Initialization
-        const container = document.getElementById('globeViz');
-        const myGlobe = Globe()(container)
-            .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
-            .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
-            .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.1 })
-            .showAtmosphere(true)
-            .atmosphereColor('#38bdf8')
-            .atmosphereAltitude(0.15);
+        // Safe Globe Init
+        let myGlobe = null;
+        try {
+            const container = document.getElementById('globeViz');
+            if (container && typeof Globe !== 'undefined') {
+                myGlobe = Globe()(container)
+                    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
+                    .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
+                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.1 })
+                    .showAtmosphere(true)
+                    .atmosphereColor('#38bdf8')
+                    .atmosphereAltitude(0.15);
+                myGlobe.controls().autoRotate = true;
+                myGlobe.controls().autoRotateSpeed = 0.6;
+            }
+        } catch (e) {
+            console.error("Globe Error:", e);
+        }
 
         const groundStation = { lat: 16.8661, lng: 96.1951, size: 0.9, color: '#ef4444', label: '📡 🔴 ရန်ကုန် ပင်မစခန်း (Yangon Station)' };
 
         function updateGlobeData(satList) {
+            if (!myGlobe) return;
             myGlobe.pointsData([groundStation, ...satList])
                 .pointColor('color')
                 .pointAltitude(d => d.lat === 16.8661 ? 0.02 : 0.25)
@@ -675,17 +653,6 @@
                 .arcStroke(0.8);
         }
 
-        myGlobe.controls().autoRotate = true;
-        myGlobe.controls().autoRotateSpeed = 0.6;
-
-        function updateGlobeDimensions() {
-            if (container && container.clientWidth > 0 && container.clientHeight > 0) {
-                myGlobe.width(container.clientWidth).height(container.clientHeight);
-            }
-        }
-        window.addEventListener('resize', updateGlobeDimensions);
-
-        // Skyplot Canvas Renderer
         function renderSkyPlotCanvas(satellites) {
             const canvas = document.getElementById('skyplotCanvas');
             if (!canvas) return;
@@ -714,26 +681,27 @@
             ctx.fillText('N', cx - 3, cy - radius - 3);
             ctx.fillText('E', cx + radius + 3, cy + 3);
 
-            satellites.forEach(sat => {
-                if (sat.visible === false) return;
-                const r = radius * (1 - (sat.elevation_deg || 45) / 90.0);
-                const azRad = ((sat.azimuth_deg || 0) - 90) * (Math.PI / 180);
-                const x = cx + r * Math.cos(azRad);
-                const y = cy + r * Math.sin(azRad);
+            if (satellites) {
+                satellites.forEach(sat => {
+                    if (sat.visible === false) return;
+                    const r = radius * (1 - (sat.elevation_deg || 45) / 90.0);
+                    const azRad = ((sat.azimuth_deg || 0) - 90) * (Math.PI / 180);
+                    const x = cx + r * Math.cos(azRad);
+                    const y = cy + r * Math.sin(azRad);
 
-                ctx.beginPath();
-                ctx.arc(x, y, 5, 0, 2 * Math.PI);
-                ctx.fillStyle = 'rgba(56, 189, 248, 0.35)';
-                ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(x, y, 5, 0, 2 * Math.PI);
+                    ctx.fillStyle = 'rgba(56, 189, 248, 0.35)';
+                    ctx.fill();
 
-                ctx.beginPath();
-                ctx.arc(x, y, 2.5, 0, 2 * Math.PI);
-                ctx.fillStyle = '#38bdf8';
-                ctx.fill();
-            });
+                    ctx.beginPath();
+                    ctx.arc(x, y, 2.5, 0, 2 * Math.PI);
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.fill();
+                });
+            }
         }
 
-        // Constellation Switcher Handler
         function switchConstellation(sys, btn) {
             currentSystem = sys;
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -770,7 +738,7 @@
             renderSkyPlotCanvas(data.sats);
             updateGlobeData(data.globeSats);
 
-            if (fleetChart) {
+            if (fleetChart && fleetChart.data) {
                 fleetChart.data.datasets[0].data = data.fleet;
                 fleetChart.update();
             }
@@ -831,7 +799,9 @@
         }
 
         function renderGpsBdsChart(timestamps, gpsCounts, bdsCounts) {
-            const ctx = document.getElementById('gpsBdsCompareChart').getContext('2d');
+            const canvas = document.getElementById('gpsBdsCompareChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
             if (gpsBdsChart) gpsBdsChart.destroy();
 
             gpsBdsChart = new Chart(ctx, {
@@ -873,39 +843,64 @@
             });
         }
 
-        // Initialize All Charts on DOM Load
-        window.addEventListener('DOMContentLoaded', () => {
-            fleetChart = new Chart(document.getElementById('fleetChart').getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: ['Block I', 'Block II', 'Block III', 'Block IV'],
-                    datasets: [{ label: 'ဂြိုဟ်တု အရေအတွက်', data: constellationData.gps.fleet, backgroundColor: '#38bdf8' }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
+        // Initialize All Charts safely
+        function initCharts() {
+            try {
+                const defaultOptions = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: '#94a3b8', font: { size: 8 } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+                        y: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }
+                    }
+                };
 
-            clockChart = new Chart(document.getElementById('clockChart').getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: ['10:00', '14:00', '18:00', '22:00'],
-                    datasets: [{ label: 'Clock Error', data: [0.01, -0.02, 0.02, -0.01], borderColor: '#c084fc', borderWidth: 1.5, tension: 0.3 }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
+                const fc = document.getElementById('fleetChart');
+                if (fc) {
+                    fleetChart = new Chart(fc.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: ['Block I', 'Block II', 'Block III', 'Block IV'],
+                            datasets: [{ label: 'ဂြိုဟ်တု အရေအတွက်', data: constellationData.gps.fleet, backgroundColor: '#38bdf8' }]
+                        },
+                        options: defaultOptions
+                    });
+                }
 
-            pdopChart = new Chart(document.getElementById('pdopChart').getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: ['10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'],
-                    datasets: [{ label: 'PDOP', data: [2.1, 1.9, 1.8, 3.5, 1.8, 1.7, 2.0], borderColor: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.1)', fill: true, tension: 0.3 }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
+                const cc = document.getElementById('clockChart');
+                if (cc) {
+                    clockChart = new Chart(cc.getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            labels: ['10:00', '14:00', '18:00', '22:00'],
+                            datasets: [{ label: 'Clock Error', data: [0.01, -0.02, 0.02, -0.01], borderColor: '#c084fc', borderWidth: 1.5, tension: 0.3 }]
+                        },
+                        options: defaultOptions
+                    });
+                }
 
-            renderGpsBdsChart(['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'], [10, 11, 12, 10, 11, 10], [18, 19, 21, 20, 19, 18]);
+                const pc = document.getElementById('pdopChart');
+                if (pc) {
+                    pdopChart = new Chart(pc.getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            labels: ['10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'],
+                            datasets: [{ label: 'PDOP', data: [2.1, 1.9, 1.8, 3.5, 1.8, 1.7, 2.0], borderColor: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.1)', fill: true, tension: 0.3 }]
+                        },
+                        options: defaultOptions
+                    });
+                }
 
-            switchConstellation('gps', document.querySelector('.nav-btn.active'));
-        });
+                renderGpsBdsChart(['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'], [10, 11, 12, 10, 11, 10], [18, 19, 21, 20, 19, 18]);
+
+                switchConstellation('gps', document.querySelector('.nav-btn.active'));
+            } catch (err) {
+                console.error("Chart Init Error:", err);
+            }
+        }
+
+        window.onload = initCharts;
     </script>
 </body>
 </html>
