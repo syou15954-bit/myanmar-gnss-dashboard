@@ -3,3 +3,4 @@ uvicorn
 gunicorn
 pandas
 python-multipart
+requests
