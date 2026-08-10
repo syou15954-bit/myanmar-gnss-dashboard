@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
@@ -7,6 +7,8 @@ from fastapi.responses import HTMLResponse
 from app.fetchers.tle_fetcher import get_live_tle_data
 from app.analytics.skyplot import calculate_skyplot_data
 from app.analytics.dop_calculator import calculate_dop_metrics
+from app.parsers.rinex_parser import parse_rinex_bytes
+from app.analytics.gnss_compare import analyze_gps_vs_bds
 
 app = FastAPI(title="Myanmar GNSS Dashboard API", version="1.0.0")
 
@@ -99,3 +101,25 @@ def get_dop_metrics_api(system: str = "gps", mask_angle: float = 10.0):
         "constellation": system.upper(),
         "dop_analysis": dop_results
     }
+
+# RINEX File မှ GPS (G) နှင့် BDS (C) နှိုင်းယှဉ်ချက် Data ထုတ်ပေးမည့် API Endpoint
+@app.post("/api/v1/gnss/gps-vs-bds")
+async def compare_gps_bds_endpoint(file: UploadFile = File(...)):
+    try:
+        contents = await file.read()
+        # 1. RINEX File Bytes ကို Read ပြုလုပ်ခြင်း
+        df = parse_rinex_bytes(contents, file.filename)
+        
+        # 2. GPS (G) နှင့် BDS (C) Analytics တွက်ချက်ခြင်း
+        results = analyze_gps_vs_bds(df)
+        
+        if "error" in results:
+            return {"status": "error", "message": results["error"]}
+            
+        return {
+            "status": "success",
+            "filename": file.filename,
+            "analytics": results
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Data Processing Error: {str(e)}")

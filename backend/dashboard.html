@@ -27,9 +27,10 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         html, body {
-            height: 100vh;
+            min-height: 100vh;
             width: 100vw;
             overflow-x: hidden;
+            overflow-y: auto;
             background-color: var(--bg-dark); 
             color: #cbd5e1; 
             font-family: 'Pyidaungsu', -apple-system, sans-serif; 
@@ -138,29 +139,33 @@
 
         /* Dashboard Content Viewport Container */
         .dashboard-body {
-            flex: 1;
             display: flex;
             flex-direction: column;
             gap: 8px;
-            min-height: 0;
         }
 
         /* Top Grid Layout - 3 Columns */
         .grid-top {
-            flex: 1.25;
             display: grid;
             grid-template-columns: 290px 1fr 290px;
             gap: 8px;
-            min-height: 0;
+            min-height: 280px;
         }
 
         /* Bottom Grid Layout - 4 Columns */
         .grid-bottom {
-            flex: 1;
             display: grid;
             grid-template-columns: 280px 200px 1fr 1.2fr;
             gap: 8px;
-            min-height: 0;
+            min-height: 220px;
+        }
+
+        /* Analysis Grid Layout - Full Width */
+        .grid-analysis {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            min-height: 260px;
         }
 
         /* Card / Box Styling */
@@ -203,7 +208,7 @@
         .card-header-title { display: flex; align-items: center; gap: 6px; }
         .card-header-icon { font-size: 13px; }
 
-        .chart-container { flex: 1; position: relative; width: 100%; min-height: 0; }
+        .chart-container { flex: 1; position: relative; width: 100%; min-height: 140px; }
 
         /* Stats Blocks */
         .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; text-align: center; margin-bottom: 6px; flex-shrink: 0; }
@@ -218,7 +223,7 @@
             border-radius: 6px;
             overflow: hidden;
             background: #000;
-            min-height: 0;
+            min-height: 220px;
             position: relative;
         }
         
@@ -259,6 +264,42 @@
         .dop-mini-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; flex: 1; align-content: center; }
         .dop-mini-card { background: rgba(30, 41, 59, 0.5); padding: 6px 4px; border-radius: 5px; text-align: center; border: 1px solid rgba(255,255,255,0.03); }
         .dop-mini-val { font-size: 15px; font-weight: 700; color: var(--accent-blue); margin-top: 1px; }
+
+        /* Custom File Upload Styling */
+        .upload-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+            background: rgba(30, 41, 59, 0.4);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px dashed var(--accent-blue);
+        }
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        .file-input-wrapper input[type="file"] {
+            color: var(--text-muted);
+            font-size: 10px;
+        }
+        .rinex-kpi-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        .rinex-kpi-card {
+            flex: 1;
+            min-width: 140px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid var(--card-border);
+            padding: 6px 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -414,7 +455,7 @@
                         <span class="card-header-icon">🎯</span>
                         <span>တည်နေရာ တိကျမှု ညွှန်းကိန်း (DOP)</span>
                     </div>
-                    <span class="badge badge-excellent" id="dop-badge">အလွန်ကောင်းမွန် (<2m)</span>
+                    <span class="badge badge-excellent" id="dop-badge">အလွန်ကောင်းမွန် (&lt;2m)</span>
                 </div>
                 <p style="font-size:8px; color:var(--text-muted); margin-bottom:4px;">ရန်ကုန်စခန်း မိုးကုတ်စက်ဝိုင်းအထက် ၁၀° အထက် ဂြိုဟ်တုများ၏ Geometry တွက်ချက်ချက်။</p>
                 
@@ -440,12 +481,60 @@
             </div>
         </div>
 
+        <!-- NEW: RINEX File Analysis & GPS vs BeiDou Comparison Section -->
+        <div class="grid-analysis">
+            <div class="card card-accent-cyan">
+                <div class="card-header">
+                    <div class="card-header-title">
+                        <span class="card-header-icon">📂</span>
+                        <span>RINEX Observation Data Analysis: GPS (G) vs BeiDou (C) နှိုင်းယှဉ်ချက်</span>
+                    </div>
+                    <span class="mono" style="color:var(--accent-cyan); font-size:9px;" id="uploadStatus">READY</span>
+                </div>
+
+                <!-- File Upload & Controls -->
+                <div class="upload-controls">
+                    <div class="file-input-wrapper">
+                        <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o,.22o,.23o,.24o,.25o,.26o">
+                    </div>
+                    <button onclick="uploadAndCompare()" class="nav-btn active">
+                        <span>🚀</span>
+                        <span>Analyze RINEX File</span>
+                    </button>
+                    <span style="font-size: 9px; color: var(--text-muted);">
+                        (ထောက်ပံ့ပေးသော ဖိုင်များ: RINEX 3.x Observation Data)
+                    </span>
+                </div>
+
+                <!-- KPI Summary Cards (Hidden initially until upload) -->
+                <div class="rinex-kpi-container mono" id="rinexKpiBox" style="display: none;">
+                    <div class="rinex-kpi-card">
+                        <div class="stat-lbl">GPS (G) Average Satellites</div>
+                        <div class="stat-val" style="color: var(--accent-blue);" id="avgGpsVal">0 Sats</div>
+                    </div>
+                    <div class="rinex-kpi-card">
+                        <div class="stat-lbl">BeiDou (C) Average Satellites</div>
+                        <div class="stat-val" style="color: var(--accent-red);" id="avgBdsVal">0 Sats</div>
+                    </div>
+                    <div class="rinex-kpi-card">
+                        <div class="stat-lbl">BDS Visibility Advantage Ratio</div>
+                        <div class="stat-val" style="color: var(--accent-green);" id="bdsRatioVal">0.00x</div>
+                    </div>
+                </div>
+
+                <!-- Comparison Chart Container -->
+                <div class="chart-container" style="min-height: 180px;">
+                    <canvas id="gpsBdsCompareChart"></canvas>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- JavaScript Mission Control Engine -->
     <script>
         let currentSystem = 'gps';
-        let fleetChart, clockChart, pdopChart;
+        let fleetChart, clockChart, pdopChart, gpsBdsChart;
 
         // Dynamic Constellation Datasets with Specific Country Alerts
         const constellationData = {
@@ -733,6 +822,118 @@
             }
         }
 
+        // RINEX File Upload & Comparison Engine
+        async function uploadAndCompare() {
+            const fileInput = document.getElementById('rinexFileInput');
+            const statusLabel = document.getElementById('uploadStatus');
+
+            if (!fileInput.files[0]) {
+                alert("ကျေးဇူးပြု၍ RINEX File တစ်ခု ရွေးချယ်ပေးပါ!");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            statusLabel.innerText = "PROCESSING...";
+            statusLabel.style.color = "var(--accent-yellow)";
+
+            try {
+                const response = await fetch('/api/v1/gnss/gps-vs-bds', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'error') {
+                    alert("Error: " + result.message);
+                    statusLabel.innerText = "ERROR";
+                    statusLabel.style.color = "var(--accent-red)";
+                    return;
+                }
+
+                statusLabel.innerText = "COMPLETED";
+                statusLabel.style.color = "var(--accent-green)";
+
+                const analytics = result.analytics;
+
+                // Update KPI Cards
+                document.getElementById('rinexKpiBox').style.display = 'flex';
+                document.getElementById('avgGpsVal').innerText = analytics.sat_count.avg_gps + " Sats";
+                document.getElementById('avgBdsVal').innerText = analytics.sat_count.avg_bds + " Sats";
+
+                const ratio = analytics.sat_count.avg_gps > 0 
+                    ? (analytics.sat_count.avg_bds / analytics.sat_count.avg_gps).toFixed(2) 
+                    : 'N/A';
+                document.getElementById('bdsRatioVal').innerText = ratio + "x More Sats";
+
+                // Render Chart.js
+                renderGpsBdsChart(analytics.timestamps, analytics.sat_count.gps, analytics.sat_count.bds);
+
+            } catch (err) {
+                console.error(err);
+                alert("Data ပို့ယူရာတွင် အမှားအယွင်း ရှိနေပါသည်!");
+                statusLabel.innerText = "FAILED";
+                statusLabel.style.color = "var(--accent-red)";
+            }
+        }
+
+        function renderGpsBdsChart(timestamps, gpsCounts, bdsCounts) {
+            const ctx = document.getElementById('gpsBdsCompareChart').getContext('2d');
+
+            if (gpsBdsChart) gpsBdsChart.destroy();
+
+            gpsBdsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [
+                        {
+                            label: 'GPS (G) Satellites',
+                            data: gpsCounts,
+                            borderColor: '#38bdf8',
+                            backgroundColor: 'rgba(56, 189, 248, 0.12)',
+                            fill: true,
+                            tension: 0.2,
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'BeiDou (C) Satellites',
+                            data: bdsCounts,
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.12)',
+                            fill: true,
+                            tension: 0.2,
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: { color: '#f8fafc', font: { family: 'JetBrains Mono', size: 10 } }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 8 } },
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                        },
+                        y: {
+                            ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 9 } },
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            beginAtZero: true,
+                            title: { display: true, text: 'Visible Satellites Count', color: '#94a3b8', font: { size: 9 } }
+                        }
+                    }
+                }
+            });
+        }
+
         // Initialize Charts
         fleetChart = new Chart(document.getElementById('fleetChart'), {
             type: 'bar',
@@ -760,6 +961,9 @@
             },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
         });
+
+        // Initial RINEX Chart Placeholder
+        renderGpsBdsChart(['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'], [10, 11, 12, 10, 11, 10], [18, 19, 21, 20, 19, 18]);
 
         // First Load Initial GPS
         switchConstellation('gps', document.querySelector('.nav-btn.active'));
