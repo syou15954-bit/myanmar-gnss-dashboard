@@ -32,6 +32,7 @@
             padding: 12px; 
             overflow-x: hidden;
             font-size: 11px;
+            min-height: 100vh;
         }
 
         .mono { font-family: 'JetBrains Mono', monospace; }
@@ -82,11 +83,13 @@
             border: 1px solid var(--card-border);
             border-radius: 8px;
             margin-bottom: 12px; 
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .header h2 { font-size: 15px; color: var(--text-main); letter-spacing: 0.5px; font-weight: 700; }
 
-        /* Constellation Selector Buttons */
-        .constellation-selector { display: flex; gap: 6px; }
+        /* Constellation Selector Buttons & Fullscreen Button */
+        .constellation-selector { display: flex; gap: 6px; align-items: center; }
         .nav-btn {
             background: #1e293b; color: var(--text-muted); border: 1px solid #334155;
             padding: 6px 14px; border-radius: 4px; font-size: 10px; font-weight: 700; cursor: pointer;
@@ -95,6 +98,27 @@
         .nav-btn:hover, .nav-btn.active {
             background: rgba(56, 189, 248, 0.2); color: var(--accent-blue); border-color: var(--accent-blue);
             box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+        }
+
+        .fullscreen-btn {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(34, 197, 94, 0.25));
+            color: #ffffff;
+            border: 1px solid var(--accent-blue);
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+            transition: all 0.2s;
+        }
+        .fullscreen-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
+            background: rgba(56, 189, 248, 0.4);
         }
 
         /* Responsive Grids */
@@ -209,12 +233,18 @@
             <h2>GNSS Global Mission Control Center</h2>
         </div>
 
-        <!-- Constellation Selector Buttons -->
+        <!-- Constellation Switcher & Screen Full Button -->
         <div class="constellation-selector">
             <button class="nav-btn active" onclick="switchConstellation('gps', this)">GPS (အမေရိကန်)</button>
             <button class="nav-btn" onclick="switchConstellation('bds', this)">BEIDOU (တရုတ်)</button>
             <button class="nav-btn" onclick="switchConstellation('galileo', this)">GALILEO (ဥရောပ)</button>
             <button class="nav-btn" onclick="switchConstellation('glonass', this)">GLONASS (ရုရှား)</button>
+            
+            <!-- Screen အပြည့်ကြည့်ရန် Fullscreen Button -->
+            <button class="fullscreen-btn" onclick="toggleFullscreen()">
+                <span>📺</span>
+                <span id="fs-btn-text">Screen အပြည့်ကြည့်ရန်</span>
+            </button>
         </div>
 
         <!-- Myanmar Standard Time (MMT) -->
@@ -347,6 +377,23 @@
     <!-- JavaScript Mission Control Engine -->
     <script>
         let currentSystem = 'gps';
+
+        // Fullscreen Toggle Handler
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().then(() => {
+                    document.getElementById('fs-btn-text').innerText = "မူလအတိုင်း ပြန်ထားရန်";
+                }).catch(err => {
+                    alert(`Fullscreen အသုံးပြုမရပါ: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().then(() => {
+                        document.getElementById('fs-btn-text').innerText = "Screen အပြည့်ကြည့်ရန်";
+                    });
+                }
+            }
+        }
 
         // 1. Myanmar Standard Time (MMT) Clock
         function updateMyanmarTime() {
