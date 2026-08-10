@@ -84,7 +84,7 @@
             gap: 5px;
         }
 
-        /* Top Header Navigation Bar (Fixed Overlap Layout) */
+        /* Header Navigation Bar */
         .header { 
             display: flex; 
             justify-content: space-between; 
@@ -163,7 +163,7 @@
             min-height: 0;
         }
 
-        /* Card / Box Modern Styling */
+        /* Card / Box Styling */
         .card { 
             background: var(--card-bg); 
             border-radius: 8px; 
@@ -179,11 +179,8 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
             transition: border-color 0.3s;
         }
-        .card:hover {
-            border-color: rgba(56, 189, 248, 0.3);
-        }
+        .card:hover { border-color: rgba(56, 189, 248, 0.3); }
 
-        /* Card Specific Top Accent Indicators */
         .card-accent-blue { border-top: 2px solid var(--accent-blue); }
         .card-accent-green { border-top: 2px solid var(--accent-green); }
         .card-accent-amber { border-top: 2px solid var(--accent-yellow); }
@@ -203,22 +200,10 @@
             flex-shrink: 0;
         }
 
-        .card-header-title {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+        .card-header-title { display: flex; align-items: center; gap: 6px; }
+        .card-header-icon { font-size: 13px; }
 
-        .card-header-icon {
-            font-size: 13px;
-        }
-
-        .chart-container {
-            flex: 1;
-            position: relative;
-            width: 100%;
-            min-height: 0;
-        }
+        .chart-container { flex: 1; position: relative; width: 100%; min-height: 0; }
 
         /* Stats Blocks */
         .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; text-align: center; margin-bottom: 6px; flex-shrink: 0; }
@@ -274,17 +259,11 @@
         .dop-mini-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; flex: 1; align-content: center; }
         .dop-mini-card { background: rgba(30, 41, 59, 0.5); padding: 6px 4px; border-radius: 5px; text-align: center; border: 1px solid rgba(255,255,255,0.03); }
         .dop-mini-val { font-size: 15px; font-weight: 700; color: var(--accent-blue); margin-top: 1px; }
-
-        @media (max-width: 1200px) {
-            .grid-top { grid-template-columns: 260px 1fr 260px; }
-            .grid-bottom { grid-template-columns: 1fr 1fr; }
-            html, body { height: auto; overflow-y: auto; }
-        }
     </style>
 </head>
 <body>
 
-    <!-- Top Executive Status Banner -->
+    <!-- Executive Status Banner -->
     <div class="exec-banner">
         <div class="exec-status-title">
             <div class="pulse-green"></div>
@@ -328,10 +307,8 @@
     <!-- Dashboard Main Viewport Container -->
     <div class="dashboard-body">
         
-        <!-- Top Grid Section (3 Columns) -->
+        <!-- Top Grid Section -->
         <div class="grid-top">
-            
-            <!-- Box 1: Fleet Status -->
             <div class="card card-accent-blue">
                 <div class="card-header">
                     <div class="card-header-title">
@@ -344,12 +321,12 @@
                     <div class="stat-box"><div class="stat-lbl">စုစုပေါင်း</div><div class="stat-val" style="color:var(--accent-blue);" id="total-sats">31</div></div>
                     <div class="stat-box"><div class="stat-lbl">ပုံမှန်</div><div class="stat-val" style="color:var(--accent-green);" id="active-sats">28</div></div>
                     <div class="stat-box"><div class="stat-lbl">သတိပေး</div><div class="stat-val" style="color:var(--accent-yellow);" id="degraded-sats">2</div></div>
-                    <div class="stat-box"><div class="stat-lbl">ရပ်နား</div><div class="stat-val" style="color:var(--accent-red);">1</div></div>
+                    <div class="stat-box"><div class="stat-lbl">ရပ်နား</div><div class="stat-val" style="color:var(--accent-red);" id="offline-sats">1</div></div>
                 </div>
                 <div class="chart-container"><canvas id="fleetChart"></canvas></div>
             </div>
 
-            <!-- Box 2: 3D Globe Viewport -->
+            <!-- 3D Globe Viewport -->
             <div class="card card-accent-green" style="padding: 4px;">
                 <div class="card-header" style="margin: 4px;">
                     <div class="card-header-title">
@@ -368,7 +345,6 @@
                 </div>
             </div>
 
-            <!-- Box 3: System Alerts & Anomaly Monitor -->
             <div class="card card-accent-amber">
                 <div class="card-header">
                     <div class="card-header-title">
@@ -394,17 +370,15 @@
             </div>
         </div>
 
-        <!-- Bottom Grid Section (4 Columns) -->
+        <!-- Bottom Grid Section -->
         <div class="grid-bottom">
-            
-            <!-- Box 4: Satellite Telemetry -->
             <div class="card card-accent-purple">
                 <div class="card-header">
                     <div class="card-header-title">
                         <span class="card-header-icon">📊</span>
                         <span>ဂြိုဟ်တု စက်ပစ္စည်း တိုင်းတာချက်</span>
                     </div>
-                    <span class="mono" style="color:var(--accent-purple);">SVN-62</span>
+                    <span class="mono" style="color:var(--accent-purple);" id="sat-telemetry-name">SVN-62</span>
                 </div>
                 
                 <div class="sat-spec-grid mono">
@@ -423,7 +397,6 @@
                 <div class="chart-container"><canvas id="clockChart"></canvas></div>
             </div>
 
-            <!-- Box 5: Sky Plot Canvas -->
             <div class="card card-accent-cyan">
                 <div class="card-header">
                     <div class="card-header-title">
@@ -437,7 +410,6 @@
                 </div>
             </div>
 
-            <!-- Box 6: DOP Precision Matrix -->
             <div class="card card-accent-blue">
                 <div class="card-header">
                     <div class="card-header-title">
@@ -458,7 +430,6 @@
                 </div>
             </div>
 
-            <!-- Box 7: 24h Navigation Accuracy History -->
             <div class="card card-accent-green">
                 <div class="card-header">
                     <div class="card-header-title">
@@ -476,6 +447,108 @@
     <!-- JavaScript Mission Control Engine -->
     <script>
         let currentSystem = 'gps';
+        let fleetChart, clockChart, pdopChart;
+
+        // Dynamic Constellation Datasets
+        const constellationData = {
+            gps: {
+                name: "GPS Constellation",
+                satName: "SVN-62 / PRN-07",
+                total: 31, active: 28, degraded: 2, offline: 1, visible: 10,
+                pdop: "1.67", hdop: "0.81", vdop: "1.46", gdop: "1.87", tdop: "0.85",
+                fleet: [12, 8, 7, 4],
+                sats: [
+                    { elevation_deg: 75, azimuth_deg: 45, visible: true },
+                    { elevation_deg: 60, azimuth_deg: 120, visible: true },
+                    { elevation_deg: 40, azimuth_deg: 210, visible: true },
+                    { elevation_deg: 80, azimuth_deg: 310, visible: true },
+                    { elevation_deg: 25, azimuth_deg: 15, visible: true },
+                    { elevation_deg: 50, azimuth_deg: 160, visible: true },
+                    { elevation_deg: 35, azimuth_deg: 280, visible: true },
+                    { elevation_deg: 65, azimuth_deg: 340, visible: true },
+                    { elevation_deg: 15, azimuth_deg: 90, visible: true },
+                    { elevation_deg: 45, azimuth_deg: 240, visible: true }
+                ],
+                globeSats: [
+                    { lat: 35.0, lng: 139.0, size: 0.6, color: '#38bdf8', label: '🛰️ GPS SVN-62' },
+                    { lat: 51.5, lng: -0.12, size: 0.6, color: '#22c55e', label: '🛰️ GPS SVN-45' },
+                    { lat: -22.9, lng: -43.1, size: 0.6, color: '#38bdf8', label: '🛰️ GPS SVN-53' },
+                    { lat: 1.35, lng: 103.8, size: 0.6, color: '#38bdf8', label: '🛰️ GPS SVN-71' }
+                ]
+            },
+            bds: {
+                name: "BEIDOU Constellation",
+                satName: "BDS-3 MEO-01",
+                total: 56, active: 48, degraded: 5, offline: 3, visible: 14,
+                pdop: "1.35", hdop: "0.65", vdop: "1.18", gdop: "1.52", tdop: "0.71",
+                fleet: [18, 15, 15, 8],
+                sats: [
+                    { elevation_deg: 82, azimuth_deg: 30, visible: true },
+                    { elevation_deg: 70, azimuth_deg: 110, visible: true },
+                    { elevation_deg: 65, azimuth_deg: 195, visible: true },
+                    { elevation_deg: 55, azimuth_deg: 250, visible: true },
+                    { elevation_deg: 45, azimuth_deg: 320, visible: true },
+                    { elevation_deg: 35, azimuth_deg: 70, visible: true },
+                    { elevation_deg: 28, azimuth_deg: 140, visible: true },
+                    { elevation_deg: 75, azimuth_deg: 290, visible: true },
+                    { elevation_deg: 50, azimuth_deg: 15, visible: true },
+                    { elevation_deg: 60, azimuth_deg: 180, visible: true },
+                    { elevation_deg: 40, azimuth_deg: 220, visible: true },
+                    { elevation_deg: 30, azimuth_deg: 350, visible: true },
+                    { elevation_deg: 20, azimuth_deg: 100, visible: true },
+                    { elevation_deg: 68, azimuth_deg: 50, visible: true }
+                ],
+                globeSats: [
+                    { lat: 39.9, lng: 116.4, size: 0.6, color: '#38bdf8', label: '🛰️ BDS-3 MEO-01' },
+                    { lat: 22.3, lng: 114.1, size: 0.6, color: '#22c55e', label: '🛰️ BDS-3 IGSO-02' },
+                    { lat: 13.7, lng: 100.5, size: 0.6, color: '#38bdf8', label: '🛰️ BDS-3 GEO-03' },
+                    { lat: -33.8, lng: 151.2, size: 0.6, color: '#38bdf8', label: '🛰️ BDS-3 MEO-05' }
+                ]
+            },
+            galileo: {
+                name: "GALILEO Constellation",
+                satName: "GSAT-0201",
+                total: 28, active: 24, degraded: 3, offline: 1, visible: 8,
+                pdop: "1.92", hdop: "0.95", vdop: "1.67", gdop: "2.10", tdop: "0.92",
+                fleet: [10, 8, 6, 4],
+                sats: [
+                    { elevation_deg: 70, azimuth_deg: 60, visible: true },
+                    { elevation_deg: 55, azimuth_deg: 140, visible: true },
+                    { elevation_deg: 45, azimuth_deg: 220, visible: true },
+                    { elevation_deg: 35, azimuth_deg: 300, visible: true },
+                    { elevation_deg: 60, azimuth_deg: 20, visible: true },
+                    { elevation_deg: 25, azimuth_deg: 170, visible: true },
+                    { elevation_deg: 80, azimuth_deg: 260, visible: true },
+                    { elevation_deg: 40, azimuth_deg: 330, visible: true }
+                ],
+                globeSats: [
+                    { lat: 48.8, lng: 2.35, size: 0.6, color: '#38bdf8', label: '🛰️ GALILEO GSAT-0201' },
+                    { lat: 40.4, lng: -3.7, size: 0.6, color: '#22c55e', label: '🛰️ GALILEO GSAT-0202' },
+                    { lat: 52.5, lng: 13.4, size: 0.6, color: '#38bdf8', label: '🛰️ GALILEO GSAT-0203' }
+                ]
+            },
+            glonass: {
+                name: "GLONASS Constellation",
+                satName: "GLONASS-M 758",
+                total: 24, active: 22, degraded: 1, offline: 1, visible: 7,
+                pdop: "2.15", hdop: "1.10", vdop: "1.85", gdop: "2.35", tdop: "1.05",
+                fleet: [8, 8, 5, 3],
+                sats: [
+                    { elevation_deg: 65, azimuth_deg: 40, visible: true },
+                    { elevation_deg: 50, azimuth_deg: 130, visible: true },
+                    { elevation_deg: 42, azimuth_deg: 200, visible: true },
+                    { elevation_deg: 75, azimuth_deg: 310, visible: true },
+                    { elevation_deg: 30, azimuth_deg: 80, visible: true },
+                    { elevation_deg: 22, azimuth_deg: 160, visible: true },
+                    { elevation_deg: 58, azimuth_deg: 270, visible: true }
+                ],
+                globeSats: [
+                    { lat: 55.7, lng: 37.6, size: 0.6, color: '#38bdf8', label: '🛰️ GLONASS-M No.758' },
+                    { lat: 59.9, lng: 30.3, size: 0.6, color: '#22c55e', label: '🛰️ GLONASS-K1 No.702' },
+                    { lat: 55.0, lng: 82.9, size: 0.6, color: '#38bdf8', label: '🛰️ GLONASS-M No.759' }
+                ]
+            }
+        };
 
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
@@ -501,7 +574,7 @@
         setInterval(updateMyanmarTime, 1000);
         updateMyanmarTime();
 
-        // 3D Globe Component
+        // 3D Globe Initialization
         const container = document.getElementById('globeViz');
         const myGlobe = Globe()(container)
             .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
@@ -511,32 +584,28 @@
             .atmosphereColor('#38bdf8')
             .atmosphereAltitude(0.15);
 
-        const groundStation = { lat: 16.8661, lng: 96.1951, size: 0.9, color: '#ef4444', label: '📡 🔴 ရန်ကုန် ပင်မစခန်း (Yangon Ground Station)' };
-        const satMarkers = [
-            { lat: 35.0, lng: 139.0, size: 0.6, color: '#38bdf8', label: '🛰️ 🔵 ဂြိုဟ်တု SVN-62 (PRN-07) - Active' },
-            { lat: 51.5, lng: -0.12, size: 0.6, color: '#22c55e', label: '🛰️ 🔵 ဂြိုဟ်တု SVN-45 - Active' },
-            { lat: -22.9, lng: -43.1, size: 0.6, color: '#38bdf8', label: '🛰️ 🔵 ဂြိုဟ်တု SVN-53 - Active' },
-            { lat: 1.35, lng: 103.8, size: 0.6, color: '#38bdf8', label: '🛰️ 🔵 ဂြိုဟ်တု SVN-71 - Active' }
-        ];
+        const groundStation = { lat: 16.8661, lng: 96.1951, size: 0.9, color: '#ef4444', label: '📡 🔴 ရန်ကုန် ပင်မစခန်း (Yangon Station)' };
 
-        myGlobe.pointsData([groundStation, ...satMarkers])
-            .pointColor('color')
-            .pointAltitude(d => d.lat === 16.8661 ? 0.02 : 0.25)
-            .pointRadius('size')
-            .pointLabel('label');
+        function updateGlobeData(satList) {
+            myGlobe.pointsData([groundStation, ...satList])
+                .pointColor('color')
+                .pointAltitude(d => d.lat === 16.8661 ? 0.02 : 0.25)
+                .pointRadius('size')
+                .pointLabel('label');
 
-        const arcs = satMarkers.map(sat => ({
-            startLat: groundStation.lat, startLng: groundStation.lng,
-            endLat: sat.lat, endLng: sat.lng,
-            color: ['#ef4444', '#22c55e']
-        }));
+            const arcs = satList.map(sat => ({
+                startLat: groundStation.lat, startLng: groundStation.lng,
+                endLat: sat.lat, endLng: sat.lng,
+                color: ['#ef4444', '#22c55e']
+            }));
 
-        myGlobe.arcsData(arcs)
-            .arcColor('color')
-            .arcDashLength(0.4)
-            .arcDashGap(0.2)
-            .arcDashAnimateTime(1500)
-            .arcStroke(0.8);
+            myGlobe.arcsData(arcs)
+                .arcColor('color')
+                .arcDashLength(0.4)
+                .arcDashGap(0.2)
+                .arcDashAnimateTime(1500)
+                .arcStroke(0.8);
+        }
 
         myGlobe.controls().autoRotate = true;
         myGlobe.controls().autoRotateSpeed = 0.6;
@@ -546,25 +615,11 @@
                 myGlobe.width(container.clientWidth).height(container.clientHeight);
             }
         }
-
         window.addEventListener('resize', updateGlobeDimensions);
         const resizeObserver = new ResizeObserver(() => updateGlobeDimensions());
         resizeObserver.observe(container);
 
-        // Sky Plot Canvas
-        const defaultSats = [
-            { elevation_deg: 75, azimuth_deg: 45, visible: true },
-            { elevation_deg: 60, azimuth_deg: 120, visible: true },
-            { elevation_deg: 40, azimuth_deg: 210, visible: true },
-            { elevation_deg: 80, azimuth_deg: 310, visible: true },
-            { elevation_deg: 25, azimuth_deg: 15, visible: true },
-            { elevation_deg: 50, azimuth_deg: 160, visible: true },
-            { elevation_deg: 35, azimuth_deg: 280, visible: true },
-            { elevation_deg: 65, azimuth_deg: 340, visible: true },
-            { elevation_deg: 15, azimuth_deg: 90, visible: true },
-            { elevation_deg: 45, azimuth_deg: 240, visible: true }
-        ];
-
+        // Skyplot Canvas Renderer
         function renderSkyPlotCanvas(satellites) {
             const canvas = document.getElementById('skyplotCanvas');
             if (!canvas) return;
@@ -593,8 +648,7 @@
             ctx.fillText('N', cx - 3, cy - radius - 3);
             ctx.fillText('E', cx + radius + 3, cy + 3);
 
-            const list = satellites || defaultSats;
-            list.forEach(sat => {
+            satellites.forEach(sat => {
                 if (sat.visible === false) return;
                 const r = radius * (1 - (sat.elevation_deg || 45) / 90.0);
                 const azRad = ((sat.azimuth_deg || 0) - 90) * (Math.PI / 180);
@@ -613,58 +667,54 @@
             });
         }
 
-        renderSkyPlotCanvas(defaultSats);
-
+        // Constellation Switcher Handler
         function switchConstellation(sys, btn) {
             currentSystem = sys;
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            document.getElementById('constellation-label').innerText = `${sys.toUpperCase()} Constellation`;
-            loadDashboardData();
+
+            const data = constellationData[sys] || constellationData.gps;
+
+            // Update UI Labels and Stats
+            document.getElementById('constellation-label').innerText = data.name;
+            document.getElementById('total-sats').innerText = data.total;
+            document.getElementById('active-sats').innerText = data.active;
+            document.getElementById('degraded-sats').innerText = data.degraded;
+            document.getElementById('offline-sats').innerText = data.offline;
+            document.getElementById('banner-vis-sats').innerText = `${data.visible} စီး`;
+            document.getElementById('sky-count').innerText = `Sats: ${data.visible}`;
+            document.getElementById('sat-telemetry-name').innerText = data.satName;
+
+            // Update DOP Matrix
+            document.getElementById('pdop-val').innerText = data.pdop;
+            document.getElementById('hdop-val').innerText = data.hdop;
+            document.getElementById('vdop-val').innerText = data.vdop;
+            document.getElementById('gdop-val').innerText = data.gdop;
+            document.getElementById('tdop-val').innerText = data.tdop;
+            document.getElementById('vis-sats-val').innerText = data.visible;
+
+            // Update Skyplot and 3D Globe
+            renderSkyPlotCanvas(data.sats);
+            updateGlobeData(data.globeSats);
+
+            // Update Fleet Chart Bar Data
+            if (fleetChart) {
+                fleetChart.data.datasets[0].data = data.fleet;
+                fleetChart.update();
+            }
         }
 
-        async function loadDashboardData() {
-            const apiBase = window.location.origin;
-
-            try {
-                const resSky = await fetch(`${apiBase}/api/v1/gnss/skyplot?system=${currentSystem}`);
-                if (resSky.ok) {
-                    const skyRes = await resSky.json();
-                    if (skyRes.status === 'success' && skyRes.data) {
-                        document.getElementById('sky-count').innerText = `Sats: ${skyRes.visible_satellites}/${skyRes.total_satellites}`;
-                        document.getElementById('banner-vis-sats').innerText = `${skyRes.visible_satellites} စီး`;
-                        renderSkyPlotCanvas(skyRes.data);
-                    }
-                } else { renderSkyPlotCanvas(defaultSats); }
-            } catch (err) { renderSkyPlotCanvas(defaultSats); }
-
-            try {
-                const resDop = await fetch(`${apiBase}/api/v1/gnss/dop?system=${currentSystem}`);
-                if (resDop.ok) {
-                    const dopRes = await resDop.json();
-                    if (dopRes.dop_analysis && dopRes.dop_analysis.status === 'success') {
-                        const dop = dopRes.dop_analysis;
-                        document.getElementById('pdop-val').innerText = dop.pdop ?? '1.67';
-                        document.getElementById('hdop-val').innerText = dop.hdop ?? '0.81';
-                        document.getElementById('vdop-val').innerText = dop.vdop ?? '1.46';
-                        document.getElementById('gdop-val').innerText = dop.gdop ?? '1.87';
-                        document.getElementById('tdop-val').innerText = dop.tdop ?? '0.85';
-                        document.getElementById('vis-sats-val').innerText = dop.visible_count ?? '10';
-                    }
-                }
-            } catch (err) {}
-        }
-
-        new Chart(document.getElementById('fleetChart'), {
+        // Initialize Charts
+        fleetChart = new Chart(document.getElementById('fleetChart'), {
             type: 'bar',
             data: {
-                labels: ['IIF', 'IIR-M', 'III', 'IIIF'],
-                datasets: [{ label: 'ဂြိုဟ်တု အရေအတွက်', data: [12, 8, 7, 4], backgroundColor: '#38bdf8' }]
+                labels: ['Block I', 'Block II', 'Block III', 'Block IV'],
+                datasets: [{ label: 'ဂြိုဟ်တု အရေအတွက်', data: constellationData.gps.fleet, backgroundColor: '#38bdf8' }]
             },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
         });
 
-        new Chart(document.getElementById('clockChart'), {
+        clockChart = new Chart(document.getElementById('clockChart'), {
             type: 'line',
             data: {
                 labels: ['10:00', '14:00', '18:00', '22:00'],
@@ -673,7 +723,7 @@
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
         });
 
-        new Chart(document.getElementById('pdopChart'), {
+        pdopChart = new Chart(document.getElementById('pdopChart'), {
             type: 'line',
             data: {
                 labels: ['10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'],
@@ -682,7 +732,8 @@
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
         });
 
-        loadDashboardData();
+        // First Load Initial GPS
+        switchConstellation('gps', document.querySelector('.nav-btn.active'));
     </script>
 </body>
 </html>
