@@ -12,7 +12,7 @@
     <style>
         :root {
             --bg-dark: #030712;
-            --card-bg: rgba(15, 23, 42, 0.90);
+            --card-bg: rgba(15, 23, 42, 0.92);
             --card-border: #1e293b;
             --accent-blue: #38bdf8;
             --accent-green: #22c55e;
@@ -33,14 +33,14 @@
             background-color: var(--bg-dark); 
             color: #cbd5e1; 
             font-family: 'Pyidaungsu', -apple-system, sans-serif; 
-            font-size: 10px;
+            font-size: 11px;
         }
 
         body {
             display: flex;
             flex-direction: column;
             padding: 5px;
-            gap: 4px;
+            gap: 5px;
             background: radial-gradient(circle at 50% 0%, #0f172a 0%, #030712 100%);
         }
 
@@ -65,22 +65,22 @@
 
         .exec-status-title { display: flex; align-items: center; gap: 8px; }
         .pulse-green {
-            width: 7px; height: 7px; background: var(--accent-green); border-radius: 50%;
-            box-shadow: 0 0 6px var(--accent-green); animation: pulse-anim 1.8s infinite;
+            width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent-green); animation: pulse-anim 1.8s infinite;
         }
         @keyframes pulse-anim {
             0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.8); }
-            70% { transform: scale(1.1); box-shadow: 0 0 0 4px rgba(34, 197, 94, 0); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 5px rgba(34, 197, 94, 0); }
             100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
         }
 
-        .exec-metrics { display: flex; gap: 5px; flex-wrap: wrap; }
+        .exec-metrics { display: flex; gap: 6px; flex-wrap: wrap; }
         .exec-pill {
             background: rgba(30, 41, 59, 0.8);
             border: 1px solid var(--card-border);
-            padding: 2px 6px;
+            padding: 2px 8px;
             border-radius: 10px;
-            font-size: 8px;
+            font-size: 8.5px;
             font-weight: 600;
             display: flex;
             align-items: center;
@@ -98,14 +98,14 @@
         }
         
         .header-brand { display: flex; align-items: center; gap: 6px; }
-        .header-brand h1 { font-size: 12px; color: var(--text-main); font-weight: 700; white-space: nowrap; }
+        .header-brand h1 { font-size: 12.5px; color: var(--text-main); font-weight: 700; white-space: nowrap; }
 
         .header-controls { display: flex; align-items: center; gap: 4px; }
-        .header-info { font-size: 8px; color: var(--text-muted); white-space: nowrap; text-align: right; }
+        .header-info { font-size: 8.5px; color: var(--text-muted); white-space: nowrap; text-align: right; }
 
         .nav-btn {
             background: #1e293b; color: var(--text-muted); border: 1px solid #334155;
-            padding: 2px 6px; border-radius: 4px; font-size: 8px; font-weight: 700; cursor: pointer;
+            padding: 2px 7px; border-radius: 4px; font-size: 8.5px; font-weight: 700; cursor: pointer;
             transition: all 0.2s; display: inline-flex; align-items: center; gap: 3px;
         }
         .nav-btn:hover, .nav-btn.active {
@@ -115,16 +115,16 @@
         .fullscreen-btn {
             background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(34, 197, 94, 0.25));
             color: #ffffff; border: 1px solid var(--accent-blue);
-            padding: 2px 6px; border-radius: 4px; font-size: 8px; font-weight: 700; cursor: pointer;
+            padding: 2px 7px; border-radius: 4px; font-size: 8.5px; font-weight: 700; cursor: pointer;
         }
 
-        /* Strict Non-Overlapping 3-Column Grid Layout */
+        /* Expanded Side Panels & Balanced Center Grid Layout */
         .dashboard-main {
             flex: 1;
             display: grid;
-            grid-template-columns: 275px 1fr 275px !important;
-            grid-template-rows: 1fr 110px !important;
-            gap: 5px;
+            grid-template-columns: 310px 1fr 310px !important;
+            grid-template-rows: 1fr 140px !important;
+            gap: 6px;
             min-height: 0;
             overflow: hidden;
             width: 100%;
@@ -134,7 +134,7 @@
             grid-column: 1;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 5px;
             min-height: 0;
             overflow: hidden;
         }
@@ -152,7 +152,7 @@
             grid-column: 3;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 5px;
             min-height: 0;
             overflow: hidden;
         }
@@ -162,15 +162,15 @@
             min-height: 0;
             overflow: hidden;
             display: grid;
-            grid-template-columns: 1fr 310px;
-            gap: 5px;
+            grid-template-columns: 1fr 340px;
+            gap: 6px;
         }
 
         /* Panel Cards */
         .card { 
             background: var(--card-bg); 
-            border-radius: 5px; 
-            padding: 4px 7px; 
+            border-radius: 6px; 
+            padding: 6px 9px; 
             border: 1px solid var(--card-border); 
             position: relative;
             backdrop-filter: blur(12px);
@@ -179,7 +179,7 @@
             min-height: 0;
             flex: 1;
             overflow: hidden;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
         }
 
         .card-accent-blue { border-top: 2px solid var(--accent-blue); }
@@ -189,19 +189,19 @@
         .card-accent-cyan { border-top: 2px solid var(--accent-cyan); }
 
         .card-header { 
-            font-size: 9px; 
+            font-size: 10px; 
             font-weight: 700; 
             color: var(--text-main); 
-            margin-bottom: 2px; 
+            margin-bottom: 3px; 
             display: flex; 
             justify-content: space-between; 
             align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             padding-bottom: 2px;
             flex-shrink: 0;
         }
 
-        .card-header-title { display: flex; align-items: center; gap: 4px; }
+        .card-header-title { display: flex; align-items: center; gap: 5px; }
 
         .chart-container { 
             position: relative;
@@ -217,17 +217,17 @@
             height: 100% !important;
         }
 
-        .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; text-align: center; margin-bottom: 2px; flex-shrink: 0; }
-        .stat-box { background: rgba(30, 41, 59, 0.6); padding: 2px; border-radius: 3px; }
-        .stat-lbl { font-size: 6.5px; color: var(--text-muted); font-weight: 600; }
-        .stat-val { font-size: 10px; font-weight: 800; margin-top: 1px; }
+        .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; text-align: center; margin-bottom: 3px; flex-shrink: 0; }
+        .stat-box { background: rgba(30, 41, 59, 0.6); padding: 3px 2px; border-radius: 4px; }
+        .stat-lbl { font-size: 7.5px; color: var(--text-muted); font-weight: 600; }
+        .stat-val { font-size: 11px; font-weight: 800; margin-top: 1px; }
 
         /* Globe Strict Container */
         #globeViz {
             flex: 1;
             width: 100%;
             height: 100%;
-            border-radius: 5px;
+            border-radius: 6px;
             overflow: hidden;
             background: #000;
             position: relative;
@@ -236,54 +236,54 @@
         
         .globe-legend-box {
             position: absolute;
-            bottom: 4px;
-            left: 4px;
+            bottom: 6px;
+            left: 6px;
             z-index: 10;
-            background: rgba(3, 7, 18, 0.9);
+            background: rgba(3, 7, 18, 0.92);
             border: 1px solid var(--card-border);
             backdrop-filter: blur(8px);
-            padding: 3px 6px;
-            border-radius: 4px;
-            font-size: 7.5px;
+            padding: 5px 8px;
+            border-radius: 5px;
+            font-size: 8.5px;
             pointer-events: none;
         }
-        .legend-row { display: flex; align-items: center; gap: 3px; margin-bottom: 1px; font-weight: 600; }
+        .legend-row { display: flex; align-items: center; gap: 4px; margin-bottom: 2px; font-weight: 600; }
 
-        .badge { padding: 1px 3px; border-radius: 3px; font-size: 7px; font-weight: 700; }
+        .badge { padding: 1px 5px; border-radius: 3px; font-size: 8px; font-weight: 700; }
         .badge-excellent { background: rgba(34, 197, 94, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green); }
 
-        .alert-item { padding: 2px 4px; border-radius: 3px; margin-bottom: 2px; font-size: 7.5px; display: flex; justify-content: space-between; align-items: center; }
+        .alert-item { padding: 3px 6px; border-radius: 3px; margin-bottom: 3px; font-size: 8.5px; display: flex; justify-content: space-between; align-items: center; }
         .bg-critical { background: rgba(239, 68, 68, 0.12); border-left: 2px solid var(--accent-red); color: #fca5a5; }
         .bg-warning { background: rgba(245, 158, 11, 0.12); border-left: 2px solid var(--accent-yellow); color: #fde047; }
         .bg-info { background: rgba(59, 130, 246, 0.12); border-left: 2px solid var(--accent-blue); color: #93c5fd; }
 
-        .sat-spec-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: rgba(30, 41, 59, 0.5); padding: 2px; border-radius: 3px; text-align: center; margin-bottom: 2px; flex-shrink: 0; }
-        .sat-spec-val { font-size: 10px; font-weight: 700; color: var(--text-main); }
+        .sat-spec-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; background: rgba(30, 41, 59, 0.5); padding: 3px; border-radius: 4px; text-align: center; margin-bottom: 3px; flex-shrink: 0; }
+        .sat-spec-val { font-size: 11px; font-weight: 700; color: var(--text-main); }
 
-        .dop-mini-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; flex: 1; align-content: center; }
-        .dop-mini-card { background: rgba(30, 41, 59, 0.5); padding: 2px; border-radius: 3px; text-align: center; }
-        .dop-mini-val { font-size: 11px; font-weight: 700; color: var(--accent-blue); }
+        .dop-mini-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; flex: 1; align-content: center; }
+        .dop-mini-card { background: rgba(30, 41, 59, 0.5); padding: 3px 2px; border-radius: 4px; text-align: center; }
+        .dop-mini-val { font-size: 12px; font-weight: 700; color: var(--accent-blue); }
 
         .rinex-bottom-layout {
             display: flex;
-            gap: 6px;
+            gap: 8px;
             align-items: center;
             height: 100%;
         }
         .upload-controls {
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 3px;
             background: rgba(30, 41, 59, 0.4);
-            padding: 3px 6px;
-            border-radius: 4px;
+            padding: 4px 8px;
+            border-radius: 5px;
             border: 1px dashed var(--accent-cyan);
-            width: 170px;
+            width: 190px;
             flex-shrink: 0;
         }
         .file-input-wrapper input[type="file"] {
             color: var(--text-muted);
-            font-size: 8px;
+            font-size: 8.5px;
             cursor: pointer;
             width: 100%;
         }
@@ -296,15 +296,15 @@
             transform: translate(-50%, -50%);
         }
         .sat-icon-wrapper {
-            font-size: 13px;
+            font-size: 14px;
             filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.9));
         }
         .sat-tag {
-            font-size: 6.5px;
+            font-size: 7.5px;
             font-family: 'JetBrains Mono', monospace;
             background: rgba(3, 7, 18, 0.92);
-            padding: 1px 3px;
-            border-radius: 2px;
+            padding: 1px 4px;
+            border-radius: 3px;
             white-space: nowrap;
             margin-top: 1px;
         }
@@ -312,37 +312,37 @@
         #satHudModal {
             display: none;
             position: absolute;
-            top: 8px;
-            right: 8px;
+            top: 10px;
+            right: 10px;
             z-index: 100;
-            background: rgba(3, 7, 18, 0.94);
+            background: rgba(3, 7, 18, 0.95);
             border: 1px solid var(--accent-cyan);
-            padding: 6px 10px;
-            border-radius: 5px;
+            padding: 8px 12px;
+            border-radius: 6px;
             backdrop-filter: blur(10px);
-            box-shadow: 0 0 12px rgba(6, 182, 212, 0.35);
-            width: 190px;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.35);
+            width: 200px;
         }
         .hud-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding-bottom: 2px;
-            margin-bottom: 4px;
+            padding-bottom: 3px;
+            margin-bottom: 5px;
             font-weight: 700;
             color: var(--accent-cyan);
         }
         .hud-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 3px;
-            font-size: 7.5px;
+            gap: 4px;
+            font-size: 8.5px;
         }
         .hud-item {
             background: rgba(30,41,59,0.5);
-            padding: 2px;
-            border-radius: 2px;
+            padding: 3px;
+            border-radius: 3px;
             text-align: center;
         }
     </style>
@@ -355,8 +355,8 @@
             <div class="exec-status-title">
                 <div class="pulse-green"></div>
                 <div>
-                    <div style="font-size: 10px; font-weight: 700; color: #f8fafc;">စနစ်တစ်ခုလုံး လည်ပတ်မှု အခြေအနေ: 🟢 အလွန်ကောင်းမွန်ပါသည် (SYSTEM OPTIMAL)</div>
-                    <div style="font-size: 7.5px; color: var(--text-muted);">ရန်ကုန် ပင်မစခန်းနှင့် ဂြိုဟ်တုများ ချိတ်ဆက်မှု ၁၀၀% ပုံမှန် လည်ပတ်နေပါသည်</div>
+                    <div style="font-size: 11px; font-weight: 700; color: #f8fafc;">စနစ်တစ်ခုလုံး လည်ပတ်မှု အခြေအနေ: 🟢 အလွန်ကောင်းမွန်ပါသည် (SYSTEM OPTIMAL)</div>
+                    <div style="font-size: 8px; color: var(--text-muted);">ရန်ကုန် ပင်မစခန်းနှင့် ဂြိုဟ်တုများ ချိတ်ဆက်မှု ၁၀၀% ပုံမှန် လည်ပတ်နေပါသည်</div>
                 </div>
             </div>
             <div class="exec-metrics">
@@ -368,7 +368,7 @@
 
         <div class="header">
             <div class="header-brand">
-                <span style="font-size: 13px;">🌐</span>
+                <span style="font-size: 14px;">🌐</span>
                 <h1>GNSS Global Mission Control Center</h1>
             </div>
 
@@ -407,7 +407,7 @@
                         <span>🛰️</span>
                         <span>ဂြိုဟ်တုများ တည်ရှိမှု အခြေအနေ</span>
                     </div>
-                    <span class="mono" style="color:var(--accent-blue); font-size:7.5px;">LIVE</span>
+                    <span class="mono" style="color:var(--accent-blue); font-size:8px;">LIVE</span>
                 </div>
                 <div class="stat-grid mono">
                     <div class="stat-box"><div class="stat-lbl">စုစုပေါင်း</div><div class="stat-val" style="color:var(--accent-blue);" id="total-sats">31</div></div>
@@ -425,7 +425,7 @@
                         <span>📊</span>
                         <span>ဂြိုဟ်တု စက်ပစ္စည်း တိုင်းတာချက်</span>
                     </div>
-                    <span class="mono" style="color:var(--accent-purple); font-size:7.5px;" id="sat-telemetry-name">SVN-62</span>
+                    <span class="mono" style="color:var(--accent-purple); font-size:8px;" id="sat-telemetry-name">SVN-62</span>
                 </div>
                 <div class="sat-spec-grid mono">
                     <div><div class="stat-lbl">⚡ စွမ်းအင်</div><div class="sat-spec-val" style="color:var(--accent-green);">85%</div></div>
@@ -442,14 +442,14 @@
                         <span>☀️</span>
                         <span>Space Weather & Ionosphere HUD</span>
                     </div>
-                    <span class="mono" style="color:var(--accent-yellow); font-size:7.5px;">QUIET</span>
+                    <span class="mono" style="color:var(--accent-yellow); font-size:8px;">QUIET</span>
                 </div>
                 <div class="sat-spec-grid mono">
                     <div><div class="stat-lbl">Kp-INDEX</div><div class="sat-spec-val" style="color:var(--accent-green);">2.1</div></div>
                     <div><div class="stat-lbl">SOLAR FLUX</div><div class="sat-spec-val" style="color:var(--accent-blue);">142 SFU</div></div>
                     <div><div class="stat-lbl">TEC DRIFT</div><div class="sat-spec-val" style="color:var(--accent-cyan);">12 TECU</div></div>
                 </div>
-                <div style="font-size:7px; color:var(--text-muted);" class="mono">
+                <div style="font-size:7.5px; color:var(--text-muted);" class="mono">
                     <span>Storm: </span><b style="color:var(--accent-green);">NONE</b> | TEC Delay: <b style="color:var(--accent-blue);">1.2m</b>
                 </div>
             </div>
@@ -458,7 +458,7 @@
         <!-- Center Column: 3D Globe Feature -->
         <div class="center-col">
             <div class="card card-accent-green" style="padding: 2px;">
-                <div class="card-header" style="margin: 2px 5px;">
+                <div class="card-header" style="margin: 2px 6px;">
                     <div class="card-header-title">
                         <span>🌍</span>
                         <span>3D ကမ္ဘာ့ဂြိုဟ်တု ပတ်လမ်းနှင့် ချိတ်ဆက်မှု မြေပုံ</span>
@@ -499,10 +499,10 @@
                         <span>🌌</span>
                         <span>မိုးကုတ်စက်ဝိုင်း မြင်ကွင်း (Skyplot)</span>
                     </div>
-                    <span class="mono" id="sky-count" style="color:var(--accent-cyan); font-size:7.5px;">Sats: 10</span>
+                    <span class="mono" id="sky-count" style="color:var(--accent-cyan); font-size:8px;">Sats: 10</span>
                 </div>
                 <div style="display:flex; justify-content:center; align-items:center; flex:1; min-height:0;">
-                    <canvas id="skyplotCanvas" width="95" height="95"></canvas>
+                    <canvas id="skyplotCanvas" width="115" height="115"></canvas>
                 </div>
             </div>
 
@@ -513,7 +513,7 @@
                         <span>⚠️</span>
                         <span>စနစ် သတိပေးချက်များ</span>
                     </div>
-                    <span class="mono" style="color:var(--accent-yellow); font-size:7.5px;">3 ACTIVE</span>
+                    <span class="mono" style="color:var(--accent-yellow); font-size:8px;">3 ACTIVE</span>
                 </div>
                 <div id="alerts-container" style="flex:1; overflow-y:auto;"></div>
             </div>
@@ -544,11 +544,11 @@
                         <span>📡</span>
                         <span>Yangon Station Status</span>
                     </div>
-                    <span class="mono" style="color:var(--accent-green); font-size:7.5px;">ONLINE</span>
+                    <span class="mono" style="color:var(--accent-green); font-size:8px;">ONLINE</span>
                 </div>
                 <div class="sat-spec-grid mono">
-                    <div><div class="stat-lbl">ANTENNA</div><div class="stat-spec-val" style="color:var(--accent-blue);">3.5m Dish</div></div>
-                    <div><div class="stat-lbl">TRACK</div><div class="stat-spec-val" style="color:var(--accent-green);">Auto</div></div>
+                    <div><div class="stat-lbl">ANTENNA</div><div class="sat-spec-val" style="color:var(--accent-blue);">3.5m Dish</div></div>
+                    <div><div class="stat-lbl">TRACK</div><div class="sat-spec-val" style="color:var(--accent-green);">Auto</div></div>
                     <div><div class="stat-lbl">SPEED</div><div class="sat-spec-val" style="color:var(--accent-cyan);">20 Mbps</div></div>
                 </div>
             </div>
@@ -562,7 +562,7 @@
                         <span>📂</span>
                         <span>RINEX Observation Data Analysis: GPS (G) vs BeiDou (C) နှိုင်းယှဉ်ချက်</span>
                     </div>
-                    <span class="mono" style="color:var(--accent-cyan); font-size:7.5px;" id="uploadStatus">READY</span>
+                    <span class="mono" style="color:var(--accent-cyan); font-size:8px;" id="uploadStatus">READY</span>
                 </div>
 
                 <div class="rinex-bottom-layout">
@@ -588,7 +588,7 @@
                         <span>📶</span>
                         <span>Multi-Frequency C/N0 SNR Quality</span>
                     </div>
-                    <span class="mono" style="color:var(--accent-purple); font-size:7.5px;">L1 / L2 / L5</span>
+                    <span class="mono" style="color:var(--accent-purple); font-size:8px;">L1 / L2 / L5</span>
                 </div>
                 <div class="chart-container" style="flex:1;">
                     <canvas id="snrChart"></canvas>
@@ -761,7 +761,7 @@
                 myGlobe = Globe()(container)
                     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
-                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.2 })
+                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.3 })
                     .showAtmosphere(true)
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.18)
@@ -859,7 +859,7 @@
             const ctx = canvas.getContext('2d');
             const cx = canvas.width / 2;
             const cy = canvas.height / 2;
-            const radius = 38;
+            const radius = 45;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -877,7 +877,7 @@
             ctx.stroke();
 
             ctx.fillStyle = '#64748b';
-            ctx.font = 'bold 7.5px JetBrains Mono';
+            ctx.font = 'bold 8px JetBrains Mono';
             ctx.fillText('N', cx - 3, cy - radius - 2);
             ctx.fillText('E', cx + radius + 2, cy + 3);
 
@@ -890,12 +890,12 @@
                     const y = cy + r * Math.sin(azRad);
 
                     ctx.beginPath();
-                    ctx.arc(x, y, 3.5, 0, 2 * Math.PI);
+                    ctx.arc(x, y, 4, 0, 2 * Math.PI);
                     ctx.fillStyle = 'rgba(56, 189, 248, 0.35)';
                     ctx.fill();
 
                     ctx.beginPath();
-                    ctx.arc(x, y, 1.8, 0, 2 * Math.PI);
+                    ctx.arc(x, y, 2, 0, 2 * Math.PI);
                     ctx.fillStyle = '#38bdf8';
                     ctx.fill();
                 });
@@ -925,7 +925,7 @@
                 alertsContainer.innerHTML = data.alerts.map(a => `
                     <div class="alert-item bg-${a.type}">
                         <div><b>${a.tag}</b> ${a.msg}</div>
-                        <div class="mono" style="font-size:7.5px;">${a.time}</div>
+                        <div class="mono" style="font-size:8px;">${a.time}</div>
                     </div>
                 `).join('');
             }
@@ -1011,10 +1011,10 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: true, labels: { color: '#f8fafc', font: { size: 8 } } } },
+                    plugins: { legend: { display: true, labels: { color: '#f8fafc', font: { size: 9 } } } },
                     scales: {
-                        x: { ticks: { color: '#94a3b8', font: { size: 7 } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
-                        y: { ticks: { color: '#94a3b8', font: { size: 7.5 } }, grid: { color: 'rgba(255, 255, 255, 0.05)' }, beginAtZero: true }
+                        x: { ticks: { color: '#94a3b8', font: { size: 7.5 } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+                        y: { ticks: { color: '#94a3b8', font: { size: 8 } }, grid: { color: 'rgba(255, 255, 255, 0.05)' }, beginAtZero: true }
                     }
                 }
             });
@@ -1038,10 +1038,10 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: true, labels: { color: '#f8fafc', font: { size: 7.5 } } } },
+                    plugins: { legend: { display: true, labels: { color: '#f8fafc', font: { size: 8 } } } },
                     scales: {
-                        x: { ticks: { color: '#94a3b8', font: { size: 7 } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
-                        y: { ticks: { color: '#94a3b8', font: { size: 7.5 } }, grid: { color: 'rgba(255, 255, 255, 0.05)' }, min: 30 }
+                        x: { ticks: { color: '#94a3b8', font: { size: 7.5 } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+                        y: { ticks: { color: '#94a3b8', font: { size: 8 } }, grid: { color: 'rgba(255, 255, 255, 0.05)' }, min: 30 }
                     }
                 }
             });
@@ -1055,8 +1055,8 @@
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        x: { ticks: { color: '#94a3b8', font: { size: 7 } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
-                        y: { ticks: { color: '#94a3b8', font: { size: 7.5 } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }
+                        x: { ticks: { color: '#94a3b8', font: { size: 7.5 } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+                        y: { ticks: { color: '#94a3b8', font: { size: 8 } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }
                     }
                 };
 
