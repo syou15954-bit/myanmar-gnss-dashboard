@@ -3,12 +3,12 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
-# Modules Import များကို ဖိုင်ထိပ်ဆုံးတွင် စုစည်းထားခြင်း
-from app.fetchers.tle_fetcher import get_live_tle_data
-from app.analytics.skyplot import calculate_skyplot_data
-from app.analytics.dop_calculator import calculate_dop_metrics
-from app.parsers.rinex_parser import parse_rinex_bytes
-from app.analytics.gnss_compare import analyze_gps_vs_bds
+# Relative Import များ ပြောင်းလဲခြင်း (ModuleNotFoundError မတက်စေရန်)
+from .fetchers.tle_fetcher import get_live_tle_data
+from .analytics.skyplot import calculate_skyplot_data
+from .analytics.dop_calculator import calculate_dop_metrics
+from .parsers.rinex_parser import parse_rinex_bytes
+from .analytics.gnss_compare import analyze_gps_vs_bds
 
 app = FastAPI(title="Myanmar GNSS Dashboard API", version="1.0.0")
 
@@ -20,17 +20,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Dashboard UI ကို /dashboard သို့မဟုတ် / လမ်းကြောင်းမှ တိုက်ရိုက် ပြသပေးခြင်း
+# Root Directory ရှိ dashboard.html ကို တိကျစွာ ခေါ်ယူခြင်း
 @app.get("/dashboard", response_class=HTMLResponse)
 @app.get("/", response_class=HTMLResponse)
 def serve_dashboard():
-    html_path = os.path.join(os.path.dirname(__file__), "..", "dashboard.html")
+    # backend/app မှ Root သို့ ၂ ဆင့် ပြန်တက်ရန်
+    html_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "dashboard.html"))
     if os.path.exists(html_path):
         with open(html_path, "r", encoding="utf-8") as f:
             return f.read()
     return "<h1>dashboard.html file not found!</h1>"
 
-# Dashboard Summary Data API
+# Dashboard Summary API
 @app.get("/api/v1/dashboard/summary")
 def get_dashboard_summary():
     return {
@@ -43,7 +44,7 @@ def get_dashboard_summary():
         ]
     }
 
-# Dashboard Telemetry & Performance API
+# Dashboard Telemetry API
 @app.get("/api/v1/dashboard/telemetry")
 def get_telemetry_metrics():
     return {
@@ -55,23 +56,23 @@ def get_telemetry_metrics():
         "pdop_history": [2.1, 1.9, 1.8, 3.5, 1.8, 1.7, 2.0]
     }
 
-# GPS နှင့် BDS Live Orbit Data တောင်းယူမည့် API
+# GPS & BDS Live Orbit API
 @app.get("/api/v1/gnss/live-orbit")
 def fetch_satellite_orbits(system: str = "gps"):
     group = "beidou" if system.lower() == "bds" else "gps-ops"
     return get_live_tle_data(constellation=group)
 
-# Yangon Ground Station မှ Sky Plot (Azimuth / Elevation) တောင်းယူမည့် API
+# Skyplot API
 @app.get("/api/v1/gnss/skyplot")
 def get_skyplot_api(system: str = "gps", mask_angle: float = 10.0):
     group = "beidou" if system.lower() == "bds" else "gps-ops"
     tle_res = get_live_tle_data(constellation=group)
     
-    if tle_res["status"] != "success":
+    if tle_res.get("status") != "success":
         return {"status": "error", "message": "Failed to fetch TLE data"}
 
     skyplot_data = calculate_skyplot_data(tle_res["data"], mask_angle=mask_angle)
-    visible_count = sum(1 for s in skyplot_data if s["visible"])
+    visible_count = sum(1 for s in skyplot_data if s.get("visible"))
 
     return {
         "status": "success",
@@ -83,13 +84,13 @@ def get_skyplot_api(system: str = "gps", mask_angle: float = 10.0):
         "data": skyplot_data
     }
 
-# DOP Metrics (PDOP, HDOP, VDOP) API Endpoint
+# DOP Metrics API
 @app.get("/api/v1/gnss/dop")
 def get_dop_metrics_api(system: str = "gps", mask_angle: float = 10.0):
     group = "beidou" if system.lower() == "bds" else "gps-ops"
     tle_res = get_live_tle_data(constellation=group)
     
-    if tle_res["status"] != "success":
+    if tle_res.get("status") != "success":
         return {"status": "error", "message": "Failed to fetch TLE data"}
 
     skyplot_data = calculate_skyplot_data(tle_res["data"], mask_angle=mask_angle)
@@ -102,15 +103,12 @@ def get_dop_metrics_api(system: str = "gps", mask_angle: float = 10.0):
         "dop_analysis": dop_results
     }
 
-# RINEX File မှ GPS (G) နှင့် BDS (C) နှိုင်းယှဉ်ချက် Data ထုတ်ပေးမည့် API Endpoint
+# RINEX Upload & Compare API
 @app.post("/api/v1/gnss/gps-vs-bds")
 async def compare_gps_bds_endpoint(file: UploadFile = File(...)):
     try:
         contents = await file.read()
-        # 1. RINEX File Bytes ကို Read ပြုလုပ်ခြင်း
         df = parse_rinex_bytes(contents, file.filename)
-        
-        # 2. GPS (G) နှင့် BDS (C) Analytics တွက်ချက်ခြင်း
         results = analyze_gps_vs_bds(df)
         
         if "error" in results:
