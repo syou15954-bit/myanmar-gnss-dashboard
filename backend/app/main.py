@@ -1,14 +1,24 @@
 import os
+import sys
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
-# Relative Import များ ပြောင်းလဲခြင်း (ModuleNotFoundError မတက်စေရန်)
-from .fetchers.tle_fetcher import get_live_tle_data
-from .analytics.skyplot import calculate_skyplot_data
-from .analytics.dop_calculator import calculate_dop_metrics
-from .parsers.rinex_parser import parse_rinex_bytes
-from .analytics.gnss_compare import analyze_gps_vs_bds
+# Module Import Error မတက်စေရန် Path များကို စနစ်တကျ ထည့်သွင်းခြင်း
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+BACKEND_DIR = os.path.dirname(CURRENT_DIR)
+ROOT_DIR = os.path.dirname(BACKEND_DIR)
+
+for path in [CURRENT_DIR, BACKEND_DIR, ROOT_DIR]:
+    if path not in sys.path:
+        sys.path.append(path)
+
+# Safe Imports
+from app.fetchers.tle_fetcher import get_live_tle_data
+from app.analytics.skyplot import calculate_skyplot_data
+from app.analytics.dop_calculator import calculate_dop_metrics
+from app.parsers.rinex_parser import parse_rinex_bytes
+from app.analytics.gnss_compare import analyze_gps_vs_bds
 
 app = FastAPI(title="Myanmar GNSS Dashboard API", version="1.0.0")
 
@@ -20,18 +30,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Root Directory ရှိ dashboard.html ကို တိကျစွာ ခေါ်ယူခြင်း
+def find_dashboard_html():
+    candidates = [
+        os.path.join(ROOT_DIR, "dashboard.html"),
+        os.path.join(BACKEND_DIR, "dashboard.html"),
+        os.path.join(CURRENT_DIR, "dashboard.html"),
+        "dashboard.html"
+    ]
+    for path in candidates:
+        if os.path.exists(path):
+            return path
+    return None
+
 @app.get("/dashboard", response_class=HTMLResponse)
 @app.get("/", response_class=HTMLResponse)
 def serve_dashboard():
-    # backend/app မှ Root သို့ ၂ ဆင့် ပြန်တက်ရန်
-    html_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "dashboard.html"))
-    if os.path.exists(html_path):
+    html_path = find_dashboard_html()
+    if html_path and os.path.exists(html_path):
         with open(html_path, "r", encoding="utf-8") as f:
             return f.read()
     return "<h1>dashboard.html file not found!</h1>"
 
-# Dashboard Summary API
 @app.get("/api/v1/dashboard/summary")
 def get_dashboard_summary():
     return {
@@ -44,7 +63,6 @@ def get_dashboard_summary():
         ]
     }
 
-# Dashboard Telemetry API
 @app.get("/api/v1/dashboard/telemetry")
 def get_telemetry_metrics():
     return {
@@ -56,13 +74,11 @@ def get_telemetry_metrics():
         "pdop_history": [2.1, 1.9, 1.8, 3.5, 1.8, 1.7, 2.0]
     }
 
-# GPS & BDS Live Orbit API
 @app.get("/api/v1/gnss/live-orbit")
 def fetch_satellite_orbits(system: str = "gps"):
     group = "beidou" if system.lower() == "bds" else "gps-ops"
     return get_live_tle_data(constellation=group)
 
-# Skyplot API
 @app.get("/api/v1/gnss/skyplot")
 def get_skyplot_api(system: str = "gps", mask_angle: float = 10.0):
     group = "beidou" if system.lower() == "bds" else "gps-ops"
@@ -84,7 +100,6 @@ def get_skyplot_api(system: str = "gps", mask_angle: float = 10.0):
         "data": skyplot_data
     }
 
-# DOP Metrics API
 @app.get("/api/v1/gnss/dop")
 def get_dop_metrics_api(system: str = "gps", mask_angle: float = 10.0):
     group = "beidou" if system.lower() == "bds" else "gps-ops"
@@ -103,7 +118,6 @@ def get_dop_metrics_api(system: str = "gps", mask_angle: float = 10.0):
         "dop_analysis": dop_results
     }
 
-# RINEX Upload & Compare API
 @app.post("/api/v1/gnss/gps-vs-bds")
 async def compare_gps_bds_endpoint(file: UploadFile = File(...)):
     try:
