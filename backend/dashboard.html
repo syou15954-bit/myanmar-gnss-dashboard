@@ -354,9 +354,7 @@
                     <span class="mono" style="color:var(--accent-yellow); font-size:9px;">3 ACTIVE</span>
                 </div>
                 <div id="alerts-container">
-                    <div class="alert-item bg-critical"><div><b>[သတိပေး]</b> SVN-45 နာရီတိကျမှု လွဲချော်မှုရှိ</div><div class="mono" style="font-size:9px;">09:42</div></div>
-                    <div class="alert-item bg-warning"><div><b>[သတိပေး]</b> ပစိဖိတ်ဒေသ အချက်ပြလှိုင်း တုန်ခါမှုရှိ</div><div class="mono" style="font-size:9px;">09:15</div></div>
-                    <div class="alert-item bg-info"><div><b>[သတင်း]</b> Orbit Data အသစ် ရယူပြီး</div><div class="mono" style="font-size:9px;">07:30</div></div>
+                    <!-- Dynamic Alerts will populate here -->
                 </div>
                 <div style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
                     <div class="card-header" style="border:none; padding:0; margin-bottom:4px;">
@@ -449,14 +447,19 @@
         let currentSystem = 'gps';
         let fleetChart, clockChart, pdopChart;
 
-        // Dynamic Constellation Datasets
+        // Dynamic Constellation Datasets with Specific Country Alerts
         const constellationData = {
             gps: {
-                name: "GPS Constellation",
+                name: "GPS Constellation (USA)",
                 satName: "SVN-62 / PRN-07",
                 total: 31, active: 28, degraded: 2, offline: 1, visible: 10,
                 pdop: "1.67", hdop: "0.81", vdop: "1.46", gdop: "1.87", tdop: "0.85",
                 fleet: [12, 8, 7, 4],
+                alerts: [
+                    { type: 'critical', tag: '[သတိပေး]', msg: 'SVN-45 နာရီတိကျမှု လွဲချော်မှုရှိ', time: '09:42' },
+                    { type: 'warning', tag: '[သတိပေး]', msg: 'ပစိဖိတ်ဒေသ အချက်ပြလှိုင်း တုန်ခါမှုရှိ', time: '09:15' },
+                    { type: 'info', tag: '[သတင်း]', msg: 'GPS Orbit Data အသစ် ရယူပြီး', time: '07:30' }
+                ],
                 sats: [
                     { elevation_deg: 75, azimuth_deg: 45, visible: true },
                     { elevation_deg: 60, azimuth_deg: 120, visible: true },
@@ -477,11 +480,16 @@
                 ]
             },
             bds: {
-                name: "BEIDOU Constellation",
+                name: "BEIDOU Constellation (China)",
                 satName: "BDS-3 MEO-01",
                 total: 56, active: 48, degraded: 5, offline: 3, visible: 14,
                 pdop: "1.35", hdop: "0.65", vdop: "1.18", gdop: "1.52", tdop: "0.71",
                 fleet: [18, 15, 15, 8],
+                alerts: [
+                    { type: 'critical', tag: '[သတိပေး]', msg: 'BDS-3 M12 ပတ်လမ်းအနည်းငယ် လွဲချော်မှုရှိ', time: '10:12' },
+                    { type: 'warning', tag: '[သတိပေး]', msg: 'အာရှ-ပစိဖိတ် C/N0 လှိုင်းအနည်းငယ်ကျ', time: '09:50' },
+                    { type: 'info', tag: '[သတင်း]', msg: 'BeiDou Ephemeris Data မွမ်းမံပြီး', time: '08:15' }
+                ],
                 sats: [
                     { elevation_deg: 82, azimuth_deg: 30, visible: true },
                     { elevation_deg: 70, azimuth_deg: 110, visible: true },
@@ -506,11 +514,16 @@
                 ]
             },
             galileo: {
-                name: "GALILEO Constellation",
+                name: "GALILEO Constellation (Europe)",
                 satName: "GSAT-0201",
                 total: 28, active: 24, degraded: 3, offline: 1, visible: 8,
                 pdop: "1.92", hdop: "0.95", vdop: "1.67", gdop: "2.10", tdop: "0.92",
                 fleet: [10, 8, 6, 4],
+                alerts: [
+                    { type: 'critical', tag: '[သတိပေး]', msg: 'GSAT-0204 အချက်ပြစွမ်းအား ကျဆင်းမှုရှိ', time: '08:30' },
+                    { type: 'warning', tag: '[သတိပေး]', msg: 'ဥရောပ Ground Station ချိတ်ဆက်မှု နှောင့်နှေး', time: '08:00' },
+                    { type: 'info', tag: '[သတင်း]', msg: 'Galileo Almanac Data ရရှိပြီး', time: '06:45' }
+                ],
                 sats: [
                     { elevation_deg: 70, azimuth_deg: 60, visible: true },
                     { elevation_deg: 55, azimuth_deg: 140, visible: true },
@@ -528,11 +541,16 @@
                 ]
             },
             glonass: {
-                name: "GLONASS Constellation",
+                name: "GLONASS Constellation (Russia)",
                 satName: "GLONASS-M 758",
                 total: 24, active: 22, degraded: 1, offline: 1, visible: 7,
                 pdop: "2.15", hdop: "1.10", vdop: "1.85", gdop: "2.35", tdop: "1.05",
                 fleet: [8, 8, 5, 3],
+                alerts: [
+                    { type: 'critical', tag: '[သတိပေး]', msg: 'GLONASS-M 755 နာရီတိကျမှု စစ်ဆေးနေဆဲ', time: '09:05' },
+                    { type: 'warning', tag: '[သတိပေး]', msg: 'မြောက်ဝင်ရိုးစွန်းဒေသ အချက်ပြနည်းပါး', time: '08:40' },
+                    { type: 'info', tag: '[သတင်း]', msg: 'Glonass Frame Sync ပြီးစီး', time: '07:10' }
+                ],
                 sats: [
                     { elevation_deg: 65, azimuth_deg: 40, visible: true },
                     { elevation_deg: 50, azimuth_deg: 130, visible: true },
@@ -684,6 +702,17 @@
             document.getElementById('banner-vis-sats').innerText = `${data.visible} စီး`;
             document.getElementById('sky-count').innerText = `Sats: ${data.visible}`;
             document.getElementById('sat-telemetry-name').innerText = data.satName;
+
+            // Dynamic Update Alerts
+            const alertsContainer = document.getElementById('alerts-container');
+            if (alertsContainer && data.alerts) {
+                alertsContainer.innerHTML = data.alerts.map(a => `
+                    <div class="alert-item bg-${a.type}">
+                        <div><b>${a.tag}</b> ${a.msg}</div>
+                        <div class="mono" style="font-size:9px;">${a.time}</div>
+                    </div>
+                `).join('');
+            }
 
             // Update DOP Matrix
             document.getElementById('pdop-val').innerText = data.pdop;
