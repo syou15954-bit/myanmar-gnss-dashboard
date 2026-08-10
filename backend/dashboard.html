@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GNSS Global Mission Control Center</title>
-    <!-- Chart.js, Globe.gl & Google Aerospace Fonts -->
+    <!-- External Libraries with Fallbacks -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/globe.gl"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Pyidaungsu:wght@400;600;700&display=swap" rel="stylesheet">
@@ -48,7 +48,6 @@
 
         .mono { font-family: 'JetBrains Mono', monospace; }
 
-        /* Banner & Header */
         .exec-banner {
             background: linear-gradient(90deg, rgba(34, 197, 94, 0.12) 0%, rgba(15, 23, 42, 0.95) 50%, rgba(56, 189, 248, 0.12) 100%);
             border: 1px solid rgba(34, 197, 94, 0.4);
@@ -133,7 +132,6 @@
             margin-left: 6px;
         }
 
-        /* Layout Grids */
         .dashboard-body {
             display: flex;
             flex-direction: column;
@@ -203,15 +201,18 @@
             flex-shrink: 0;
         }
 
-        .card-header-title { display: flex; align-items: center; gap: 6px; }
-
-        /* Fix Canvas Height Collapse */
+        /* Explicit Height Fix for Chart Canvas Containers */
         .chart-container { 
             position: relative;
             width: 100%; 
             height: 160px !important; 
             min-height: 160px;
             flex-shrink: 0;
+        }
+        .chart-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
         }
 
         .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; text-align: center; margin-bottom: 6px; flex-shrink: 0; }
@@ -298,7 +299,7 @@
 </head>
 <body>
 
-    <!-- Banner -->
+    <!-- Executive Banner -->
     <div class="exec-banner">
         <div class="exec-status-title">
             <div class="pulse-green"></div>
@@ -314,7 +315,7 @@
         </div>
     </div>
 
-    <!-- Header -->
+    <!-- Header Navigation Bar -->
     <div class="header">
         <div class="header-brand">
             <span style="font-size: 16px;">🌐</span>
@@ -339,7 +340,7 @@
         </div>
     </div>
 
-    <!-- Dashboard Content -->
+    <!-- Dashboard Body -->
     <div class="dashboard-body">
         
         <!-- Top Grid -->
@@ -361,7 +362,7 @@
                 <div class="chart-container"><canvas id="fleetChart"></canvas></div>
             </div>
 
-            <!-- 3D Globe -->
+            <!-- 3D Globe Viewport -->
             <div class="card card-accent-green" style="padding: 4px;">
                 <div class="card-header" style="margin: 4px;">
                     <div class="card-header-title">
@@ -610,7 +611,6 @@
         setInterval(updateMyanmarTime, 1000);
         updateMyanmarTime();
 
-        // Safe Globe Init
         let myGlobe = null;
         try {
             const container = document.getElementById('globeViz');
@@ -800,7 +800,7 @@
 
         function renderGpsBdsChart(timestamps, gpsCounts, bdsCounts) {
             const canvas = document.getElementById('gpsBdsCompareChart');
-            if (!canvas) return;
+            if (!canvas || typeof Chart === 'undefined') return;
             const ctx = canvas.getContext('2d');
             if (gpsBdsChart) gpsBdsChart.destroy();
 
@@ -843,8 +843,12 @@
             });
         }
 
-        // Initialize All Charts safely
         function initCharts() {
+            if (typeof Chart === 'undefined') {
+                console.warn("Chart.js CDN Not Loaded Yet");
+                return;
+            }
+
             try {
                 const defaultOptions = {
                     responsive: true,
@@ -893,14 +897,18 @@
                 }
 
                 renderGpsBdsChart(['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'], [10, 11, 12, 10, 11, 10], [18, 19, 21, 20, 19, 18]);
-
                 switchConstellation('gps', document.querySelector('.nav-btn.active'));
             } catch (err) {
                 console.error("Chart Init Error:", err);
             }
         }
 
-        window.onload = initCharts;
+        // DOM Loaded Event Safety Check
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            setTimeout(initCharts, 200);
+        } else {
+            document.addEventListener('DOMContentLoaded', () => setTimeout(initCharts, 200));
+        }
     </script>
 </body>
 </html>
