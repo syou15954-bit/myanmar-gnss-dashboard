@@ -38,7 +38,7 @@
         body {
             display: flex;
             flex-direction: column;
-            padding: 10px 12px;
+            padding: 8px 12px;
             gap: 8px;
         }
 
@@ -57,7 +57,7 @@
             flex-shrink: 0;
         }
 
-        .exec-status-title { display: flex; align-items: center; gap: 10px; }
+        .exec-status-title { display: flex; align-items: center; gap: 8px; }
         .pulse-green {
             width: 10px; height: 10px; background: var(--accent-green); border-radius: 50%;
             box-shadow: 0 0 10px var(--accent-green); animation: pulse-anim 1.8s infinite;
@@ -76,9 +76,10 @@
             border-radius: 20px;
             font-size: 10px;
             font-weight: 600;
+            white-space: nowrap;
         }
 
-        /* Top Header Navigation */
+        /* Top Header Navigation Bar */
         .header { 
             display: flex; 
             justify-content: space-between; 
@@ -88,14 +89,18 @@
             border: 1px solid var(--card-border);
             border-radius: 6px;
             flex-shrink: 0;
+            gap: 12px;
         }
-        .header h2 { font-size: 14px; color: var(--text-main); letter-spacing: 0.5px; font-weight: 700; }
+        .header-left { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .header-left h2 { font-size: 14px; color: var(--text-main); letter-spacing: 0.5px; font-weight: 700; white-space: nowrap; }
 
-        .constellation-selector { display: flex; gap: 6px; align-items: center; }
+        .header-center { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+        .header-right { font-size: 10px; color: var(--text-muted); flex-shrink: 0; white-space: nowrap; }
+
         .nav-btn {
             background: #1e293b; color: var(--text-muted); border: 1px solid #334155;
             padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s; white-space: nowrap; display: inline-flex; align-items: center;
         }
         .nav-btn:hover, .nav-btn.active {
             background: rgba(56, 189, 248, 0.2); color: var(--accent-blue); border-color: var(--accent-blue);
@@ -106,34 +111,46 @@
             background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(34, 197, 94, 0.25));
             color: #ffffff;
             border: 1px solid var(--accent-blue);
-            padding: 4px 12px;
+            padding: 4px 10px;
             border-radius: 4px;
             font-size: 10px;
             font-weight: 700;
             cursor: pointer;
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
             transition: all 0.2s;
+            white-space: nowrap;
+            margin-left: 6px;
         }
         .fullscreen-btn:hover {
             background: rgba(56, 189, 248, 0.4);
             box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
         }
 
-        /* Main Dashboard Viewport Grids */
-        .grid-top {
-            flex: 1.3;
-            display: grid;
-            grid-template-columns: 310px 1fr 310px;
+        /* Main Dashboard Content Layout */
+        .dashboard-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
             gap: 8px;
             min-height: 0;
         }
 
+        /* Top Grid - 3 Columns Layout */
+        .grid-top {
+            flex: 1.25;
+            display: grid;
+            grid-template-columns: 290px 1fr 290px;
+            gap: 8px;
+            min-height: 0;
+        }
+
+        /* Bottom Grid - 4 Columns Layout */
         .grid-bottom {
             flex: 1;
             display: grid;
-            grid-template-columns: 300px 220px 1fr 1.2fr;
+            grid-template-columns: 280px 200px 1fr 1.2fr;
             gap: 8px;
             min-height: 0;
         }
@@ -142,7 +159,7 @@
         .card { 
             background: var(--card-bg); 
             border-radius: 6px; 
-            padding: 10px; 
+            padding: 8px 10px; 
             border: 1px solid var(--card-border); 
             position: relative;
             backdrop-filter: blur(8px);
@@ -150,13 +167,14 @@
             flex-direction: column;
             min-height: 0;
             height: 100%;
+            overflow: hidden;
         }
 
         .card-header { 
             font-size: 11px; 
             font-weight: 700; 
             color: var(--text-main); 
-            margin-bottom: 6px; 
+            margin-bottom: 4px; 
             display: flex; 
             justify-content: space-between; 
             align-items: center;
@@ -173,7 +191,7 @@
         }
 
         /* Stats Blocks */
-        .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; text-align: center; margin-bottom: 6px; flex-shrink: 0; }
+        .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; text-align: center; margin-bottom: 4px; flex-shrink: 0; }
         .stat-box { background: rgba(30, 41, 59, 0.6); padding: 4px 2px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.03); }
         .stat-lbl { font-size: 8px; color: var(--text-muted); font-weight: 600; }
         .stat-val { font-size: 14px; font-weight: 800; margin-top: 1px; }
@@ -186,35 +204,37 @@
             overflow: hidden;
             background: #000;
             min-height: 0;
+            position: relative;
         }
         
         .globe-legend-box {
             position: absolute;
-            bottom: 10px;
-            left: 10px;
+            bottom: 8px;
+            left: 8px;
             z-index: 10;
             background: rgba(3, 7, 18, 0.88);
             border: 1px solid var(--card-border);
             backdrop-filter: blur(6px);
-            padding: 6px 10px;
+            padding: 5px 8px;
             border-radius: 4px;
-            font-size: 9px;
+            font-size: 8px;
+            pointer-events: none;
         }
-        .legend-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; font-weight: 600; }
+        .legend-row { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; font-weight: 600; }
 
         /* Quality Badges */
         .badge { padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; }
         .badge-excellent { background: rgba(34, 197, 94, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green); }
 
         /* Alerts Table */
-        .alert-item { padding: 6px 8px; border-radius: 4px; margin-bottom: 5px; font-size: 9px; display: flex; justify-content: space-between; align-items: center; }
+        .alert-item { padding: 5px 8px; border-radius: 4px; margin-bottom: 4px; font-size: 9px; display: flex; justify-content: space-between; align-items: center; }
         .bg-critical { background: rgba(239, 68, 68, 0.12); border-left: 3px solid var(--accent-red); color: #fca5a5; }
         .bg-warning { background: rgba(245, 158, 11, 0.12); border-left: 3px solid var(--accent-yellow); color: #fde047; }
         .bg-info { background: rgba(59, 130, 246, 0.12); border-left: 3px solid var(--accent-blue); color: #93c5fd; }
 
         /* Telemetry Specifications */
-        .sat-spec-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; background: rgba(30, 41, 59, 0.5); padding: 6px; border-radius: 4px; text-align: center; margin-bottom: 6px; flex-shrink: 0; }
-        .sat-spec-val { font-size: 13px; font-weight: 700; color: var(--text-main); }
+        .sat-spec-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; background: rgba(30, 41, 59, 0.5); padding: 4px; border-radius: 4px; text-align: center; margin-bottom: 4px; flex-shrink: 0; }
+        .sat-spec-val { font-size: 12px; font-weight: 700; color: var(--text-main); }
 
         .progress-bg { background: #1e293b; height: 5px; border-radius: 3px; overflow: hidden; margin-top: 3px; }
         .progress-fill { background: var(--accent-green); height: 100%; width: 85%; }
@@ -245,13 +265,12 @@
 
     <!-- Header Navigation Bar -->
     <div class="header">
-        <div style="display:flex; align-items:center; gap:8px;">
+        <div class="header-left">
             <span style="font-size: 15px;">🌐</span>
             <h2>GNSS Global Mission Control Center</h2>
         </div>
 
-        <!-- Constellation Switcher & Screen Full Button -->
-        <div class="constellation-selector">
+        <div class="header-center">
             <button class="nav-btn active" onclick="switchConstellation('gps', this)">GPS (အမေရိကန်)</button>
             <button class="nav-btn" onclick="switchConstellation('bds', this)">BEIDOU (တရုတ်)</button>
             <button class="nav-btn" onclick="switchConstellation('galileo', this)">GALILEO (ဥရောပ)</button>
@@ -263,121 +282,132 @@
             </button>
         </div>
 
-        <div class="mono" style="font-size: 10px; color: var(--text-muted);">
+        <div class="header-right mono">
             မြန်မာစံတော်ချိန်: <b id="mmt-time" style="color: var(--accent-blue);">--:--:-- MMT</b> | စခန်း: <b style="color: var(--text-main);">ရန်ကုန် (16.86°N, 96.19°E)</b>
         </div>
     </div>
 
-    <!-- Top Grid Section -->
-    <div class="grid-top">
-        <div class="card">
-            <div class="card-header">
-                <span>🛰️ ဂြိုဟ်တုများ တည်ရှိမှု အခြေအနေ</span>
-                <span class="mono" style="color:var(--accent-blue); font-size:9px;">LIVE</span>
-            </div>
-            <div class="stat-grid mono">
-                <div class="stat-box"><div class="stat-lbl">စုစုပေါင်း</div><div class="stat-val" style="color:var(--accent-blue);" id="total-sats">31</div></div>
-                <div class="stat-box"><div class="stat-lbl">ပုံမှန်</div><div class="stat-val" style="color:var(--accent-green);" id="active-sats">28</div></div>
-                <div class="stat-box"><div class="stat-lbl">သတိပေး</div><div class="stat-val" style="color:var(--accent-yellow);" id="degraded-sats">2</div></div>
-                <div class="stat-box"><div class="stat-lbl">ရပ်နား</div><div class="stat-val" style="color:var(--accent-red);">1</div></div>
-            </div>
-            <div class="chart-container"><canvas id="fleetChart"></canvas></div>
-        </div>
-
-        <!-- 3D Globe Viewport -->
-        <div class="card" style="padding: 6px;">
-            <div class="card-header" style="margin: 4px;">
-                <span>🌍 3D ကမ္ဘာ့ဂြိုဟ်တု ပတ်လမ်းနှင့် ချိတ်ဆက်မှု မြေပုံ</span>
-                <span class="badge badge-excellent" id="constellation-label">GPS Constellation</span>
-            </div>
-
-            <div id="globeViz"></div>
-
-            <div class="globe-legend-box">
-                <div class="legend-row"><span style="font-size:11px;">📡</span> <b style="color:#ef4444;">🔴 ရန်ကုန် ပင်မဖမ်းစက်စခန်း</b> (Yangon Station)</div>
-                <div class="legend-row"><span style="font-size:11px;">🛰️</span> <b style="color:#38bdf8;">🔵 လက်ရှိ အလုပ်လုပ်နေသော ဂြိုဟ်တုများ</b> (Active Satellites)</div>
-                <div class="legend-row"><span style="font-size:11px;">⚡</span> <b style="color:#22c55e;">🔴—🔵 ချိတ်ဆက်ထားသော အချက်ပြ လှိုင်းလမ်းကြောင်း</b> (Signal Arc)</div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <span>⚠️ စနစ် သတိပေးချက်နှင့် အမှားအယွင်းများ</span>
-                <span class="mono" style="color:var(--accent-yellow); font-size:9px;">3 ACTIVE</span>
-            </div>
-            <div id="alerts-container">
-                <div class="alert-item bg-critical"><div><b>[သတိပေး]</b> SVN-45 နာရီတိကျမှု လွဲချော်မှုရှိ</div><div class="mono" style="font-size:9px;">09:42 MMT</div></div>
-                <div class="alert-item bg-warning"><div><b>[သတိပေး]</b> ပစိဖိတ်ဒေသ အချက်ပြလှိုင်း တုန်ခါမှုရှိ</div><div class="mono" style="font-size:9px;">09:15 MMT</div></div>
-                <div class="alert-item bg-info"><div><b>[သတင်းအချက်လက်]</b> Orbit Data အသစ် ရယူပြီး</div><div class="mono" style="font-size:9px;">07:30 MMT</div></div>
-            </div>
-            <div style="margin-top: auto; border-top: 1px solid var(--card-border); padding-top: 8px;">
-                <div class="card-header" style="border:none; padding:0; margin-bottom:4px;">အချက်ပြ စွမ်းရည် ကြံ့ခိုင်မှု (Signal Integrity)</div>
-                <div class="mono" style="display:flex; justify-content:space-between; font-size:9px;">
-                    <span>Carrier-to-Noise (C/N0)</span><span style="color:var(--accent-green);">44.2 dB-Hz (ကောင်းမွန်)</span>
+    <!-- Dashboard Main Viewport Container -->
+    <div class="dashboard-body">
+        
+        <!-- Top Grid Section (3 Columns) -->
+        <div class="grid-top">
+            <!-- Card 1: Fleet Status -->
+            <div class="card">
+                <div class="card-header">
+                    <span>🛰️ ဂြိုဟ်တုများ တည်ရှိမှု အခြေအနေ</span>
+                    <span class="mono" style="color:var(--accent-blue); font-size:9px;">LIVE</span>
                 </div>
-                <div class="progress-bg"><div class="progress-fill" style="width: 88%;"></div></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bottom Grid Section -->
-    <div class="grid-bottom">
-        <div class="card">
-            <div class="card-header">
-                <span>📊 ဂြိုဟ်တု စက်ပစ္စည်း တိုင်းတာချက်</span>
-                <span class="mono" style="color:var(--accent-blue);">SVN-62 / PRN-07</span>
-            </div>
-            
-            <div class="sat-spec-grid mono">
-                <div><div class="stat-lbl">စွမ်းအင် လက်ကျန်</div><div class="sat-spec-val" style="color:var(--accent-green);">85%</div></div>
-                <div><div class="stat-lbl">ဆိုလာ ပါဝါ</div><div class="sat-spec-val" style="color:var(--accent-blue);">2.1 kW</div></div>
-                <div><div class="stat-lbl">အပူချိန်</div><div class="sat-spec-val" style="color:var(--accent-yellow);">-2.4°C</div></div>
-            </div>
-
-            <div style="margin-bottom: 6px;">
-                <div class="mono" style="display:flex; justify-content:space-between; font-size:8px; color:var(--text-muted);">
-                    <span>လောင်စာဆီ လက်ကျန် (Hydrazine)</span><span>85%</span>
+                <div class="stat-grid mono">
+                    <div class="stat-box"><div class="stat-lbl">စုစုပေါင်း</div><div class="stat-val" style="color:var(--accent-blue);" id="total-sats">31</div></div>
+                    <div class="stat-box"><div class="stat-lbl">ပုံမှန်</div><div class="stat-val" style="color:var(--accent-green);" id="active-sats">28</div></div>
+                    <div class="stat-box"><div class="stat-lbl">သတိပေး</div><div class="stat-val" style="color:var(--accent-yellow);" id="degraded-sats">2</div></div>
+                    <div class="stat-box"><div class="stat-lbl">ရပ်နား</div><div class="stat-val" style="color:var(--accent-red);">1</div></div>
                 </div>
-                <div class="progress-bg"><div class="progress-fill"></div></div>
+                <div class="chart-container"><canvas id="fleetChart"></canvas></div>
             </div>
 
-            <div class="chart-container"><canvas id="clockChart"></canvas></div>
+            <!-- Card 2: 3D Globe Viewport -->
+            <div class="card" style="padding: 4px;">
+                <div class="card-header" style="margin: 4px;">
+                    <span>🌍 3D ကမ္ဘာ့ဂြိုဟ်တု ပတ်လမ်းနှင့် ချိတ်ဆက်မှု မြေပုံ</span>
+                    <span class="badge badge-excellent" id="constellation-label">GPS Constellation</span>
+                </div>
+
+                <div id="globeViz"></div>
+
+                <div class="globe-legend-box">
+                    <div class="legend-row"><span style="font-size:10px;">📡</span> <b style="color:#ef4444;">🔴 ရန်ကုန် ပင်မဖမ်းစက်စခန်း</b> (Yangon Station)</div>
+                    <div class="legend-row"><span style="font-size:10px;">🛰️</span> <b style="color:#38bdf8;">🔵 လက်ရှိ အလုပ်လုပ်နေသော ဂြိုဟ်တုများ</b> (Active Satellites)</div>
+                    <div class="legend-row"><span style="font-size:10px;">⚡</span> <b style="color:#22c55e;">🔴—🔵 ချိတ်ဆက်ထားသော အချက်ပြ လှိုင်းလမ်းကြောင်း</b> (Signal Arc)</div>
+                </div>
+            </div>
+
+            <!-- Card 3: System Alerts & Anomaly Monitor -->
+            <div class="card">
+                <div class="card-header">
+                    <span>⚠️ စနစ် သတိပေးချက်နှင့် အမှားအယွင်းများ</span>
+                    <span class="mono" style="color:var(--accent-yellow); font-size:9px;">3 ACTIVE</span>
+                </div>
+                <div id="alerts-container">
+                    <div class="alert-item bg-critical"><div><b>[သတိပေး]</b> SVN-45 နာရီတိကျမှု လွဲချော်မှုရှိ</div><div class="mono" style="font-size:9px;">09:42 MMT</div></div>
+                    <div class="alert-item bg-warning"><div><b>[သတိပေး]</b> ပစိဖိတ်ဒေသ အချက်ပြလှိုင်း တုန်ခါမှုရှိ</div><div class="mono" style="font-size:9px;">09:15 MMT</div></div>
+                    <div class="alert-item bg-info"><div><b>[သတင်းအချက်လက်]</b> Orbit Data အသစ် ရယူပြီး</div><div class="mono" style="font-size:9px;">07:30 MMT</div></div>
+                </div>
+                <div style="margin-top: auto; border-top: 1px solid var(--card-border); padding-top: 6px;">
+                    <div class="card-header" style="border:none; padding:0; margin-bottom:4px;">အချက်ပြ စွမ်းရည် ကြံ့ခိုင်မှု (Signal Integrity)</div>
+                    <div class="mono" style="display:flex; justify-content:space-between; font-size:9px;">
+                        <span>Carrier-to-Noise (C/N0)</span><span style="color:var(--accent-green);">44.2 dB-Hz (ကောင်းမွန်)</span>
+                    </div>
+                    <div class="progress-bg"><div class="progress-fill" style="width: 88%;"></div></div>
+                </div>
+            </div>
         </div>
 
-        <div class="card">
-            <div class="card-header">
-                <span>🌌 ရန်ကုန်စခန်း မိုးကုတ်စက်ဝိုင်း မြင်ကွင်း</span>
-                <span class="mono" id="sky-count" style="color:var(--accent-blue);">Sats: 10</span>
+        <!-- Bottom Grid Section (4 Columns) -->
+        <div class="grid-bottom">
+            <!-- Card 1: Satellite Telemetry -->
+            <div class="card">
+                <div class="card-header">
+                    <span>📊 ဂြိုဟ်တု စက်ပစ္စည်း တိုင်းတာချက်</span>
+                    <span class="mono" style="color:var(--accent-blue);">SVN-62 / PRN-07</span>
+                </div>
+                
+                <div class="sat-spec-grid mono">
+                    <div><div class="stat-lbl">စွမ်းအင် လက်ကျန်</div><div class="sat-spec-val" style="color:var(--accent-green);">85%</div></div>
+                    <div><div class="stat-lbl">ဆိုလာ ပါဝါ</div><div class="sat-spec-val" style="color:var(--accent-blue);">2.1 kW</div></div>
+                    <div><div class="stat-lbl">အပူချိန်</div><div class="sat-spec-val" style="color:var(--accent-yellow);">-2.4°C</div></div>
+                </div>
+
+                <div style="margin-bottom: 4px;">
+                    <div class="mono" style="display:flex; justify-content:space-between; font-size:8px; color:var(--text-muted);">
+                        <span>လောင်စာဆီ လက်ကျန် (Hydrazine)</span><span>85%</span>
+                    </div>
+                    <div class="progress-bg"><div class="progress-fill"></div></div>
+                </div>
+
+                <div class="chart-container"><canvas id="clockChart"></canvas></div>
             </div>
-            <div style="display:flex; justify-content:center; align-items:center; flex:1; min-height:0;">
-                <canvas id="skyplotCanvas" width="150" height="150"></canvas>
+
+            <!-- Card 2: Sky Plot Canvas -->
+            <div class="card">
+                <div class="card-header">
+                    <span>🌌 ရန်ကုန်စခန်း မိုးကုတ်စက်ဝိုင်း မြင်ကွင်း</span>
+                    <span class="mono" id="sky-count" style="color:var(--accent-blue);">Sats: 10</span>
+                </div>
+                <div style="display:flex; justify-content:center; align-items:center; flex:1; min-height:0;">
+                    <canvas id="skyplotCanvas" width="140" height="140"></canvas>
+                </div>
+            </div>
+
+            <!-- Card 3: DOP Precision Matrix -->
+            <div class="card">
+                <div class="card-header">
+                    <span>🎯 တည်နေရာ တိကျမှု ညွှန်းကိန်း (DOP)</span>
+                    <span class="badge badge-excellent" id="dop-badge">အလွန်ကောင်းမွန် (<2m)</span>
+                </div>
+                <p style="font-size:8px; color:var(--text-muted); margin-bottom:4px;">ရန်ကုန်စခန်း မိုးကုတ်စက်ဝိုင်းအထက် ၁၀ ဒီဂရီအထက် ဂြိုဟ်တုများ၏ Geometry တွက်ချက်ချက်။</p>
+                
+                <div class="dop-mini-grid mono">
+                    <div class="dop-mini-card"><div class="stat-lbl">PDOP (စုစုပေါင်း)</div><div class="dop-mini-val" id="pdop-val">1.67</div></div>
+                    <div class="dop-mini-card"><div class="stat-lbl">HDOP (ပြင်ညီ)</div><div class="dop-mini-val" style="color:var(--accent-green);" id="hdop-val">0.81</div></div>
+                    <div class="dop-mini-card"><div class="stat-lbl">VDOP (ဒေါင်လိုက်)</div><div class="dop-mini-val" style="color:var(--accent-yellow);" id="vdop-val">1.46</div></div>
+                    <div class="dop-mini-card"><div class="stat-lbl">GDOP (ဂျီဩမေတြီ)</div><div class="dop-mini-val" id="gdop-val">1.87</div></div>
+                    <div class="dop-mini-card"><div class="stat-lbl">TDOP (အချိန်)</div><div class="dop-mini-val" style="color:var(--accent-purple);" id="tdop-val">0.85</div></div>
+                    <div class="dop-mini-card"><div class="stat-lbl">မြင်ရသောဂြိုဟ်တု</div><div class="dop-mini-val" style="color:var(--accent-blue);" id="vis-sats-val">10</div></div>
+                </div>
+            </div>
+
+            <!-- Card 4: 24h Navigation Accuracy History -->
+            <div class="card">
+                <div class="card-header">
+                    <span>📈 ၂၄ နာရီအတွင်း တည်နေရာတိကျမှု မှတ်တမ်း</span>
+                    <span class="mono" style="color:var(--text-muted); font-size:9px;">PDOP TREND</span>
+                </div>
+                <div class="chart-container"><canvas id="pdopChart"></canvas></div>
             </div>
         </div>
 
-        <div class="card">
-            <div class="card-header">
-                <span>🎯 တည်နေရာ တိကျမှု ညွှန်းကိန်း (DOP)</span>
-                <span class="badge badge-excellent" id="dop-badge">အလွန်ကောင်းမွန် (<2m)</span>
-            </div>
-            <p style="font-size:8px; color:var(--text-muted); margin-bottom:6px;">ရန်ကုန်စခန်း မိုးကုတ်စက်ဝိုင်းအထက် ၁၀ ဒီဂရီအထက် ဂြိုဟ်တုများ၏ Geometry တွက်ချက်ချက်။</p>
-            
-            <div class="dop-mini-grid mono">
-                <div class="dop-mini-card"><div class="stat-lbl">PDOP (စုစုပေါင်း)</div><div class="dop-mini-val" id="pdop-val">1.67</div></div>
-                <div class="dop-mini-card"><div class="stat-lbl">HDOP (ပြင်ညီ)</div><div class="dop-mini-val" style="color:var(--accent-green);" id="hdop-val">0.81</div></div>
-                <div class="dop-mini-card"><div class="stat-lbl">VDOP (ဒေါင်လိုက်)</div><div class="dop-mini-val" style="color:var(--accent-yellow);" id="vdop-val">1.46</div></div>
-                <div class="dop-mini-card"><div class="stat-lbl">GDOP (ဂျီဩမေတြီ)</div><div class="dop-mini-val" id="gdop-val">1.87</div></div>
-                <div class="dop-mini-card"><div class="stat-lbl">TDOP (အချိန်)</div><div class="dop-mini-val" style="color:var(--accent-purple);" id="tdop-val">0.85</div></div>
-                <div class="dop-mini-card"><div class="stat-lbl">မြင်ရသောဂြိုဟ်တု</div><div class="dop-mini-val" style="color:var(--accent-blue);" id="vis-sats-val">10</div></div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <span>📈 ၂၄ နာရီအတွင်း တည်နေရာတိကျမှု မှတ်တမ်း</span>
-                <span class="mono" style="color:var(--text-muted); font-size:9px;">PDOP TREND</span>
-            </div>
-            <div class="chart-container"><canvas id="pdopChart"></canvas></div>
-        </div>
     </div>
 
     <!-- JavaScript Mission Control Engine -->
@@ -478,7 +508,7 @@
             const ctx = canvas.getContext('2d');
             const cx = canvas.width / 2;
             const cy = canvas.height / 2;
-            const radius = 60;
+            const radius = 55;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
