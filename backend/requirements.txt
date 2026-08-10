@@ -1,7 +1,4 @@
 fastapi
 uvicorn
-georinex
-xarray
-netcdf4
 pandas
 python-multipart
