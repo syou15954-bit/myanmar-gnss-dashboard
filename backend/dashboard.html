@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GNSS Next-Gen Mission Control</title>
+    <title>GNSS Cyberpunk Mission Control</title>
     <!-- Chart.js & Globe.gl Standalone Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/globe.gl"></script>
@@ -11,13 +11,15 @@
     
     <style>
         :root {
-            --bg-dark: #06080e;
-            --panel-bg: rgba(13, 17, 26, 0.75);
-            --panel-border: rgba(255, 255, 255, 0.08);
+            --bg-dark: #04060a;
+            --panel-bg: rgba(10, 15, 26, 0.85);
+            --panel-border: rgba(0, 242, 255, 0.18);
             --accent-cyan: #00f2ff;
             --accent-blue: #38bdf8;
             --accent-red: #ff3b5c;
             --accent-green: #00ff9d;
+            --accent-yellow: #fba919;
+            --accent-purple: #c084fc;
             --text-main: #f8fafc;
             --text-muted: #64748b;
         }
@@ -37,14 +39,14 @@
         body {
             display: flex;
             flex-direction: column;
-            padding: 8px;
-            gap: 8px;
-            background: radial-gradient(circle at 50% 30%, #0d1322 0%, #040509 100%);
+            padding: 6px;
+            gap: 6px;
+            background: radial-gradient(circle at 50% 25%, #0b1326 0%, #030407 100%);
         }
 
         .mono { font-family: 'JetBrains Mono', monospace; }
 
-        /* Top Cyber Header */
+        /* Top Cyber Navigation Bar */
         .top-nav {
             display: flex;
             justify-content: space-between;
@@ -52,70 +54,29 @@
             background: var(--panel-bg);
             border: 1px solid var(--panel-border);
             backdrop-filter: blur(16px);
-            border-radius: 10px;
-            padding: 6px 14px;
+            border-radius: 8px;
+            padding: 5px 12px;
             flex-shrink: 0;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.08);
         }
 
         .brand-logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 12px; letter-spacing: 0.5px; }
         .brand-dot { width: 8px; height: 8px; background: var(--accent-cyan); border-radius: 50%; box-shadow: 0 0 10px var(--accent-cyan); }
 
-        .nav-tabs { display: flex; gap: 4px; background: rgba(0, 0, 0, 0.4); padding: 3px; border-radius: 8px; border: 1px solid var(--panel-border); }
+        .nav-tabs { display: flex; gap: 4px; background: rgba(0, 0, 0, 0.5); padding: 3px; border-radius: 6px; border: 1px solid var(--panel-border); }
         .nav-tab-btn {
-            background: transparent; color: var(--text-muted); border: none; padding: 4px 12px; border-radius: 6px;
-            font-size: 9px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+            background: transparent; color: var(--text-muted); border: 1px solid transparent; padding: 3px 10px; border-radius: 4px;
+            font-size: 8.5px; font-weight: 700; cursor: pointer; transition: all 0.2s;
         }
-        .nav-tab-btn.active { background: rgba(0, 242, 255, 0.12); color: var(--accent-cyan); border: 1px solid rgba(0, 242, 255, 0.3); }
+        .nav-tab-btn.active { background: rgba(0, 242, 255, 0.15); color: var(--accent-cyan); border-color: var(--accent-cyan); }
 
-        /* Main Workspace Split */
+        /* Main Workspace Split Grid */
         .viewport-main {
             flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            min-height: 0;
-            position: relative;
-        }
-
-        /* Top Central Globe Stage */
-        .globe-stage {
-            flex: 1.6;
-            position: relative;
-            background: var(--panel-bg);
-            border: 1px solid var(--panel-border);
-            backdrop-filter: blur(16px);
-            border-radius: 12px;
-            overflow: hidden;
-            min-height: 0;
-        }
-
-        #globeViz { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
-
-        /* Floating Cards Overlaying Globe */
-        .overlay-card-left {
-            position: absolute; top: 12px; left: 12px; z-index: 10;
-            background: rgba(10, 14, 23, 0.85); border: 1px solid var(--panel-border);
-            backdrop-filter: blur(12px); border-radius: 10px; padding: 10px; width: 220px;
-        }
-        
-        .overlay-card-right {
-            position: absolute; top: 12px; right: 12px; z-index: 10;
-            background: rgba(10, 14, 23, 0.85); border: 1px solid var(--panel-border);
-            backdrop-filter: blur(12px); border-radius: 10px; padding: 10px; width: 180px;
-        }
-
-        .sat-3d-render-box {
-            height: 90px; background: rgba(0, 0, 0, 0.4); border-radius: 8px;
-            border: 1px dashed rgba(0, 242, 255, 0.3); display: flex; flex-direction: column;
-            align-items: center; justify-content: center; margin-top: 6px;
-        }
-
-        /* Bottom Floating Dock Panels */
-        .bottom-dock {
-            flex: 1;
             display: grid;
-            grid-template-columns: 300px 1fr 380px;
-            gap: 8px;
+            grid-template-columns: 280px 1fr 300px;
+            grid-template-rows: 1fr 180px;
+            gap: 6px;
             min-height: 0;
         }
 
@@ -123,140 +84,224 @@
             background: var(--panel-bg);
             border: 1px solid var(--panel-border);
             backdrop-filter: blur(16px);
-            border-radius: 12px;
-            padding: 10px;
+            border-radius: 8px;
+            padding: 8px;
             display: flex;
             flex-direction: column;
             min-height: 0;
             position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
 
         .panel-title {
-            font-size: 10px; font-weight: 700; color: var(--text-main); margin-bottom: 6px;
+            font-size: 9.5px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;
             display: flex; justify-content: space-between; align-items: center; text-transform: uppercase; letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 3px; flex-shrink: 0;
         }
 
-        /* Data Table (Center Bottom Panel) */
-        .cyber-table { width: 100%; border-collapse: collapse; font-size: 8.5px; margin-top: 4px; }
-        .cyber-table th { text-align: left; color: var(--text-muted); padding-bottom: 6px; border-bottom: 1px solid var(--panel-border); }
-        .cyber-table td { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.02); }
+        /* Center 3D Globe Stage */
+        .globe-stage {
+            grid-column: 2;
+            grid-row: 1;
+            position: relative;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        #globeViz { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+
+        /* Floating Overlay Cards */
+        .overlay-card-left {
+            position: absolute; top: 10px; left: 10px; z-index: 10;
+            background: rgba(8, 12, 20, 0.88); border: 1px solid var(--panel-border);
+            backdrop-filter: blur(12px); border-radius: 6px; padding: 8px 10px; width: 190px; pointer-events: none;
+        }
         
-        .status-pill { padding: 2px 6px; border-radius: 4px; font-size: 7.5px; font-weight: 700; }
+        .overlay-card-right {
+            position: absolute; top: 10px; right: 10px; z-index: 10;
+            background: rgba(8, 12, 20, 0.88); border: 1px solid var(--panel-border);
+            backdrop-filter: blur(12px); border-radius: 6px; padding: 8px 10px; width: 180px; pointer-events: none;
+        }
+
+        .sat-marker { display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translate(-50%, -50%); }
+        .sat-icon-wrapper { font-size: 13px; filter: drop-shadow(0 0 6px var(--accent-cyan)); }
+        .sat-tag { font-size: 7.5px; font-family: 'JetBrains Mono', monospace; background: rgba(4, 6, 10, 0.9); padding: 1px 4px; border-radius: 2px; white-space: nowrap; margin-top: 1px; }
+
+        /* Tables & Lists */
+        .cyber-table { width: 100%; border-collapse: collapse; font-size: 8px; margin-top: 2px; }
+        .cyber-table th { text-align: left; color: var(--text-muted); padding-bottom: 4px; border-bottom: 1px solid var(--panel-border); }
+        .cyber-table td { padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.02); }
+        
+        .status-pill { padding: 1px 5px; border-radius: 3px; font-size: 7px; font-weight: 700; }
         .pill-green { background: rgba(0, 255, 157, 0.15); color: var(--accent-green); border: 1px solid var(--accent-green); }
         .pill-blue { background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); }
 
         .chart-box { position: relative; flex: 1; width: 100%; min-height: 0; }
         .chart-box canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
+
+        /* Mini DOP Grid */
+        .dop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; margin-top: 4px; }
+        .dop-card { background: rgba(0,0,0,0.3); padding: 3px; border-radius: 3px; text-align: center; border: 1px solid rgba(255,255,255,0.03); }
+        .dop-val { font-size: 11px; font-weight: 700; color: var(--accent-cyan); }
+
+        /* RINEX Upload Form */
+        .upload-box { display: flex; gap: 6px; align-items: center; background: rgba(0,0,0,0.3); padding: 6px; border-radius: 4px; border: 1px dashed var(--accent-cyan); }
+        .upload-btn { background: rgba(0,242,255,0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 4px 8px; border-radius: 4px; font-size: 8px; font-weight: 700; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <!-- Cyber Header -->
+    <!-- Cyber Header Navigation -->
     <header class="top-nav">
         <div class="brand-logo">
             <div class="brand-dot"></div>
-            <span>CYBER-GNSS MISSION CONTROL</span>
+            <span>CYBER-GNSS MISSION CONTROL CENTER</span>
         </div>
 
+        <!-- Functional Constellation Switcher Buttons -->
         <div class="nav-tabs mono">
-            <button class="nav-tab-btn active">Overview</button>
-            <button class="nav-tab-btn">Fleet Track</button>
-            <button class="nav-tab-btn">RINEX Data</button>
-            <button class="nav-tab-btn">Analytics</button>
+            <button class="nav-tab-btn active" onclick="switchConstellation('gps', this)">🛰️ GPS</button>
+            <button class="nav-tab-btn" onclick="switchConstellation('bds', this)">🛰️ BEIDOU</button>
+            <button class="nav-tab-btn" onclick="switchConstellation('galileo', this)">🛰️ GALILEO</button>
+            <button class="nav-tab-btn" onclick="switchConstellation('glonass', this)">🛰️ GLONASS</button>
+            <button class="nav-tab-btn" onclick="switchConstellation('all', this)">✨ ALL SYSTEMS</button>
         </div>
 
-        <div class="mono" style="font-size: 9px; color: var(--text-muted);">
-            SYS: <b style="color:var(--accent-cyan);">ONLINE</b> | UTC: <b id="utc-time" style="color:#fff;">--:--:--</b>
+        <div class="mono" style="font-size: 8.5px; color: var(--text-muted);">
+            STATION: <b style="color:#fff;">YANGON (16.86°N, 96.19°E)</b> | UTC: <b id="utc-time" style="color:var(--accent-cyan);">--:--:--</b>
         </div>
     </header>
 
-    <!-- Main Viewport -->
+    <!-- Main Viewport Layout -->
     <main class="viewport-main">
         
-        <!-- Central 3D Globe Stage -->
+        <!-- Left Panel Top: Satellite Fleet Metrics -->
+        <div class="glass-panel" style="grid-column: 1; grid-row: 1;">
+            <div class="panel-title">
+                <span>🛰️ SATELLITE FLEET</span>
+                <span class="mono" style="color:var(--accent-cyan);" id="fleet-live-tag">LIVE</span>
+            </div>
+            <div class="dop-grid mono" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 6px;">
+                <div class="dop-card"><div style="font-size:7px; color:var(--text-muted);">TOTAL</div><div class="dop-val" id="total-sats">31</div></div>
+                <div class="dop-card"><div style="font-size:7px; color:var(--text-muted);">ACTIVE</div><div class="dop-val" style="color:var(--accent-green);" id="active-sats">28</div></div>
+            </div>
+            <div class="chart-box"><canvas id="fleetBlockChart"></canvas></div>
+            
+            <div class="panel-title" style="margin-top: 6px;">
+                <span>🎯 DOP ACCURACY</span>
+            </div>
+            <div class="dop-grid mono">
+                <div class="dop-card"><div style="font-size:7px; color:var(--text-muted);">PDOP</div><div class="dop-val" id="pdop-val">1.67</div></div>
+                <div class="dop-card"><div style="font-size:7px; color:var(--text-muted);">HDOP</div><div class="dop-val" style="color:var(--accent-green);" id="hdop-val">0.81</div></div>
+                <div class="dop-card"><div style="font-size:7px; color:var(--text-muted);">VDOP</div><div class="dop-val" style="color:var(--accent-yellow);" id="vdop-val">1.46</div></div>
+            </div>
+        </div>
+
+        <!-- Center 3D Globe Stage -->
         <section class="globe-stage">
             <div id="globeViz"></div>
 
-            <!-- Left Floating Card (Mini Radar / Target) -->
+            <!-- Target Acquisition Overlay Card -->
             <div class="overlay-card-left mono">
-                <div style="font-size: 9px; font-weight: 700; color: var(--accent-cyan); margin-bottom: 4px;">🎯 TARGET ACQUISITION</div>
-                <div style="font-size: 8px; color: var(--text-muted);">LOC: Yangon Ground Station</div>
-                <div style="font-size: 11px; font-weight: 700; color: #fff; margin-top: 2px;">16.8661° N, 96.1951° E</div>
-                <div style="margin-top: 6px; font-size: 8px; display: flex; justify-content: space-between;">
-                    <span>PDOP: <b style="color:var(--accent-green);">1.15</b></span>
-                    <span>SATS: <b style="color:var(--accent-cyan);">14 ACTIVE</b></span>
+                <div style="font-size: 8px; font-weight: 700; color: var(--accent-cyan); margin-bottom: 2px;">🌐 CONSTELLATION MODE</div>
+                <div style="font-size: 10px; font-weight: 700; color: #fff;" id="constellation-label">GPS Constellation (USA)</div>
+                <div style="margin-top: 4px; font-size: 7.5px; display: flex; justify-content: space-between;">
+                    <span>VIS SATS: <b style="color:var(--accent-green);" id="vis-sats-val">10</b></span>
+                    <span>SIGNAL: <b style="color:var(--accent-cyan);">OPTIMAL</b></span>
                 </div>
             </div>
 
-            <!-- Right Floating Card (3D Satellite Preview) -->
+            <!-- Active Payload Overlay Card -->
             <div class="overlay-card-right mono">
-                <div style="font-size: 9px; font-weight: 700; color: var(--accent-blue);">🛰️ SELECTED PAYLOAD</div>
-                <div class="sat-3d-render-box">
-                    <span style="font-size: 26px; filter: drop-shadow(0 0 10px #00f2ff);">🛰️</span>
-                    <span style="font-size: 8px; font-weight: 700; color: #fff; margin-top: 4px;">GPS SVN-62</span>
-                </div>
-                <div style="margin-top: 6px; font-size: 7.5px; color: var(--text-muted);">
+                <div style="font-size: 8px; font-weight: 700; color: var(--accent-blue);">🛰️ SELECTED PAYLOAD</div>
+                <div style="font-size: 9.5px; font-weight: 700; color: #fff; margin-top: 2px;" id="sat-telemetry-name">GPS SVN-62</div>
+                <div style="margin-top: 4px; font-size: 7.5px; color: var(--text-muted);">
                     <div>ALTITUDE: <b style="color:#fff;">20,200 km</b></div>
                     <div>STATUS: <b style="color:var(--accent-green);">LOCKED</b></div>
                 </div>
             </div>
         </section>
 
-        <!-- Bottom Floating Dock Panels -->
-        <section class="bottom-dock">
-            
-            <!-- Panel 1: Satellite CAD Preview & Gyro -->
-            <div class="glass-panel">
-                <div class="panel-title">
-                    <span>SUBSYSTEMS</span>
-                    <span class="mono" style="color:var(--accent-cyan); font-size:8.5px;">GYRO / CAD</span>
-                </div>
-                <div style="display:flex; gap:8px; align-items:center; flex:1;">
-                    <div style="flex:1; text-align:center; background:rgba(0,0,0,0.3); padding:8px; border-radius:8px; border:1px solid var(--panel-border);">
-                        <span style="font-size:36px; filter:drop-shadow(0 0 12px var(--accent-cyan));">🛰️</span>
-                    </div>
-                    <div class="mono" style="font-size:8px; display:flex; flex-direction:column; gap:4px; flex:1;">
-                        <div>PITCH: <b style="color:var(--accent-cyan);">+0.12°</b></div>
-                        <div>ROLL: <b style="color:var(--accent-green);">-0.05°</b></div>
-                        <div>YAW: <b style="color:var(--accent-blue);">+1.42°</b></div>
-                        <div>SOLAR: <b style="color:var(--accent-green);">100% OPTIMAL</b></div>
-                    </div>
-                </div>
+        <!-- Right Panel Top: Skyplot & Space Weather -->
+        <div class="glass-panel" style="grid-column: 3; grid-row: 1;">
+            <div class="panel-title">
+                <span>🌌 SKYPLOT POLAR VIEW</span>
+                <span class="mono" style="color:var(--accent-cyan); font-size:7.5px;" id="sky-count">Sats: 10</span>
+            </div>
+            <div style="display:flex; justify-content:center; align-items:center; flex:1; min-height:0;">
+                <canvas id="skyplotCanvas" width="130" height="130"></canvas>
             </div>
 
-            <!-- Panel 2: Live Stream Data Table -->
-            <div class="glass-panel">
-                <div class="panel-title">
-                    <span>LIVE DATA STREAM (SQLITE SYNC)</span>
-                    <span class="mono" style="color:var(--accent-green); font-size:8.5px;">● RECEIVER ACTIVE</span>
+            <div class="panel-title" style="margin-top: 6px;">
+                <span>☀️ SPACE WEATHER HUD</span>
+            </div>
+            <div class="dop-grid mono">
+                <div class="dop-card"><div style="font-size:7px; color:var(--text-muted);">Kp-INDEX</div><div class="dop-val" style="color:var(--accent-green);">2.1</div></div>
+                <div class="dop-card"><div style="font-size:7px; color:var(--text-muted);">SOLAR FLUX</div><div class="dop-val" style="color:var(--accent-blue);">142</div></div>
+                <div class="dop-card"><div style="font-size:7px; color:var(--text-muted);">TEC DRIFT</div><div class="dop-val" style="color:var(--accent-cyan);">12</div></div>
+            </div>
+        </div>
+
+        <!-- Left Panel Bottom: Subsystems Gyro -->
+        <div class="glass-panel" style="grid-column: 1; grid-row: 2;">
+            <div class="panel-title">
+                <span>⚙️ SUBSYSTEMS & GYRO</span>
+            </div>
+            <div style="display:flex; gap:6px; align-items:center; flex:1;">
+                <div style="text-align:center; background:rgba(0,0,0,0.3); padding:6px; border-radius:6px; border:1px solid var(--panel-border);">
+                    <span style="font-size:28px; filter:drop-shadow(0 0 10px var(--accent-cyan));">🛰️</span>
                 </div>
+                <div class="mono" style="font-size:7.5px; display:flex; flex-direction:column; gap:3px; flex:1;">
+                    <div>PITCH: <b style="color:var(--accent-cyan);">+0.12°</b></div>
+                    <div>ROLL: <b style="color:var(--accent-green);">-0.05°</b></div>
+                    <div>YAW: <b style="color:var(--accent-blue);">+1.42°</b></div>
+                    <div>POWER: <b style="color:var(--accent-green);">2.1 kW (85%)</b></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center Panel Bottom: Live Stream Data & Local DB -->
+        <div class="glass-panel" style="grid-column: 2; grid-row: 2;">
+            <div class="panel-title">
+                <span>🗄️ LOCAL GNSS DATABASE STREAM (SQLITE SYNC)</span>
+                <span class="mono" style="color:var(--accent-green); font-size:7.5px;">● 1,420 LOGS</span>
+            </div>
+            <div style="flex:1; overflow-y:auto;">
                 <table class="cyber-table mono">
                     <thead>
                         <tr><th>PRN</th><th>CONSTELLATION</th><th>ELEVATION</th><th>AZIMUTH</th><th>SNR (C/N0)</th><th>STATUS</th></tr>
                     </thead>
-                    <tbody>
-                        <tr><td>G07</td><td>GPS</td><td>75.2°</td><td>145.0°</td><td>46.8 dB-Hz</td><td><span class="status-pill pill-blue">TRACKING</span></td></tr>
-                        <tr><td>C03</td><td>BEIDOU</td><td>82.1°</td><td>110.5°</td><td>48.2 dB-Hz</td><td><span class="status-pill pill-green">LOCK</span></td></tr>
-                        <tr><td>E01</td><td>GALILEO</td><td>65.4°</td><td>210.2°</td><td>44.1 dB-Hz</td><td><span class="status-pill pill-blue">TRACKING</span></td></tr>
-                        <tr><td>R08</td><td>GLONASS</td><td>55.0°</td><td>040.5°</td><td>42.5 dB-Hz</td><td><span class="status-pill pill-green">LOCK</span></td></tr>
+                    <tbody id="sat-table-body">
+                        <!-- Dynamic Rows -->
                     </tbody>
                 </table>
             </div>
+        </div>
 
-            <!-- Panel 3: Glowing Multi-Wave Telemetry Chart -->
-            <div class="glass-panel">
-                <div class="panel-title">
-                    <span>TELEMETRY WAVEFORM</span>
-                    <span class="mono" style="color:var(--accent-blue); font-size:8.5px;">MULTI-FREQ</span>
-                </div>
-                <div class="chart-box"><canvas id="waveformChart"></canvas></div>
+        <!-- Right Panel Bottom: RINEX Analysis Upload -->
+        <div class="glass-panel" style="grid-column: 3; grid-row: 2;">
+            <div class="panel-title">
+                <span>📂 RINEX FILE ANALYTICS</span>
             </div>
-
-        </section>
+            <div class="upload-box mono">
+                <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o,.22o,.23o,.24o,.25o,.26o" style="font-size:8px; color:var(--text-muted); width:120px;">
+                <button onclick="uploadAndCompare()" class="upload-btn">🚀 ANALYZE</button>
+            </div>
+            <div class="chart-box" style="margin-top:4px;"><canvas id="waveformChart"></canvas></div>
+        </div>
 
     </main>
 
     <script>
+        let currentSystem = 'gps';
+        let fleetChart = null, waveformChart = null;
+        let myGlobe = null;
+        let activeSatList = [];
+        let animTime = 0;
+
         // Clock
         function updateClock() {
             const now = new Date();
@@ -266,84 +311,167 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // Globe Init
-        let myGlobe = null;
+        const constellationData = {
+            gps: { name: "GPS Constellation (USA)", satName: "SVN-62 / PRN-07", total: 31, active: 28, visible: 10, pdop: "1.67", hdop: "0.81", vdop: "1.46", fleet: [12, 8, 7, 4], color: "#38bdf8", sats: [{ prn: 'G07', elevation: 75, azimuth: 45, snr: 46.8 }, { prn: 'G12', elevation: 60, azimuth: 120, snr: 44.2 }, { prn: 'G18', elevation: 40, azimuth: 210, snr: 41.5 }, { prn: 'G24', elevation: 80, azimuth: 310, snr: 48.1 }], globeSats: [{ name: 'GPS SVN-62', baseLat: 35.0, baseLng: 139.0, latAmplitude: 15, speed: 12, color: '#38bdf8' }, { name: 'GPS SVN-45', baseLat: 51.5, baseLng: -0.12, latAmplitude: 20, speed: 10, color: '#00ff9d' }] },
+            bds: { name: "BEIDOU Constellation (China)", satName: "BDS-3 MEO-01", total: 56, active: 48, visible: 14, pdop: "1.35", hdop: "0.65", vdop: "1.18", fleet: [18, 15, 15, 8], color: "#ff3b5c", sats: [{ prn: 'C01', elevation: 82, azimuth: 30, snr: 48.2 }, { prn: 'C03', elevation: 70, azimuth: 110, snr: 46.5 }, { prn: 'C07', elevation: 65, azimuth: 195, snr: 45.1 }], globeSats: [{ name: 'BDS-3 GEO-03', baseLat: 0.0, baseLng: 110.5, latAmplitude: 0, speed: 0, color: '#ff3b5c' }, { name: 'BDS-3 MEO-01', baseLat: 39.9, baseLng: 116.4, latAmplitude: 20, speed: 15, color: '#38bdf8' }] },
+            galileo: { name: "GALILEO Constellation (Europe)", satName: "GSAT-0201", total: 28, active: 24, visible: 8, pdop: "1.92", hdop: "0.95", vdop: "1.67", fleet: [10, 8, 6, 4], color: "#00ff9d", sats: [{ prn: 'E01', elevation: 70, azimuth: 60, snr: 44.1 }], globeSats: [{ name: 'GALILEO GSAT-0201', baseLat: 48.8, baseLng: 2.35, latAmplitude: 18, speed: 12, color: '#00ff9d' }] },
+            glonass: { name: "GLONASS Constellation (Russia)", satName: "GLONASS-M 758", total: 24, active: 22, visible: 7, pdop: "2.15", hdop: "1.10", vdop: "1.85", fleet: [8, 8, 5, 3], color: "#c084fc", sats: [{ prn: 'R08', elevation: 65, azimuth: 40, snr: 42.5 }], globeSats: [{ name: 'GLONASS-M No.758', baseLat: 55.7, baseLng: 37.6, latAmplitude: 25, speed: 14, color: '#c084fc' }] },
+            all: { name: "All Constellations (Multi-GNSS)", satName: "Multi-GNSS Active", total: 139, active: 122, visible: 39, pdop: "1.15", hdop: "0.52", vdop: "0.98", fleet: [48, 38, 24, 12], color: "#00f2ff", sats: [{ prn: 'G07', elevation: 75, azimuth: 45, snr: 46.8 }, { prn: 'C03', elevation: 82, azimuth: 110, snr: 48.2 }, { prn: 'E01', elevation: 70, azimuth: 60, snr: 44.1 }, { prn: 'R08', elevation: 65, azimuth: 40, snr: 42.5 }], globeSats: [{ name: 'GPS SVN-62', baseLat: 35.0, baseLng: 139.0, latAmplitude: 15, speed: 12, color: '#38bdf8' }, { name: 'BDS-3 GEO-03', baseLat: 0.0, baseLng: 110.5, latAmplitude: 0, speed: 0, color: '#ff3b5c' }, { name: 'GALILEO GSAT', baseLat: 48.8, baseLng: 2.35, latAmplitude: 18, speed: 12, color: '#00ff9d' }, { name: 'GLONASS-M', baseLat: 55.7, baseLng: 37.6, latAmplitude: 25, speed: 14, color: '#c084fc' }] }
+        };
+
+        // Initialize 3D Globe with Moving Satellites and Beams
         try {
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
                 myGlobe = Globe()(container)
                     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
-                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.25 })
+                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.8 })
                     .showAtmosphere(true)
                     .atmosphereColor('#00f2ff')
-                    .atmosphereAltitude(0.25)
-                    .pointsData([
-                        { lat: 16.8661, lng: 96.1951, size: 0.6, color: '#00f2ff' },
-                        { lat: 35.0, lng: 139.0, size: 0.4, color: '#00ff9d' },
-                        { lat: 51.5, lng: -0.12, size: 0.4, color: '#38bdf8' }
-                    ])
-                    .pointColor('color')
-                    .pointRadius('size')
-                    .arcsData([
-                        { startLat: 16.8661, startLng: 96.1951, endLat: 35.0, endLng: 139.0, color: ['#00f2ff', '#00ff9d'] },
-                        { startLat: 16.8661, startLng: 96.1951, endLat: 51.5, endLng: -0.12, color: ['#00f2ff', '#38bdf8'] }
-                    ])
-                    .arcColor('color')
-                    .arcDashLength(0.4)
-                    .arcDashGap(0.2)
-                    .arcDashAnimateTime(1200)
-                    .arcStroke(1.2);
+                    .atmosphereAltitude(0.22)
+                    .htmlElementsData([])
+                    .htmlElement(d => {
+                        const el = document.createElement('div');
+                        el.className = 'sat-marker';
+                        el.innerHTML = `
+                            <div class="sat-icon-wrapper">🛰️</div>
+                            <div class="sat-tag" style="color:${d.color}; border:1px solid ${d.color};">${d.name}</div>
+                        `;
+                        return el;
+                    })
+                    .ringsData([{ lat: 16.8661, lng: 96.1951, maxRadius: 16, propagationSpeed: 1.2, repeatPeriod: 2000, color: '#00ff9d' }])
+                    .ringColor(d => d.color)
+                    .ringMaxRadius(d => d.maxRadius);
 
                 myGlobe.controls().autoRotate = true;
                 myGlobe.controls().autoRotateSpeed = 0.4;
             }
-        } catch (e) { console.error(e); }
+        } catch (e) { console.error("Globe Error:", e); }
 
-        window.addEventListener('resize', () => {
-            if (myGlobe) {
-                const container = document.getElementById('globeViz');
-                if (container) {
-                    myGlobe.width(container.clientWidth);
-                    myGlobe.height(container.clientHeight);
+        // Satellite Animation Loop
+        let lastFrameTime = 0;
+        function animateSatellites(timestamp) {
+            if (timestamp - lastFrameTime > 60) {
+                lastFrameTime = timestamp;
+                animTime += 0.002;
+                if (activeSatList.length > 0 && myGlobe) {
+                    const dynamicSats = activeSatList.map((sat, i) => {
+                        let newLng = sat.baseLng;
+                        let newLat = sat.baseLat;
+                        if (sat.speed > 0) {
+                            newLng = (sat.baseLng + animTime * sat.speed * 6) % 360;
+                            if (newLng > 180) newLng -= 360;
+                            newLat = sat.baseLat + Math.sin(animTime * 2 + i) * sat.latAmplitude;
+                        }
+                        return { ...sat, lat: newLat, lng: newLng };
+                    });
+                    myGlobe.htmlElementsData(dynamicSats);
+
+                    // Signal Arcs to Yangon Station
+                    const arcs = dynamicSats.map(sat => ({
+                        startLat: 16.8661, startLng: 96.1951,
+                        endLat: sat.lat, endLng: sat.lng,
+                        color: ['#00f2ff', sat.color || '#38bdf8']
+                    }));
+                    myGlobe.arcsData(arcs).arcColor('color').arcDashLength(0.4).arcDashGap(0.2).arcDashAnimateTime(1200).arcStroke(1.2);
                 }
             }
-        });
+            requestAnimationFrame(animateSatellites);
+        }
+        requestAnimationFrame(animateSatellites);
 
-        // Waveform Chart Init
-        function initChart() {
-            if (typeof Chart === 'undefined') return;
-            const ctx = document.getElementById('waveformChart').getContext('2d');
-            
-            const gradientCyan = ctx.createLinearGradient(0, 0, 0, 150);
-            gradientCyan.addColorStop(0, 'rgba(0, 242, 255, 0.35)');
-            gradientCyan.addColorStop(1, 'rgba(0, 242, 255, 0.0)');
-
-            const gradientRed = ctx.createLinearGradient(0, 0, 0, 150);
-            gradientRed.addColorStop(0, 'rgba(255, 59, 92, 0.35)');
-            gradientRed.addColorStop(1, 'rgba(255, 59, 92, 0.0)');
-
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['00s', '05s', '10s', '15s', '20s', '25s', '30s'],
-                    datasets: [
-                        { label: 'Carrier L1', data: [42, 45, 41, 48, 44, 47, 46], borderColor: '#00f2ff', backgroundColor: gradientCyan, fill: true, tension: 0.4, borderWidth: 1.5 },
-                        { label: 'Carrier L5', data: [38, 40, 39, 42, 41, 43, 41], borderColor: '#ff3b5c', backgroundColor: gradientRed, fill: true, tension: 0.4, borderWidth: 1.5 }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 7.5 } }, grid: { color: 'rgba(255,255,255,0.03)' } },
-                        y: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 7.5 } }, grid: { color: 'rgba(255,255,255,0.03)' } }
-                    }
-                }
-            });
+        // Skyplot Renderer
+        function renderSkyPlotCanvas(satellites) {
+            const canvas = document.getElementById('skyplotCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const cx = canvas.width / 2, cy = canvas.height / 2, radius = 50;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 1;
+            [0.33, 0.66, 1.0].forEach(rRatio => { ctx.beginPath(); ctx.arc(cx, cy, radius * rRatio, 0, 2 * Math.PI); ctx.stroke(); });
+            ctx.beginPath(); ctx.moveTo(cx - radius, cy); ctx.lineTo(cx + radius, cy); ctx.moveTo(cx, cy - radius); ctx.lineTo(cx, cy + radius); ctx.stroke();
+            ctx.fillStyle = '#64748b'; ctx.font = 'bold 8px JetBrains Mono'; ctx.fillText('N', cx - 3, cy - radius - 2); ctx.fillText('E', cx + radius + 2, cy + 3);
+            if (satellites) {
+                satellites.forEach(sat => {
+                    const r = radius * (1 - sat.elevation / 90.0);
+                    const azRad = (sat.azimuth - 90) * (Math.PI / 180);
+                    const x = cx + r * Math.cos(azRad), y = cy + r * Math.sin(azRad);
+                    ctx.beginPath(); ctx.arc(x, y, 4, 0, 2 * Math.PI); ctx.fillStyle = '#00f2ff59'; ctx.fill();
+                    ctx.beginPath(); ctx.arc(x, y, 2, 0, 2 * Math.PI); ctx.fillStyle = '#00f2ff'; ctx.fill();
+                });
+            }
         }
 
-        if (document.readyState === 'complete' || document.readyState === 'active') { setTimeout(initChart, 150); } else { document.addEventListener('DOMContentLoaded', () => setTimeout(initChart, 150)); }
+        // Functional Constellation Switcher
+        function switchConstellation(sys, btn) {
+            currentSystem = sys;
+            document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+
+            const data = constellationData[sys] || constellationData.gps;
+            document.getElementById('constellation-label').innerText = data.name;
+            document.getElementById('sat-telemetry-name').innerText = data.satName;
+            document.getElementById('total-sats').innerText = data.total;
+            document.getElementById('active-sats').innerText = data.active;
+            document.getElementById('vis-sats-val').innerText = data.visible;
+            document.getElementById('sky-count').innerText = `Sats: ${data.visible}`;
+            document.getElementById('pdop-val').innerText = data.pdop;
+            document.getElementById('hdop-val').innerText = data.hdop;
+            document.getElementById('vdop-val').innerText = data.vdop;
+
+            // Render Satellite Table
+            const tbody = document.getElementById('sat-table-body');
+            tbody.innerHTML = data.sats.map(s => `
+                <tr>
+                    <td>${s.prn}</td>
+                    <td>${sys.toUpperCase()}</td>
+                    <td>${s.elevation}°</td>
+                    <td>${s.azimuth}°</td>
+                    <td>${s.snr} dB-Hz</td>
+                    <td><span class="status-pill pill-green">TRACKING</span></td>
+                </tr>
+            `).join('');
+
+            activeSatList = data.globeSats;
+            renderSkyPlotCanvas(data.sats);
+
+            if (fleetChart) {
+                fleetChart.data.datasets[0].data = data.fleet;
+                fleetChart.update();
+            }
+        }
+
+        async function uploadAndCompare() {
+            alert("RINEX File Processing Engine Activated!");
+        }
+
+        // Initialize Charts
+        function initCharts() {
+            if (typeof Chart === 'undefined') return;
+
+            const fc = document.getElementById('fleetBlockChart');
+            if (fc) {
+                fleetChart = new Chart(fc.getContext('2d'), {
+                    type: 'bar',
+                    data: { labels: ['Blk I', 'Blk II', 'Blk III', 'Blk IV'], datasets: [{ label: 'Sats', data: constellationData.gps.fleet, backgroundColor: '#00f2ff' }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#64748b', font: { size: 7 } } }, y: { ticks: { color: '#64748b', font: { size: 7 } } } } }
+                });
+            }
+
+            const wc = document.getElementById('waveformChart');
+            if (wc) {
+                waveformChart = new Chart(wc.getContext('2d'), {
+                    type: 'line',
+                    data: { labels: ['00s', '05s', '10s', '15s', '20s'], datasets: [{ label: 'Carrier L1', data: [42, 45, 41, 48, 44], borderColor: '#00f2ff', fill: false, tension: 0.3 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#64748b', font: { size: 7 } } }, y: { ticks: { color: '#64748b', font: { size: 7 } } } } }
+                });
+            }
+
+            switchConstellation('gps', document.querySelector('.nav-tab-btn.active'));
+        }
+
+        if (document.readyState === 'complete' || document.readyState === 'active') { setTimeout(initCharts, 150); } else { document.addEventListener('DOMContentLoaded', () => setTimeout(initCharts, 150)); }
     </script>
 </body>
 </html>
