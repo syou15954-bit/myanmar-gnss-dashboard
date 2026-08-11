@@ -3,24 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GNSS Operational Dashboard</title>
+    <title>GNSS Next-Gen Mission Control</title>
     <!-- Chart.js & Globe.gl Standalone Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/globe.gl"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg-dark: #070d1e;
-            --card-bg: rgba(13, 22, 45, 0.92);
-            --card-border: #1e2d5a;
+            --bg-dark: #06080e;
+            --panel-bg: rgba(13, 17, 26, 0.75);
+            --panel-border: rgba(255, 255, 255, 0.08);
+            --accent-cyan: #00f2ff;
             --accent-blue: #38bdf8;
-            --accent-green: #10b981;
-            --accent-yellow: #f59e0b;
-            --accent-red: #ef4444;
-            --accent-purple: #a855f7;
-            --accent-cyan: #06b6d4;
-            --text-main: #f1f5f9;
+            --accent-red: #ff3b5c;
+            --accent-green: #00ff9d;
+            --text-main: #f8fafc;
             --text-muted: #64748b;
         }
 
@@ -31,7 +29,7 @@
             width: 100vw !important;
             overflow: hidden !important;
             background-color: var(--bg-dark); 
-            color: #cbd5e1; 
+            color: var(--text-main); 
             font-family: 'Inter', -apple-system, sans-serif; 
             font-size: 11px;
         }
@@ -39,264 +37,269 @@
         body {
             display: flex;
             flex-direction: column;
-            padding: 6px;
-            gap: 6px;
-            background: radial-gradient(circle at 50% 0%, #0d1b3e 0%, #050914 100%);
+            padding: 8px;
+            gap: 8px;
+            background: radial-gradient(circle at 50% 30%, #0d1322 0%, #040509 100%);
         }
 
         .mono { font-family: 'JetBrains Mono', monospace; }
 
-        /* Top Executive Header */
-        .top-header {
+        /* Top Cyber Header */
+        .top-nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(13, 22, 45, 0.95);
-            border: 1px solid var(--card-border);
-            border-radius: 6px;
-            padding: 4px 12px;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            backdrop-filter: blur(16px);
+            border-radius: 10px;
+            padding: 6px 14px;
             flex-shrink: 0;
         }
-        .header-title { font-size: 12px; font-weight: 700; color: #fff; letter-spacing: 0.5px; }
-        .header-meta { font-size: 9px; color: var(--text-muted); display: flex; gap: 12px; }
 
-        /* Main Operational Grid Layout (Matching Reference Screenshot) */
-        .dashboard-grid {
+        .brand-logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 12px; letter-spacing: 0.5px; }
+        .brand-dot { width: 8px; height: 8px; background: var(--accent-cyan); border-radius: 50%; box-shadow: 0 0 10px var(--accent-cyan); }
+
+        .nav-tabs { display: flex; gap: 4px; background: rgba(0, 0, 0, 0.4); padding: 3px; border-radius: 8px; border: 1px solid var(--panel-border); }
+        .nav-tab-btn {
+            background: transparent; color: var(--text-muted); border: none; padding: 4px 12px; border-radius: 6px;
+            font-size: 9px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        }
+        .nav-tab-btn.active { background: rgba(0, 242, 255, 0.12); color: var(--accent-cyan); border: 1px solid rgba(0, 242, 255, 0.3); }
+
+        /* Main Workspace Split */
+        .viewport-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 0;
+            position: relative;
+        }
+
+        /* Top Central Globe Stage */
+        .globe-stage {
+            flex: 1.6;
+            position: relative;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            backdrop-filter: blur(16px);
+            border-radius: 12px;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        #globeViz { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+
+        /* Floating Cards Overlaying Globe */
+        .overlay-card-left {
+            position: absolute; top: 12px; left: 12px; z-index: 10;
+            background: rgba(10, 14, 23, 0.85); border: 1px solid var(--panel-border);
+            backdrop-filter: blur(12px); border-radius: 10px; padding: 10px; width: 220px;
+        }
+        
+        .overlay-card-right {
+            position: absolute; top: 12px; right: 12px; z-index: 10;
+            background: rgba(10, 14, 23, 0.85); border: 1px solid var(--panel-border);
+            backdrop-filter: blur(12px); border-radius: 10px; padding: 10px; width: 180px;
+        }
+
+        .sat-3d-render-box {
+            height: 90px; background: rgba(0, 0, 0, 0.4); border-radius: 8px;
+            border: 1px dashed rgba(0, 242, 255, 0.3); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; margin-top: 6px;
+        }
+
+        /* Bottom Floating Dock Panels */
+        .bottom-dock {
             flex: 1;
             display: grid;
-            grid-template-columns: 320px 1fr 340px !important;
-            grid-template-rows: 1fr 1fr !important;
-            gap: 6px;
+            grid-template-columns: 300px 1fr 380px;
+            gap: 8px;
             min-height: 0;
-            overflow: hidden;
-            width: 100%;
         }
 
-        .card { 
-            background: var(--card-bg); 
-            border-radius: 6px; 
-            padding: 8px; 
-            border: 1px solid var(--card-border); 
-            position: relative; 
-            backdrop-filter: blur(12px);
-            display: flex; 
-            flex-direction: column; 
-            min-height: 0; 
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-        }
-
-        .card-title {
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--text-main);
+        .glass-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            backdrop-filter: blur(16px);
+            border-radius: 12px;
+            padding: 10px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-            flex-shrink: 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding-bottom: 4px;
+            flex-direction: column;
+            min-height: 0;
+            position: relative;
         }
+
+        .panel-title {
+            font-size: 10px; font-weight: 700; color: var(--text-main); margin-bottom: 6px;
+            display: flex; justify-content: space-between; align-items: center; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        /* Data Table (Center Bottom Panel) */
+        .cyber-table { width: 100%; border-collapse: collapse; font-size: 8.5px; margin-top: 4px; }
+        .cyber-table th { text-align: left; color: var(--text-muted); padding-bottom: 6px; border-bottom: 1px solid var(--panel-border); }
+        .cyber-table td { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.02); }
+        
+        .status-pill { padding: 2px 6px; border-radius: 4px; font-size: 7.5px; font-weight: 700; }
+        .pill-green { background: rgba(0, 255, 157, 0.15); color: var(--accent-green); border: 1px solid var(--accent-green); }
+        .pill-blue { background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); }
 
         .chart-box { position: relative; flex: 1; width: 100%; min-height: 0; }
         .chart-box canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
-
-        /* Fleet Status Stats Grid */
-        .fleet-stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; text-align: center; margin-bottom: 6px; }
-        .fleet-stat-box { background: rgba(30, 41, 59, 0.4); padding: 4px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.03); }
-        .fleet-stat-lbl { font-size: 7.5px; color: var(--text-muted); font-weight: 600; }
-        .fleet-stat-val { font-size: 12px; font-weight: 800; margin-top: 2px; }
-
-        /* Center Map Card */
-        #mapCard { position: relative; padding: 4px; display: flex; flex-direction: column; }
-        #globeViz { flex: 1; width: 100%; height: 100%; border-radius: 4px; overflow: hidden; background: #000; min-height: 0; }
-        
-        .map-badge-overlay {
-            position: absolute; top: 12px; left: 12px; z-index: 10;
-            background: rgba(5, 12, 30, 0.85); border: 1px solid var(--card-border);
-            padding: 4px 8px; border-radius: 4px; font-size: 8.5px; pointer-events: none;
-        }
-
-        .map-legend-overlay {
-            position: absolute; bottom: 12px; left: 12px; z-index: 10;
-            background: rgba(5, 12, 30, 0.85); border: 1px solid var(--card-border);
-            padding: 4px 8px; border-radius: 4px; font-size: 8px; pointer-events: none;
-        }
-
-        /* Alerts Table (Top Right) */
-        .alerts-table { width: 100%; border-collapse: collapse; font-size: 8.5px; }
-        .alerts-table th { text-align: left; color: var(--text-muted); padding-bottom: 4px; font-size: 8px; }
-        .alerts-table td { padding: 4px 0; border-top: 1px solid rgba(255,255,255,0.04); }
-        .badge-alert { padding: 1px 5px; border-radius: 3px; font-weight: 700; font-size: 7.5px; display: inline-block; }
-        .badge-critical { background: rgba(239, 68, 68, 0.25); color: #fca5a5; border: 1px solid #ef4444; }
-        .badge-warning { background: rgba(245, 158, 11, 0.25); color: #fde047; border: 1px solid #f59e0b; }
-        .badge-info { background: rgba(56, 189, 248, 0.25); color: #93c5fd; border: 1px solid #38bdf8; }
-
-        /* Telemetry Custom Bar */
-        .fuel-bar-bg { background: rgba(30,41,59,0.8); height: 6px; border-radius: 3px; width: 100%; overflow: hidden; margin: 4px 0 8px 0; }
-        .fuel-bar-fill { background: linear-gradient(90deg, #10b981, #38bdf8); height: 100%; width: 85%; }
-
-        /* Bottom Center Split Cards */
-        .telemetry-split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; flex: 1; min-height: 0; }
     </style>
 </head>
 <body>
 
-    <!-- Header Section -->
-    <div class="top-header">
-        <div class="header-title">GNSS OPERATIONAL DASHBOARD (GPS CONSTELLATION)</div>
-        <div class="header-meta mono">
-            <span>UTC TIME: <b id="utc-time" style="color:var(--accent-blue);">14:35:10</b></span>
-            <span>LOCATION: <b style="color:#fff;">YANGON, MM (GND STATION)</b></span>
+    <!-- Cyber Header -->
+    <header class="top-nav">
+        <div class="brand-logo">
+            <div class="brand-dot"></div>
+            <span>CYBER-GNSS MISSION CONTROL</span>
         </div>
-    </div>
 
-    <!-- Main Operational Grid -->
-    <div class="dashboard-grid">
+        <div class="nav-tabs mono">
+            <button class="nav-tab-btn active">Overview</button>
+            <button class="nav-tab-btn">Fleet Track</button>
+            <button class="nav-tab-btn">RINEX Data</button>
+            <button class="nav-tab-btn">Analytics</button>
+        </div>
+
+        <div class="mono" style="font-size: 9px; color: var(--text-muted);">
+            SYS: <b style="color:var(--accent-cyan);">ONLINE</b> | UTC: <b id="utc-time" style="color:#fff;">--:--:--</b>
+        </div>
+    </header>
+
+    <!-- Main Viewport -->
+    <main class="viewport-main">
         
-        <!-- Top Left: Fleet Status -->
-        <div class="card">
-            <div class="card-title">
-                <span>Fleet Status</span>
-                <span class="mono" style="color:var(--text-muted);">•••</span>
-            </div>
-            <div class="fleet-stat-row mono">
-                <div class="fleet-stat-box"><div class="fleet-stat-lbl">Total Sats:</div><div class="fleet-stat-val" style="color:var(--accent-blue);">31</div></div>
-                <div class="fleet-stat-box"><div class="fleet-stat-lbl">Active:</div><div class="fleet-stat-val" style="color:var(--accent-green);">28</div></div>
-                <div class="fleet-stat-box"><div class="fleet-stat-lbl">Degraded:</div><div class="fleet-stat-val" style="color:var(--accent-yellow);">2</div></div>
-                <div class="fleet-stat-box"><div class="fleet-stat-lbl">Inactive:</div><div class="fleet-stat-val" style="color:var(--accent-red);">1</div></div>
-            </div>
-            <div class="chart-box"><canvas id="fleetBlockChart"></canvas></div>
-        </div>
-
-        <!-- Top Center: Global Tracking Map -->
-        <div class="card" id="mapCard">
-            <div class="map-badge-overlay mono">
-                <div>Coverage: <b style="color:var(--accent-green);">98.7%</b></div>
-                <div>Avg PDOP: <b style="color:var(--accent-blue);">1.8</b></div>
-            </div>
-
+        <!-- Central 3D Globe Stage -->
+        <section class="globe-stage">
             <div id="globeViz"></div>
 
-            <div class="map-legend-overlay mono">
-                <div style="color:var(--accent-green);">● Real-Time Satellites</div>
-                <div style="color:var(--accent-blue);">● Ground Tracks</div>
-                <div style="color:var(--accent-yellow);">● Major Ground Stations</div>
+            <!-- Left Floating Card (Mini Radar / Target) -->
+            <div class="overlay-card-left mono">
+                <div style="font-size: 9px; font-weight: 700; color: var(--accent-cyan); margin-bottom: 4px;">🎯 TARGET ACQUISITION</div>
+                <div style="font-size: 8px; color: var(--text-muted);">LOC: Yangon Ground Station</div>
+                <div style="font-size: 11px; font-weight: 700; color: #fff; margin-top: 2px;">16.8661° N, 96.1951° E</div>
+                <div style="margin-top: 6px; font-size: 8px; display: flex; justify-content: space-between;">
+                    <span>PDOP: <b style="color:var(--accent-green);">1.15</b></span>
+                    <span>SATS: <b style="color:var(--accent-cyan);">14 ACTIVE</b></span>
+                </div>
             </div>
-        </div>
 
-        <!-- Top Right: Alerts & Messages -->
-        <div class="card">
-            <div class="card-title">
-                <span>Alerts & Messages</span>
-                <span class="mono" style="color:var(--text-muted);">•••</span>
+            <!-- Right Floating Card (3D Satellite Preview) -->
+            <div class="overlay-card-right mono">
+                <div style="font-size: 9px; font-weight: 700; color: var(--accent-blue);">🛰️ SELECTED PAYLOAD</div>
+                <div class="sat-3d-render-box">
+                    <span style="font-size: 26px; filter: drop-shadow(0 0 10px #00f2ff);">🛰️</span>
+                    <span style="font-size: 8px; font-weight: 700; color: #fff; margin-top: 4px;">GPS SVN-62</span>
+                </div>
+                <div style="margin-top: 6px; font-size: 7.5px; color: var(--text-muted);">
+                    <div>ALTITUDE: <b style="color:#fff;">20,200 km</b></div>
+                    <div>STATUS: <b style="color:var(--accent-green);">LOCKED</b></div>
+                </div>
             </div>
-            <div style="flex:1; overflow-y:auto;">
-                <table class="alerts-table mono">
+        </section>
+
+        <!-- Bottom Floating Dock Panels -->
+        <section class="bottom-dock">
+            
+            <!-- Panel 1: Satellite CAD Preview & Gyro -->
+            <div class="glass-panel">
+                <div class="panel-title">
+                    <span>SUBSYSTEMS</span>
+                    <span class="mono" style="color:var(--accent-cyan); font-size:8.5px;">GYRO / CAD</span>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center; flex:1;">
+                    <div style="flex:1; text-align:center; background:rgba(0,0,0,0.3); padding:8px; border-radius:8px; border:1px solid var(--panel-border);">
+                        <span style="font-size:36px; filter:drop-shadow(0 0 12px var(--accent-cyan));">🛰️</span>
+                    </div>
+                    <div class="mono" style="font-size:8px; display:flex; flex-direction:column; gap:4px; flex:1;">
+                        <div>PITCH: <b style="color:var(--accent-cyan);">+0.12°</b></div>
+                        <div>ROLL: <b style="color:var(--accent-green);">-0.05°</b></div>
+                        <div>YAW: <b style="color:var(--accent-blue);">+1.42°</b></div>
+                        <div>SOLAR: <b style="color:var(--accent-green);">100% OPTIMAL</b></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel 2: Live Stream Data Table -->
+            <div class="glass-panel">
+                <div class="panel-title">
+                    <span>LIVE DATA STREAM (SQLITE SYNC)</span>
+                    <span class="mono" style="color:var(--accent-green); font-size:8.5px;">● RECEIVER ACTIVE</span>
+                </div>
+                <table class="cyber-table mono">
                     <thead>
-                        <tr><th>Severity</th><th>Recent Event</th></tr>
+                        <tr><th>PRN</th><th>CONSTELLATION</th><th>ELEVATION</th><th>AZIMUTH</th><th>SNR (C/N0)</th><th>STATUS</th></tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><span class="badge-alert badge-critical">CRITICAL</span></td>
-                            <td>SVN-45 Oscillator Anomaly</td>
-                        </tr>
-                        <tr>
-                            <td><span class="badge-alert badge-warning">WARNING</span></td>
-                            <td>PDOP Spike over Pacific</td>
-                        </tr>
-                        <tr>
-                            <td><span class="badge-alert badge-info">INFO</span></td>
-                            <td>GNSS-OD Software Updated</td>
-                        </tr>
+                        <tr><td>G07</td><td>GPS</td><td>75.2°</td><td>145.0°</td><td>46.8 dB-Hz</td><td><span class="status-pill pill-blue">TRACKING</span></td></tr>
+                        <tr><td>C03</td><td>BEIDOU</td><td>82.1°</td><td>110.5°</td><td>48.2 dB-Hz</td><td><span class="status-pill pill-green">LOCK</span></td></tr>
+                        <tr><td>E01</td><td>GALILEO</td><td>65.4°</td><td>210.2°</td><td>44.1 dB-Hz</td><td><span class="status-pill pill-blue">TRACKING</span></td></tr>
+                        <tr><td>R08</td><td>GLONASS</td><td>55.0°</td><td>040.5°</td><td>42.5 dB-Hz</td><td><span class="status-pill pill-green">LOCK</span></td></tr>
                     </tbody>
                 </table>
             </div>
-        </div>
 
-        <!-- Bottom Left: Telemetry Monitor -->
-        <div class="card">
-            <div class="card-title">
-                <span>Telemetry Monitor</span>
-                <span class="mono" style="color:var(--text-muted);">•••</span>
+            <!-- Panel 3: Glowing Multi-Wave Telemetry Chart -->
+            <div class="glass-panel">
+                <div class="panel-title">
+                    <span>TELEMETRY WAVEFORM</span>
+                    <span class="mono" style="color:var(--accent-blue); font-size:8.5px;">MULTI-FREQ</span>
+                </div>
+                <div class="chart-box"><canvas id="waveformChart"></canvas></div>
             </div>
-            <div class="mono" style="font-size:8px; color:var(--text-muted);">Fuel Level Status <span style="float:right; color:var(--accent-green);">85%</span></div>
-            <div class="fuel-bar-bg"><div class="fuel-bar-fill"></div></div>
-            <div class="chart-box"><canvas id="powerErrorChart"></canvas></div>
-        </div>
 
-        <!-- Bottom Center: SVN-62 Telemetry + Clock & Orbit Error -->
-        <div class="card">
-            <div class="card-title">
-                <span>SVN-62 / PRN-07 Telemetry</span>
-                <span class="mono" style="color:var(--accent-cyan);">ACTIVE</span>
-            </div>
-            <div class="fleet-stat-row mono" style="margin-bottom:4px;">
-                <div class="fleet-stat-box"><div class="fleet-stat-lbl">Fuel Level:</div><div class="fleet-stat-val" style="color:var(--accent-green);">85%</div></div>
-                <div class="fleet-stat-box"><div class="fleet-stat-lbl">Power:</div><div class="fleet-stat-val" style="color:var(--accent-blue);">2.1 kW</div></div>
-                <div class="fleet-stat-box"><div class="fleet-stat-lbl">Temp:</div><div class="fleet-stat-val" style="color:var(--accent-yellow);">-2°C</div></div>
-            </div>
-            <div class="telemetry-split-grid">
-                <div class="chart-box"><canvas id="clockErrorChart"></canvas></div>
-                <div class="chart-box"><canvas id="orbitErrorChart"></canvas></div>
-            </div>
-        </div>
+        </section>
 
-        <!-- Bottom Right: Performance Metrics -->
-        <div class="card">
-            <div class="card-title">
-                <span>Performance Metrics</span>
-                <span class="mono" style="color:var(--text-muted);">•••</span>
-            </div>
-            <div class="telemetry-split-grid" style="grid-template-rows: 1fr 1fr; grid-template-columns: 1fr;">
-                <div class="chart-box"><canvas id="pdopHistoryChart"></canvas></div>
-                <div class="chart-box"><canvas id="cn0Chart"></canvas></div>
-            </div>
-        </div>
-
-    </div>
+    </main>
 
     <script>
-        // UTC Time Clock
-        function updateUtcTime() {
+        // Clock
+        function updateClock() {
             const now = new Date();
             const utc = now.toUTCString().split(' ')[4];
-            const timeEl = document.getElementById('utc-time');
-            if (timeEl) timeEl.innerText = utc;
+            document.getElementById('utc-time').innerText = utc;
         }
-        setInterval(updateUtcTime, 1000);
-        updateUtcTime();
+        setInterval(updateClock, 1000);
+        updateClock();
 
-        // 3D Globe Initialization
+        // Globe Init
         let myGlobe = null;
         try {
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
                 myGlobe = Globe()(container)
-                    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+                    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
-                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.5 })
+                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.25 })
                     .showAtmosphere(true)
-                    .atmosphereColor('#38bdf8')
-                    .atmosphereAltitude(0.15)
+                    .atmosphereColor('#00f2ff')
+                    .atmosphereAltitude(0.25)
                     .pointsData([
-                        { lat: 35.0, lng: 139.0, size: 0.4, color: '#10b981' },
-                        { lat: 51.5, lng: -0.12, size: 0.4, color: '#10b981' },
-                        { lat: -22.9, lng: -43.1, size: 0.4, color: '#10b981' },
-                        { lat: 16.8661, lng: 96.1951, size: 0.6, color: '#f59e0b' }
+                        { lat: 16.8661, lng: 96.1951, size: 0.6, color: '#00f2ff' },
+                        { lat: 35.0, lng: 139.0, size: 0.4, color: '#00ff9d' },
+                        { lat: 51.5, lng: -0.12, size: 0.4, color: '#38bdf8' }
                     ])
                     .pointColor('color')
-                    .pointRadius('size');
+                    .pointRadius('size')
+                    .arcsData([
+                        { startLat: 16.8661, startLng: 96.1951, endLat: 35.0, endLng: 139.0, color: ['#00f2ff', '#00ff9d'] },
+                        { startLat: 16.8661, startLng: 96.1951, endLat: 51.5, endLng: -0.12, color: ['#00f2ff', '#38bdf8'] }
+                    ])
+                    .arcColor('color')
+                    .arcDashLength(0.4)
+                    .arcDashGap(0.2)
+                    .arcDashAnimateTime(1200)
+                    .arcStroke(1.2);
 
                 myGlobe.controls().autoRotate = true;
-                myGlobe.controls().autoRotateSpeed = 0.5;
+                myGlobe.controls().autoRotateSpeed = 0.4;
             }
-        } catch (e) {
-            console.error("Globe Error:", e);
-        }
+        } catch (e) { console.error(e); }
 
-        // Auto Resize Globe on window resize
         window.addEventListener('resize', () => {
             if (myGlobe) {
                 const container = document.getElementById('globeViz');
@@ -307,105 +310,40 @@
             }
         });
 
-        // Initialize All Dashboard Charts
-        function initCharts() {
+        // Waveform Chart Init
+        function initChart() {
             if (typeof Chart === 'undefined') return;
+            const ctx = document.getElementById('waveformChart').getContext('2d');
+            
+            const gradientCyan = ctx.createLinearGradient(0, 0, 0, 150);
+            gradientCyan.addColorStop(0, 'rgba(0, 242, 255, 0.35)');
+            gradientCyan.addColorStop(1, 'rgba(0, 242, 255, 0.0)');
 
-            const chartFont = { family: 'JetBrains Mono', size: 7.5 };
-            const gridColor = 'rgba(255, 255, 255, 0.04)';
+            const gradientRed = ctx.createLinearGradient(0, 0, 0, 150);
+            gradientRed.addColorStop(0, 'rgba(255, 59, 92, 0.35)');
+            gradientRed.addColorStop(1, 'rgba(255, 59, 92, 0.0)');
 
-            // 1. Fleet Status Bar Chart
-            new Chart(document.getElementById('fleetBlockChart').getContext('2d'), {
-                type: 'bar',
+            new Chart(ctx, {
+                type: 'line',
                 data: {
-                    labels: ['IIF', 'IIR-M', 'III', 'IIIF'],
+                    labels: ['00s', '05s', '10s', '15s', '20s', '25s', '30s'],
                     datasets: [
-                        { label: 'Active', data: [12, 10, 5, 3], backgroundColor: '#38bdf8' },
-                        { label: 'Degraded', data: [1, 1, 0, 0], backgroundColor: '#f59e0b' }
+                        { label: 'Carrier L1', data: [42, 45, 41, 48, 44, 47, 46], borderColor: '#00f2ff', backgroundColor: gradientCyan, fill: true, tension: 0.4, borderWidth: 1.5 },
+                        { label: 'Carrier L5', data: [38, 40, 39, 42, 41, 43, 41], borderColor: '#ff3b5c', backgroundColor: gradientRed, fill: true, tension: 0.4, borderWidth: 1.5 }
                     ]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        x: { ticks: { color: '#64748b', font: chartFont }, grid: { color: gridColor } },
-                        y: { ticks: { color: '#64748b', font: chartFont }, grid: { color: gridColor } }
+                        x: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 7.5 } }, grid: { color: 'rgba(255,255,255,0.03)' } },
+                        y: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 7.5 } }, grid: { color: 'rgba(255,255,255,0.03)' } }
                     }
-                }
-            });
-
-            // 2. Power Error Line Chart
-            new Chart(document.getElementById('powerErrorChart').getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: ['10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '24:00'],
-                    datasets: [{ label: 'Power Error', data: [20, 22, 21, 23, 25, 20, 22], borderColor: '#10b981', borderWidth: 1.5, fill: true, backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.3 }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { x: { ticks: { color: '#64748b', font: chartFont }, grid: { color: gridColor } }, y: { ticks: { color: '#64748b', font: chartFont }, grid: { color: gridColor } } }
-                }
-            });
-
-            // 3. Clock Error Line Chart
-            new Chart(document.getElementById('clockErrorChart').getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: ['10:00', '12:00', '15:00', '17:00', '20:00', '24:00'],
-                    datasets: [{ label: 'Clock Error', data: [0.01, -0.02, 0.02, -0.01, 0.01, -0.01], borderColor: '#06b6d4', borderWidth: 1.2, tension: 0.3 }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: true, labels: { color: '#94a3b8', font: chartFont } } },
-                    scales: { x: { ticks: { color: '#64748b', font: chartFont }, grid: { color: gridColor } }, y: { ticks: { color: '#64748b', font: chartFont }, grid: { color: gridColor } } }
-                }
-            });
-
-            // 4. Orbit Error Line Chart
-            new Chart(document.getElementById('orbitErrorChart').getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: ['10:00', '12:00', '15:00', '17:00', '20:00', '24:00'],
-                    datasets: [{ label: 'Orbit Error', data: [0.2, 0.5, 0.1, 0.4, 0.2, 0.3], borderColor: '#f59e0b', borderWidth: 1.2, tension: 0.3 }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: true, labels: { color: '#94a3b8', font: chartFont } } },
-                    scales: { x: { ticks: { color: '#64748b', font: chartFont }, grid: { color: gridColor } }, y: { ticks: { color: '#64748b', font: chartFont }, grid: { color: gridColor } } }
-                }
-            });
-
-            // 5. PDOP History Chart
-            new Chart(document.getElementById('pdopHistoryChart').getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: ['09:00', '12:00', '15:00', '17:00', '20:00', '24:00'],
-                    datasets: [{ label: 'PDOP History', data: [1.8, 2.5, 1.6, 7.5, 1.8, 1.7], borderColor: '#10b981', borderWidth: 1.5, tension: 0.2 }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: true, labels: { color: '#94a3b8', font: chartFont } } },
-                    scales: { x: { ticks: { color: '#64748b', font: chartFont }, grid: { color: gridColor } }, y: { ticks: { color: '#64748b', font: chartFont }, grid: { color: gridColor } } }
-                }
-            });
-
-            // 6. Signal Integrity C/N0 Chart
-            new Chart(document.getElementById('cn0Chart').getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: ['09:00', '12:00', '15:00', '17:00', '20:00', '24:00'],
-                    datasets: [{ label: 'C/N0 Signal Integrity', data: [42, 44, 45, 41, 46, 44], borderColor: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.15)', fill: true, borderWidth: 1.2 }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: true, labels: { color: '#94a3b8', font: chartFont } } },
-                    scales: { x: { ticks: { color: '#64748b', font: chartFont }, grid: { color: gridColor } }, y: { ticks: { color: '#64748b', font: chartFont }, grid: { color: gridColor } } }
                 }
             });
         }
 
-        if (document.readyState === 'complete' || document.readyState === 'active') { setTimeout(initCharts, 150); } else { document.addEventListener('DOMContentLoaded', () => setTimeout(initCharts, 150)); }
+        if (document.readyState === 'complete' || document.readyState === 'active') { setTimeout(initChart, 150); } else { document.addEventListener('DOMContentLoaded', () => setTimeout(initChart, 150)); }
     </script>
 </body>
 </html>
