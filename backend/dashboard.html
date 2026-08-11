@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GNSS Global Mission Control Center</title>
+    <!-- Chart.js & Globe.gl Standalone Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/globe.gl"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Pyidaungsu:wght@400;600;700&display=swap" rel="stylesheet">
@@ -104,12 +105,10 @@
 
         .nav-btn {
             background: #1e293b; color: var(--text-muted); border: 1px solid #334155;
-            padding: 2px 7px; border-radius: 4px; font-size: 8.5px; font-weight: 700; cursor: pointer;
+            padding: 2px 8px; border-radius: 4px; font-size: 8.5px; font-weight: 700; cursor: pointer;
             transition: all 0.2s; display: inline-flex; align-items: center; gap: 3px;
         }
-        .nav-btn:hover, .nav-btn.active {
-            background: rgba(56, 189, 248, 0.25); color: var(--accent-blue); border-color: var(--accent-blue);
-        }
+        .nav-btn:hover { background: rgba(255, 255, 255, 0.1); }
 
         .fullscreen-btn {
             background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(34, 197, 94, 0.25));
@@ -180,8 +179,7 @@
         }
         .legend-row { display: flex; align-items: center; gap: 4px; margin-bottom: 2px; font-weight: 600; }
 
-        .badge { padding: 1px 4px; border-radius: 3px; font-size: 8px; font-weight: 700; }
-        .badge-excellent { background: rgba(34, 197, 94, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green); }
+        .badge { padding: 2px 6px; border-radius: 4px; font-size: 8.5px; font-weight: 700; border: 1px solid transparent; }
 
         .alert-item { padding: 3px 6px; border-radius: 3px; margin-bottom: 3px; font-size: 9px; display: flex; justify-content: space-between; align-items: center; }
         .bg-critical { background: rgba(239, 68, 68, 0.12); border-left: 2px solid var(--accent-red); color: #fca5a5; }
@@ -241,12 +239,13 @@
                 <h1>GNSS Global Mission Control Center</h1>
             </div>
 
+            <!-- Constellation Buttons with Specific Colors -->
             <div class="header-controls">
-                <button class="nav-btn active" onclick="switchConstellation('gps', this)">🛰️ GPS</button>
-                <button class="nav-btn" onclick="switchConstellation('bds', this)">🛰️ BEIDOU</button>
-                <button class="nav-btn" onclick="switchConstellation('galileo', this)">🛰️ GALILEO</button>
-                <button class="nav-btn" onclick="switchConstellation('glonass', this)">🛰️ GLONASS</button>
-                <button class="nav-btn" onclick="switchConstellation('all', this)">✨ All</button>
+                <button class="nav-btn active" onclick="switchConstellation('gps', this)" style="border-color: #38bdf8; color: #38bdf8;">🛰️ GPS</button>
+                <button class="nav-btn" onclick="switchConstellation('bds', this)" style="border-color: #ef4444; color: #ef4444;">🛰️ BEIDOU</button>
+                <button class="nav-btn" onclick="switchConstellation('galileo', this)" style="border-color: #22c55e; color: #22c55e;">🛰️ GALILEO</button>
+                <button class="nav-btn" onclick="switchConstellation('glonass', this)" style="border-color: #c084fc; color: #c084fc;">🛰️ GLONASS</button>
+                <button class="nav-btn" onclick="switchConstellation('all', this)" style="border-color: #06b6d4; color: #06b6d4;">✨ All</button>
                 
                 <button class="nav-btn" id="sound-btn" onclick="toggleAudio()" style="border-color:var(--accent-yellow); color:var(--accent-yellow);">
                     🔊 Sound: OFF
@@ -301,9 +300,9 @@
                     <span class="mono" style="color:var(--accent-yellow); font-size:8px;">QUIET</span>
                 </div>
                 <div class="sat-spec-grid mono">
-                    <div><div class="stat-lbl">Kp-INDEX</div><div class="sat-spec-val" style="color:var(--accent-green);">2.1</div></div>
-                    <div><div class="stat-lbl">SOLAR FLUX</div><div class="sat-spec-val" style="color:var(--accent-blue);">142 SFU</div></div>
-                    <div><div class="stat-lbl">TEC DRIFT</div><div class="sat-spec-val" style="color:var(--accent-cyan);">12 TECU</div></div>
+                    <div><div class="stat-lbl">Kp-INDEX</div><div class="stat-spec-val" style="color:var(--accent-green);">2.1</div></div>
+                    <div><div class="stat-lbl">SOLAR FLUX</div><div class="stat-spec-val" style="color:var(--accent-blue);">142 SFU</div></div>
+                    <div><div class="stat-lbl">TEC DRIFT</div><div class="stat-spec-val" style="color:var(--accent-cyan);">12 TECU</div></div>
                 </div>
                 <div style="font-size:7.5px; color:var(--text-muted);" class="mono">
                     <span>Storm: </span><b style="color:var(--accent-green);">NONE</b> | TEC Delay: <b style="color:var(--accent-blue);">1.2m</b>
@@ -315,7 +314,7 @@
             <div class="card card-accent-green" style="padding: 2px;">
                 <div class="card-header" style="margin: 2px 6px;">
                     <div class="card-header-title"><span>🌍</span> <span>3D ကမ္ဘာ့ဂြိုဟ်တု ပတ်လမ်းနှင့် အာကာသရာသီဥတု မြေပုံ</span></div>
-                    <span class="badge badge-excellent" id="constellation-label">GPS Constellation (USA)</span>
+                    <span class="badge" id="constellation-label" style="color: #38bdf8; border-color: #38bdf8; background: rgba(56, 189, 248, 0.15);">GPS Constellation (USA)</span>
                 </div>
                 <div id="globeViz"></div>
                 <div id="satHudModal" class="mono">
@@ -340,13 +339,14 @@
         </div>
 
         <div class="right-col">
+            <!-- Expanded Skyplot Canvas (Width/Height 140) to fit card borders nicely -->
             <div class="card card-accent-cyan">
                 <div class="card-header">
                     <div class="card-header-title"><span>🌌</span> <span>မိုးကုတ်စက်ဝိုင်း (Skyplot)</span></div>
                     <span class="mono" id="sky-count" style="color:var(--accent-cyan); font-size:8px;">Sats: 10</span>
                 </div>
                 <div style="display:flex; justify-content:center; align-items:center; flex:1; min-height:0;">
-                    <canvas id="skyplotCanvas" width="110" height="110"></canvas>
+                    <canvas id="skyplotCanvas" width="140" height="140"></canvas>
                 </div>
             </div>
 
@@ -470,18 +470,18 @@
         }
 
         const constellationData = {
-            gps: { name: "GPS Constellation (USA)", satName: "SVN-62 / PRN-07", total: 31, active: 28, degraded: 2, offline: 1, visible: 10, pdop: "1.67", hdop: "0.81", vdop: "1.46", gdop: "1.87", tdop: "0.85", fleet: [12, 8, 7, 4], alerts: [{ type: 'critical', tag: '[သတိပေး]', msg: 'SVN-45 နာရီတိကျမှု လွဲချော်မှုရှိ', time: '09:42' }], sats: [{ elevation_deg: 75, azimuth_deg: 45, visible: true }, { elevation_deg: 60, azimuth_deg: 120, visible: true }, { elevation_deg: 40, azimuth_deg: 210, visible: true }, { elevation_deg: 80, azimuth_deg: 310, visible: true }, { elevation_deg: 25, azimuth_deg: 15, visible: true }, { elevation_deg: 50, azimuth_deg: 160, visible: true }, { elevation_deg: 35, azimuth_deg: 280, visible: true }, { elevation_deg: 65, azimuth_deg: 340, visible: true }, { elevation_deg: 15, azimuth_deg: 90, visible: true }, { elevation_deg: 45, azimuth_deg: 240, visible: true }], globeSats: [{ name: 'GPS SVN-62', baseLat: 35.0, baseLng: 139.0, latAmplitude: 15, speed: 12, color: '#38bdf8' }, { name: 'GPS SVN-45', baseLat: 51.5, baseLng: -0.12, latAmplitude: 20, speed: 10, color: '#22c55e' }, { name: 'GPS SVN-53', baseLat: -22.9, baseLng: -43.1, latAmplitude: 10, speed: 14, color: '#38bdf8' }, { name: 'GPS SVN-71', baseLat: 1.35, baseLng: 103.8, latAmplitude: 25, speed: 9, color: '#38bdf8' }], orbitPlanes: [ generateCirclePath(55, 0), generateCirclePath(55, 60) ], groundTracks: generateSineGroundTracks(55, 4) },
-            bds: { name: "BEIDOU Constellation (China)", satName: "BDS-3 MEO-01", total: 56, active: 48, degraded: 5, offline: 3, visible: 14, pdop: "1.35", hdop: "0.65", vdop: "1.18", gdop: "1.52", tdop: "0.71", fleet: [18, 15, 15, 8], alerts: [{ type: 'critical', tag: '[သတိပေး]', msg: 'BDS-3 M12 ပတ်လမ်းအနည်းငယ် လွဲချော်မှုရှိ', time: '10:12' }], sats: [{ elevation_deg: 82, azimuth_deg: 30, visible: true }, { elevation_deg: 70, azimuth_deg: 110, visible: true }, { elevation_deg: 65, azimuth_deg: 195, visible: true }, { elevation_deg: 55, azimuth_deg: 250, visible: true }], globeSats: [{ name: 'BDS-3 GEO-03', baseLat: 0.0, baseLng: 110.5, latAmplitude: 0, speed: 0, color: '#ef4444' }, { name: 'BDS-3 IGSO-02', baseLat: 22.3, baseLng: 118.1, latAmplitude: 30, speed: 8, color: '#22c55e' }, { name: 'BDS-3 MEO-01', baseLat: 39.9, baseLng: 116.4, latAmplitude: 20, speed: 15, color: '#38bdf8' }], orbitPlanes: [ generateCirclePath(0, 0), generateCirclePath(55, 110) ], groundTracks: generateSineGroundTracks(35, 4) },
-            galileo: { name: "GALILEO Constellation (Europe)", satName: "GSAT-0201", total: 28, active: 24, degraded: 3, offline: 1, visible: 8, pdop: "1.92", hdop: "0.95", vdop: "1.67", gdop: "2.10", tdop: "0.92", fleet: [10, 8, 6, 4], alerts: [{ type: 'info', tag: '[သတင်း]', msg: 'Galileo Almanac Data ရရှိပြီး', time: '06:45' }], sats: [{ elevation_deg: 70, azimuth_deg: 60, visible: true }], globeSats: [{ name: 'GALILEO GSAT-0201', baseLat: 48.8, baseLng: 2.35, latAmplitude: 18, speed: 12, color: '#38bdf8' }], orbitPlanes: [ generateCirclePath(56, 0) ], groundTracks: generateSineGroundTracks(56, 3) },
-            glonass: { name: "GLONASS Constellation (Russia)", satName: "GLONASS-M 758", total: 24, active: 22, degraded: 1, offline: 1, visible: 7, pdop: "2.15", hdop: "1.10", vdop: "1.85", gdop: "2.35", tdop: "1.05", fleet: [8, 8, 5, 3], alerts: [{ type: 'info', tag: '[သတင်း]', msg: 'Glonass Frame Sync ပြီးစီး', time: '07:10' }], sats: [{ elevation_deg: 65, azimuth_deg: 40, visible: true }], globeSats: [{ name: 'GLONASS-M No.758', baseLat: 55.7, baseLng: 37.6, latAmplitude: 25, speed: 14, color: '#38bdf8' }], orbitPlanes: [ generateCirclePath(64.8, 0) ], groundTracks: generateSineGroundTracks(64.8, 3) },
-            all: { name: "All Constellations (Multi-GNSS)", satName: "Multi-GNSS Active", total: 139, active: 122, degraded: 11, offline: 6, visible: 39, pdop: "1.15", hdop: "0.52", vdop: "0.98", gdop: "1.32", tdop: "0.62", fleet: [48, 38, 24, 12], alerts: [{ type: 'info', tag: '[စနစ်]', msg: 'Multi-GNSS Combined Tracking အောင်မြင်သည်', time: '11:00' }], sats: [{ elevation_deg: 85, azimuth_deg: 45, visible: true }, { elevation_deg: 50, azimuth_deg: 120, visible: true }, { elevation_deg: 30, azimuth_deg: 200, visible: true }], globeSats: [{ name: 'GPS-SVN62', baseLat: 35.0, baseLng: 139.0, latAmplitude: 15, speed: 12, color: '#38bdf8' }, { name: 'BDS-GEO03', baseLat: 0.0, baseLng: 110.5, latAmplitude: 0, speed: 0, color: '#ef4444' }, { name: 'GAL-GSAT', baseLat: 48.8, baseLng: 2.35, latAmplitude: 18, speed: 12, color: '#22c55e' }], orbitPlanes: [ generateCirclePath(55, 0), generateCirclePath(0, 0) ], groundTracks: generateSineGroundTracks(45, 5) }
+            gps: { name: "GPS Constellation (USA)", satName: "SVN-62 / PRN-07", total: 31, active: 28, degraded: 2, offline: 1, visible: 10, pdop: "1.67", hdop: "0.81", vdop: "1.46", gdop: "1.87", tdop: "0.85", fleet: [12, 8, 7, 4], color: "#38bdf8", alerts: [{ type: 'critical', tag: '[သတိပေး]', msg: 'SVN-45 နာရီတိကျမှု လွဲချော်မှုရှိ', time: '09:42' }], sats: [{ elevation_deg: 75, azimuth_deg: 45, visible: true }, { elevation_deg: 60, azimuth_deg: 120, visible: true }, { elevation_deg: 40, azimuth_deg: 210, visible: true }, { elevation_deg: 80, azimuth_deg: 310, visible: true }, { elevation_deg: 25, azimuth_deg: 15, visible: true }, { elevation_deg: 50, azimuth_deg: 160, visible: true }, { elevation_deg: 35, azimuth_deg: 280, visible: true }, { elevation_deg: 65, azimuth_deg: 340, visible: true }, { elevation_deg: 15, azimuth_deg: 90, visible: true }, { elevation_deg: 45, azimuth_deg: 240, visible: true }], globeSats: [{ name: 'GPS SVN-62', baseLat: 35.0, baseLng: 139.0, latAmplitude: 15, speed: 12, color: '#38bdf8' }, { name: 'GPS SVN-45', baseLat: 51.5, baseLng: -0.12, latAmplitude: 20, speed: 10, color: '#22c55e' }, { name: 'GPS SVN-53', baseLat: -22.9, baseLng: -43.1, latAmplitude: 10, speed: 14, color: '#38bdf8' }, { name: 'GPS SVN-71', baseLat: 1.35, baseLng: 103.8, latAmplitude: 25, speed: 9, color: '#38bdf8' }], orbitPlanes: [ generateCirclePath(55, 0), generateCirclePath(55, 60) ], groundTracks: generateSineGroundTracks(55, 4) },
+            bds: { name: "BEIDOU Constellation (China)", satName: "BDS-3 MEO-01", total: 56, active: 48, degraded: 5, offline: 3, visible: 14, pdop: "1.35", hdop: "0.65", vdop: "1.18", gdop: "1.52", tdop: "0.71", fleet: [18, 15, 15, 8], color: "#ef4444", alerts: [{ type: 'critical', tag: '[သတိပေး]', msg: 'BDS-3 M12 ပတ်လမ်းအနည်းငယ် လွဲချော်မှုရှိ', time: '10:12' }], sats: [{ elevation_deg: 82, azimuth_deg: 30, visible: true }, { elevation_deg: 70, azimuth_deg: 110, visible: true }, { elevation_deg: 65, azimuth_deg: 195, visible: true }, { elevation_deg: 55, azimuth_deg: 250, visible: true }], globeSats: [{ name: 'BDS-3 GEO-03', baseLat: 0.0, baseLng: 110.5, latAmplitude: 0, speed: 0, color: '#ef4444' }, { name: 'BDS-3 IGSO-02', baseLat: 22.3, baseLng: 118.1, latAmplitude: 30, speed: 8, color: '#22c55e' }, { name: 'BDS-3 MEO-01', baseLat: 39.9, baseLng: 116.4, latAmplitude: 20, speed: 15, color: '#38bdf8' }], orbitPlanes: [ generateCirclePath(0, 0), generateCirclePath(55, 110) ], groundTracks: generateSineGroundTracks(35, 4) },
+            galileo: { name: "GALILEO Constellation (Europe)", satName: "GSAT-0201", total: 28, active: 24, degraded: 3, offline: 1, visible: 8, pdop: "1.92", hdop: "0.95", vdop: "1.67", gdop: "2.10", tdop: "0.92", fleet: [10, 8, 6, 4], color: "#22c55e", alerts: [{ type: 'info', tag: '[သတင်း]', msg: 'Galileo Almanac Data ရရှိပြီး', time: '06:45' }], sats: [{ elevation_deg: 70, azimuth_deg: 60, visible: true }], globeSats: [{ name: 'GALILEO GSAT-0201', baseLat: 48.8, baseLng: 2.35, latAmplitude: 18, speed: 12, color: '#38bdf8' }], orbitPlanes: [ generateCirclePath(56, 0) ], groundTracks: generateSineGroundTracks(56, 3) },
+            glonass: { name: "GLONASS Constellation (Russia)", satName: "GLONASS-M 758", total: 24, active: 22, degraded: 1, offline: 1, visible: 7, pdop: "2.15", hdop: "1.10", vdop: "1.85", gdop: "2.35", tdop: "1.05", fleet: [8, 8, 5, 3], color: "#c084fc", alerts: [{ type: 'info', tag: '[သတင်း]', msg: 'Glonass Frame Sync ပြီးစီး', time: '07:10' }], sats: [{ elevation_deg: 65, azimuth_deg: 40, visible: true }], globeSats: [{ name: 'GLONASS-M No.758', baseLat: 55.7, baseLng: 37.6, latAmplitude: 25, speed: 14, color: '#38bdf8' }], orbitPlanes: [ generateCirclePath(64.8, 0) ], groundTracks: generateSineGroundTracks(64.8, 3) },
+            all: { name: "All Constellations (Multi-GNSS)", satName: "Multi-GNSS Active", total: 139, active: 122, degraded: 11, offline: 6, visible: 39, pdop: "1.15", hdop: "0.52", vdop: "0.98", gdop: "1.32", tdop: "0.62", fleet: [48, 38, 24, 12], color: "#06b6d4", alerts: [{ type: 'info', tag: '[စနစ်]', msg: 'Multi-GNSS Combined Tracking အောင်မြင်သည်', time: '11:00' }], sats: [{ elevation_deg: 85, azimuth_deg: 45, visible: true }, { elevation_deg: 50, azimuth_deg: 120, visible: true }, { elevation_deg: 30, azimuth_deg: 200, visible: true }], globeSats: [{ name: 'GPS-SVN62', baseLat: 35.0, baseLng: 139.0, latAmplitude: 15, speed: 12, color: '#38bdf8' }, { name: 'BDS-GEO03', baseLat: 0.0, baseLng: 110.5, latAmplitude: 0, speed: 0, color: '#ef4444' }, { name: 'GAL-GSAT', baseLat: 48.8, baseLng: 2.35, latAmplitude: 18, speed: 12, color: '#22c55e' }], orbitPlanes: [ generateCirclePath(55, 0), generateCirclePath(0, 0) ], groundTracks: generateSineGroundTracks(45, 5) }
         };
 
         function generateCirclePath(incDeg, raanDeg) {
             const points = [];
             const inc = (incDeg * Math.PI) / 180;
             const raan = (raanDeg * Math.PI) / 180;
-            for (let i = 0; i <= 360; i += 10) { // Optimized step size to reduce lag
+            for (let i = 0; i <= 360; i += 10) {
                 const u = (i * Math.PI) / 180;
                 const x = Math.cos(u);
                 const y = Math.sin(u) * Math.cos(inc);
@@ -498,7 +498,7 @@
             for (let c = 0; c < count; c++) {
                 const points = [];
                 const phaseOffset = c * (360 / count);
-                for (let lng = -180; lng <= 180; lng += 8) { // Optimized step size
+                for (let lng = -180; lng <= 180; lng += 8) {
                     const lat = maxLat * Math.sin(((lng + phaseOffset) * Math.PI) / 180);
                     points.push({ lat: lat, lng: lng });
                 }
@@ -531,7 +531,6 @@
         let myGlobe = null;
         let activeSatList = [];
         let animTime = 0;
-        const groundStation = { lat: 16.8661, lng: 96.1951, size: 0.9, color: '#ef4444', label: '📡 🔴 ရန်ကုန် Station' };
 
         try {
             const container = document.getElementById('globeViz');
@@ -576,10 +575,9 @@
             console.error("Globe Error:", e);
         }
 
-        // Optimized lightweight animation loop to prevent browser freeze
         let lastFrameTime = 0;
         function animateSatellites(timestamp) {
-            if (timestamp - lastFrameTime > 60) { // Throttled to ~16 FPS to save CPU
+            if (timestamp - lastFrameTime > 60) {
                 lastFrameTime = timestamp;
                 animTime += 0.002;
                 if (activeSatList.length > 0 && myGlobe) {
@@ -627,18 +625,19 @@
             if (modal) modal.style.display = 'none';
         }
 
+        // Expanded Skyplot canvas (140x140) with larger radius (55)
         function renderSkyPlotCanvas(satellites) {
             const canvas = document.getElementById('skyplotCanvas');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             const cx = canvas.width / 2;
             const cy = canvas.height / 2;
-            const radius = 42; 
+            const radius = 55; 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.strokeStyle = '#334155'; ctx.lineWidth = 1;
             [0.33, 0.66, 1.0].forEach(rRatio => { ctx.beginPath(); ctx.arc(cx, cy, radius * rRatio, 0, 2 * Math.PI); ctx.stroke(); });
             ctx.beginPath(); ctx.moveTo(cx - radius, cy); ctx.lineTo(cx + radius, cy); ctx.moveTo(cx, cy - radius); ctx.lineTo(cx, cy + radius); ctx.stroke();
-            ctx.fillStyle = '#64748b'; ctx.font = 'bold 8px JetBrains Mono'; ctx.fillText('N', cx - 3, cy - radius - 2); ctx.fillText('E', cx + radius + 2, cy + 3);
+            ctx.fillStyle = '#64748b'; ctx.font = 'bold 9px JetBrains Mono'; ctx.fillText('N', cx - 3, cy - radius - 3); ctx.fillText('E', cx + radius + 3, cy + 3);
             if (satellites) {
                 satellites.forEach(sat => {
                     if (sat.visible === false) return;
@@ -647,16 +646,22 @@
                     const x = cx + r * Math.cos(azRad);
                     const y = cy + r * Math.sin(azRad);
                     const dotColor = sat.color || '#38bdf8';
-                    ctx.beginPath(); ctx.arc(x, y, 4, 0, 2 * Math.PI); ctx.fillStyle = dotColor.replace(')', ', 0.35)').replace('rgb', 'rgba'); ctx.fill();
-                    ctx.beginPath(); ctx.arc(x, y, 2, 0, 2 * Math.PI); ctx.fillStyle = dotColor; ctx.fill();
+                    ctx.beginPath(); ctx.arc(x, y, 5, 0, 2 * Math.PI); ctx.fillStyle = dotColor.replace(')', ', 0.35)').replace('rgb', 'rgba'); ctx.fill();
+                    ctx.beginPath(); ctx.arc(x, y, 2.5, 0, 2 * Math.PI); ctx.fillStyle = dotColor; ctx.fill();
                 });
             }
         }
 
         function switchConstellation(sys, btn) {
             currentSystem = sys;
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            if(btn) btn.classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(b => {
+                b.classList.remove('active');
+                b.style.background = '#1e293b';
+            });
+            if(btn) {
+                btn.classList.add('active');
+                btn.style.background = 'rgba(56, 189, 248, 0.25)';
+            }
             playTacticalBeep(950, 0.06);
 
             let satsToRender = [];
@@ -672,10 +677,18 @@
                 ];
             } else {
                 data = constellationData[sys] || constellationData.gps;
-                satsToRender = data.sats.map(s => ({...s, color: '#38bdf8'}));
+                satsToRender = data.sats.map(s => ({...s, color: data.color || '#38bdf8'}));
             }
 
-            document.getElementById('constellation-label').innerText = data.name;
+            // Dynamic Center Label Badge Color Update
+            const badgeEl = document.getElementById('constellation-label');
+            if (badgeEl) {
+                badgeEl.innerText = data.name;
+                badgeEl.style.color = data.color;
+                badgeEl.style.borderColor = data.color;
+                badgeEl.style.background = data.color.replace(')', ', 0.15)').replace('rgb', 'rgba');
+            }
+
             document.getElementById('total-sats').innerText = data.total;
             document.getElementById('active-sats').innerText = data.active;
             document.getElementById('degraded-sats').innerText = data.degraded;
