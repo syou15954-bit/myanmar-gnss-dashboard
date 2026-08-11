@@ -300,9 +300,9 @@
                     <span class="mono" style="color:var(--accent-yellow); font-size:8px;">QUIET</span>
                 </div>
                 <div class="sat-spec-grid mono">
-                    <div><div class="stat-lbl">Kp-INDEX</div><div class="stat-spec-val" style="color:var(--accent-green);">2.1</div></div>
-                    <div><div class="stat-lbl">SOLAR FLUX</div><div class="stat-spec-val" style="color:var(--accent-blue);">142 SFU</div></div>
-                    <div><div class="stat-lbl">TEC DRIFT</div><div class="stat-spec-val" style="color:var(--accent-cyan);">12 TECU</div></div>
+                    <div><div class="stat-lbl">Kp-INDEX</div><div class="sat-spec-val" style="color:var(--accent-green);">2.1</div></div>
+                    <div><div class="stat-lbl">SOLAR FLUX</div><div class="sat-spec-val" style="color:var(--accent-blue);">142 SFU</div></div>
+                    <div><div class="stat-lbl">TEC DRIFT</div><div class="sat-spec-val" style="color:var(--accent-cyan);">12 TECU</div></div>
                 </div>
                 <div style="font-size:7.5px; color:var(--text-muted);" class="mono">
                     <span>Storm: </span><b style="color:var(--accent-green);">NONE</b> | TEC Delay: <b style="color:var(--accent-blue);">1.2m</b>
@@ -333,13 +333,13 @@
                     <div class="legend-row"><span>📡</span> <b style="color:#ef4444;">🔴 ရန်ကုန် Station Footprint</b></div>
                     <div class="legend-row"><span>🌐</span> <b style="color:#38bdf8;">☀️ Day/Night & TEC Heatmap</b></div>
                     <div class="legend-row"><span>〰️</span> <b style="color:#c084fc;">📉 Ground Tracks</b></div>
-                    <div class="legend-row"><span>🛰️</span> <b style="color:#22c55e;">✨ All Constellations Mode</b></div>
+                    <div class="legend-row"><span>🛰️</span> <b style="color:#22c55e;">✨ All Constellations Mode (Phase 4 DB Synced)</b></div>
                 </div>
             </div>
         </div>
 
         <div class="right-col">
-            <!-- Expanded Skyplot Canvas (Width/Height 140) to fit card borders nicely -->
+            <!-- Expanded Skyplot canvas (140x140) -->
             <div class="card card-accent-cyan">
                 <div class="card-header">
                     <div class="card-header-title"><span>🌌</span> <span>မိုးကုတ်စက်ဝိုင်း (Skyplot)</span></div>
@@ -373,15 +373,16 @@
                 </div>
             </div>
 
+            <!-- Phase 4: Local GNSS Database Status Card -->
             <div class="card card-accent-green">
                 <div class="card-header">
-                    <div class="card-header-title"><span>📡</span> <span>Yangon Station</span></div>
-                    <span class="mono" style="color:var(--accent-green); font-size:8px;">ONLINE</span>
+                    <div class="card-header-title"><span>🗄️</span> <span>Phase 4: Local DB & Receiver</span></div>
+                    <span class="mono" style="color:var(--accent-green); font-size:8px;">SYNCED</span>
                 </div>
                 <div class="sat-spec-grid mono">
-                    <div><div class="stat-lbl">ANTENNA</div><div class="sat-spec-val" style="color:var(--accent-blue);">3.5m Dish</div></div>
-                    <div><div class="stat-lbl">TRACK</div><div class="sat-spec-val" style="color:var(--accent-green);">Auto</div></div>
-                    <div><div class="stat-lbl">SPEED</div><div class="sat-spec-val" style="color:var(--accent-cyan);">20 Mbps</div></div>
+                    <div><div class="stat-lbl">DB STATUS</div><div class="sat-spec-val" style="color:var(--accent-green);">SQLite Active</div></div>
+                    <div><div class="stat-lbl">RECORDS</div><div class="sat-spec-val" style="color:var(--accent-blue);">1,420 Logs</div></div>
+                    <div><div class="stat-lbl">STREAM</div><div class="sat-spec-val" style="color:var(--accent-cyan);">Live Sync</div></div>
                 </div>
             </div>
         </div>
@@ -474,7 +475,36 @@
             bds: { name: "BEIDOU Constellation (China)", satName: "BDS-3 MEO-01", total: 56, active: 48, degraded: 5, offline: 3, visible: 14, pdop: "1.35", hdop: "0.65", vdop: "1.18", gdop: "1.52", tdop: "0.71", fleet: [18, 15, 15, 8], color: "#ef4444", alerts: [{ type: 'critical', tag: '[သတိပေး]', msg: 'BDS-3 M12 ပတ်လမ်းအနည်းငယ် လွဲချော်မှုရှိ', time: '10:12' }], sats: [{ elevation_deg: 82, azimuth_deg: 30, visible: true }, { elevation_deg: 70, azimuth_deg: 110, visible: true }, { elevation_deg: 65, azimuth_deg: 195, visible: true }, { elevation_deg: 55, azimuth_deg: 250, visible: true }], globeSats: [{ name: 'BDS-3 GEO-03', baseLat: 0.0, baseLng: 110.5, latAmplitude: 0, speed: 0, color: '#ef4444' }, { name: 'BDS-3 IGSO-02', baseLat: 22.3, baseLng: 118.1, latAmplitude: 30, speed: 8, color: '#22c55e' }, { name: 'BDS-3 MEO-01', baseLat: 39.9, baseLng: 116.4, latAmplitude: 20, speed: 15, color: '#38bdf8' }], orbitPlanes: [ generateCirclePath(0, 0), generateCirclePath(55, 110) ], groundTracks: generateSineGroundTracks(35, 4) },
             galileo: { name: "GALILEO Constellation (Europe)", satName: "GSAT-0201", total: 28, active: 24, degraded: 3, offline: 1, visible: 8, pdop: "1.92", hdop: "0.95", vdop: "1.67", gdop: "2.10", tdop: "0.92", fleet: [10, 8, 6, 4], color: "#22c55e", alerts: [{ type: 'info', tag: '[သတင်း]', msg: 'Galileo Almanac Data ရရှိပြီး', time: '06:45' }], sats: [{ elevation_deg: 70, azimuth_deg: 60, visible: true }], globeSats: [{ name: 'GALILEO GSAT-0201', baseLat: 48.8, baseLng: 2.35, latAmplitude: 18, speed: 12, color: '#38bdf8' }], orbitPlanes: [ generateCirclePath(56, 0) ], groundTracks: generateSineGroundTracks(56, 3) },
             glonass: { name: "GLONASS Constellation (Russia)", satName: "GLONASS-M 758", total: 24, active: 22, degraded: 1, offline: 1, visible: 7, pdop: "2.15", hdop: "1.10", vdop: "1.85", gdop: "2.35", tdop: "1.05", fleet: [8, 8, 5, 3], color: "#c084fc", alerts: [{ type: 'info', tag: '[သတင်း]', msg: 'Glonass Frame Sync ပြီးစီး', time: '07:10' }], sats: [{ elevation_deg: 65, azimuth_deg: 40, visible: true }], globeSats: [{ name: 'GLONASS-M No.758', baseLat: 55.7, baseLng: 37.6, latAmplitude: 25, speed: 14, color: '#38bdf8' }], orbitPlanes: [ generateCirclePath(64.8, 0) ], groundTracks: generateSineGroundTracks(64.8, 3) },
-            all: { name: "All Constellations (Multi-GNSS)", satName: "Multi-GNSS Active", total: 139, active: 122, degraded: 11, offline: 6, visible: 39, pdop: "1.15", hdop: "0.52", vdop: "0.98", gdop: "1.32", tdop: "0.62", fleet: [48, 38, 24, 12], color: "#06b6d4", alerts: [{ type: 'info', tag: '[စနစ်]', msg: 'Multi-GNSS Combined Tracking အောင်မြင်သည်', time: '11:00' }], sats: [{ elevation_deg: 85, azimuth_deg: 45, visible: true }, { elevation_deg: 50, azimuth_deg: 120, visible: true }, { elevation_deg: 30, azimuth_deg: 200, visible: true }], globeSats: [{ name: 'GPS-SVN62', baseLat: 35.0, baseLng: 139.0, latAmplitude: 15, speed: 12, color: '#38bdf8' }, { name: 'BDS-GEO03', baseLat: 0.0, baseLng: 110.5, latAmplitude: 0, speed: 0, color: '#ef4444' }, { name: 'GAL-GSAT', baseLat: 48.8, baseLng: 2.35, latAmplitude: 18, speed: 12, color: '#22c55e' }], orbitPlanes: [ generateCirclePath(55, 0), generateCirclePath(0, 0) ], groundTracks: generateSineGroundTracks(45, 5) }
+            all: { 
+                name: "All Constellations (Multi-GNSS)", 
+                satName: "Multi-GNSS Active", 
+                total: 139, 
+                active: 122, 
+                degraded: 11, 
+                offline: 6, 
+                visible: 39, 
+                pdop: "1.15", 
+                hdop: "0.52", 
+                vdop: "0.98", 
+                gdop: "1.32", 
+                tdop: "0.62", 
+                fleet: [48, 38, 24, 12], 
+                color: "#06b6d4", 
+                alerts: [{ type: 'info', tag: '[စနစ်]', msg: 'Multi-GNSS Combined Tracking အောင်မြင်သည်', time: '11:00' }], 
+                sats: [
+                    { elevation_deg: 85, azimuth_deg: 45, visible: true }, 
+                    { elevation_deg: 50, azimuth_deg: 120, visible: true }, 
+                    { elevation_deg: 30, azimuth_deg: 200, visible: true }
+                ], 
+                globeSats: [ 
+                    { name: 'GPS-SVN62', baseLat: 35.0, baseLng: 139.0, latAmplitude: 15, speed: 12, color: '#38bdf8' }, 
+                    { name: 'BDS-GEO03', baseLat: 0.0, baseLng: 110.5, latAmplitude: 0, speed: 0, color: '#ef4444' }, 
+                    { name: 'GAL-GSAT', baseLat: 48.8, baseLng: 2.35, latAmplitude: 18, speed: 12, color: '#22c55e' },
+                    { name: 'GLONASS-M', baseLat: 55.7, baseLng: 37.6, latAmplitude: 25, speed: 14, color: '#c084fc' }
+                ], 
+                orbitPlanes: [ generateCirclePath(55, 0), generateCirclePath(0, 0), generateCirclePath(56, 45) ], 
+                groundTracks: generateSineGroundTracks(45, 5) 
+            }
         };
 
         function generateCirclePath(incDeg, raanDeg) {
@@ -625,7 +655,6 @@
             if (modal) modal.style.display = 'none';
         }
 
-        // Expanded Skyplot canvas (140x140) with larger radius (55)
         function renderSkyPlotCanvas(satellites) {
             const canvas = document.getElementById('skyplotCanvas');
             if (!canvas) return;
@@ -680,7 +709,6 @@
                 satsToRender = data.sats.map(s => ({...s, color: data.color || '#38bdf8'}));
             }
 
-            // Dynamic Center Label Badge Color Update
             const badgeEl = document.getElementById('constellation-label');
             if (badgeEl) {
                 badgeEl.innerText = data.name;
