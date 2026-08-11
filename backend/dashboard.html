@@ -12,7 +12,6 @@
     
     <style>
         :root {
-            /* Aerospace Telemetry Color System (NASA / SpaceX Style) */
             --bg-dark: #090d16;
             --panel-bg: rgba(15, 23, 42, 0.88);
             --panel-border: rgba(56, 189, 248, 0.15);
@@ -83,12 +82,6 @@
             text-align: center;
         }
         .brand-dot { width: 8px; height: 8px; background: var(--accent-cyan); border-radius: 50%; box-shadow: 0 0 8px var(--accent-cyan); }
-
-        .map-mode-btn {
-            background: rgba(16, 185, 129, 0.15); color: var(--accent-green); border: 1px solid var(--accent-green);
-            padding: 3px 10px; border-radius: 4px; font-size: 10.5px; font-weight: 700; cursor: pointer; transition: all 0.2s;
-        }
-        .map-mode-btn:hover { background: var(--accent-green); color: #000; }
 
         /* Main Viewport Grid */
         .viewport-main {
@@ -240,9 +233,8 @@
             <span>GNSS Global Mission Control Center</span>
         </div>
 
-        <div class="mono" style="display:flex; align-items:center; gap:10px; font-size: 10px; color: var(--text-muted);">
-            <button class="map-mode-btn mono" id="map-mode-toggle" onclick="toggleMapMode()">🗺️ Switch to 2D GIS Layer</button>
-            <span>မြန်မာစံတော်ချိန်: <b id="mmt-time" style="color:var(--accent-cyan);">--:--:-- MMT</b></span>
+        <div class="mono" style="font-size: 10px; color: var(--text-muted);">
+            <span>မြန်မာစံတော်ချိန်: <b id="mmt-time" style="color:var(--accent-cyan);">--:--:-- MMT</b> | ပင်မစခန်း: <b style="color:#fff;">ရန်ကုန် (16.86°N, 96.19°E)</b></span>
         </div>
     </header>
 
@@ -345,7 +337,6 @@
         let currentSystem = 'gps';
         let fleetChart = null, waveformChart = null;
         let myGlobe = null;
-        let is2DMode = false;
         let animTime = 0;
 
         let modes = { stations: false, tracks: false, heatmap: false, spectrum: false };
@@ -404,7 +395,6 @@
             }
         }
 
-        // Properly Configure ALL Globe Accessor Functions at Instantiation Time
         try {
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
@@ -415,23 +405,19 @@
                     .showAtmosphere(true)
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.18)
-                    // Points Accessors
                     .pointsData([])
                     .pointColor(d => d.color || '#10b981')
                     .pointRadius(d => d.size || 0.6)
                     .pointAltitude(0.01)
-                    // Rings Accessors
                     .ringsData([])
                     .ringColor(d => d.color || '#10b981')
                     .ringMaxRadius(d => d.maxRadius || 6)
                     .ringPropagationSpeed(d => d.propagationSpeed || 1)
                     .ringRepeatPeriod(d => d.repeatPeriod || 1500)
-                    // Paths Accessors
                     .pathsData([])
                     .pathPoints(d => d.coords || d)
                     .pathColor(d => d.color || '#38bdf8')
                     .pathStroke(d => d.stroke || 1.2)
-                    // HTML Markers Accessors
                     .htmlElementsData([])
                     .htmlElement(d => {
                         const el = document.createElement('div');
@@ -452,27 +438,6 @@
         } catch (e) { console.error("Globe Load Error:", e); }
 
         window.addEventListener('resize', resizeGlobe);
-
-        // Robust Map Mode Switcher
-        function toggleMapMode() {
-            if (!myGlobe) return;
-            is2DMode = !is2DMode;
-            const btn = document.getElementById('map-mode-toggle');
-
-            if (is2DMode) {
-                myGlobe.projection('equirectangular');
-                myGlobe.pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.2 });
-                btn.innerText = '🌐 Switch to 3D Globe';
-                btn.style.borderColor = '#38bdf8';
-                btn.style.color = '#38bdf8';
-            } else {
-                myGlobe.projection('3d');
-                myGlobe.pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.18 });
-                btn.innerText = '🗺️ Switch to 2D GIS Layer';
-                btn.style.borderColor = '#10b981';
-                btn.style.color = '#10b981';
-            }
-        }
 
         // Active SGP4 Orbit Loop Engine
         let lastFrameTime = 0;
@@ -615,7 +580,7 @@
                 }
             }
 
-            // 4. Live Signal Spectrum Chart Mode (Re-creates Chart Instance properly)
+            // 4. Live Signal Spectrum Chart Mode
             if (feature === 'spectrum') {
                 const chartCanvas = document.getElementById('waveformChart');
                 if (chartCanvas) {
