@@ -239,7 +239,6 @@
                 <h1>GNSS Global Mission Control Center</h1>
             </div>
 
-            <!-- Constellation Buttons with Specific Colors -->
             <div class="header-controls">
                 <button class="nav-btn active" onclick="switchConstellation('gps', this)" style="border-color: #38bdf8; color: #38bdf8;">🛰️ GPS</button>
                 <button class="nav-btn" onclick="switchConstellation('bds', this)" style="border-color: #ef4444; color: #ef4444;">🛰️ BEIDOU</button>
@@ -311,11 +310,11 @@
         </div>
 
         <div class="center-col">
-            <!-- Map Card with Dynamic Top Border Accent Color -->
             <div class="card" id="mapCard" style="border-top: 2px solid #38bdf8; padding: 2px;">
-                <div class="card-header" style="margin: 2px 6px;">
+                <div class="card-header" style="margin: 2px 6px; display: flex; justify-content: space-between; align-items: center;">
                     <div class="card-header-title"><span>🌍</span> <span>3D ကမ္ဘာ့ဂြိုဟ်တု ပတ်လမ်းနှင့် အာကာသရာသီဥတု မြေပုံ</span></div>
-                    <span class="badge" id="constellation-label" style="color: #38bdf8; border-color: #38bdf8; background: rgba(56, 189, 248, 0.15);">GPS Constellation (USA)</span>
+                    <!-- Added #38bdf826 for proper transparent hex background -->
+                    <span class="badge" id="constellation-label" style="color: #38bdf8; border-color: #38bdf8; background: #38bdf826;">GPS Constellation (USA)</span>
                 </div>
                 <div id="globeViz"></div>
                 <div id="satHudModal" class="mono">
@@ -340,7 +339,6 @@
         </div>
 
         <div class="right-col">
-            <!-- Expanded Skyplot canvas (140x140) -->
             <div class="card card-accent-cyan">
                 <div class="card-header">
                     <div class="card-header-title"><span>🌌</span> <span>မိုးကုတ်စက်ဝိုင်း (Skyplot)</span></div>
@@ -374,7 +372,6 @@
                 </div>
             </div>
 
-            <!-- Phase 4: Local GNSS Database Status Card -->
             <div class="card card-accent-green">
                 <div class="card-header">
                     <div class="card-header-title"><span>🗄️</span> <span>Phase 4: Local DB & Receiver</span></div>
@@ -676,7 +673,9 @@
                     const x = cx + r * Math.cos(azRad);
                     const y = cy + r * Math.sin(azRad);
                     const dotColor = sat.color || '#38bdf8';
-                    ctx.beginPath(); ctx.arc(x, y, 5, 0, 2 * Math.PI); ctx.fillStyle = dotColor.replace(')', ', 0.35)').replace('rgb', 'rgba'); ctx.fill();
+                    
+                    // Fixed transparency to render dots correctly using hex alpha '59' (approx 35%)
+                    ctx.beginPath(); ctx.arc(x, y, 5, 0, 2 * Math.PI); ctx.fillStyle = dotColor + '59'; ctx.fill();
                     ctx.beginPath(); ctx.arc(x, y, 2.5, 0, 2 * Math.PI); ctx.fillStyle = dotColor; ctx.fill();
                 });
             }
@@ -710,13 +709,13 @@
                 satsToRender = data.sats.map(s => ({...s, color: data.color || '#38bdf8'}));
             }
 
-            // Dynamic Center Label Badge & Map Card Accent Border Color Update
+            // Corrected badge background rendering using Hex Alpha '26' (approx 15%)
             const badgeEl = document.getElementById('constellation-label');
             if (badgeEl) {
                 badgeEl.innerText = data.name;
                 badgeEl.style.color = data.color;
                 badgeEl.style.borderColor = data.color;
-                badgeEl.style.background = data.color.replace(')', ', 0.15)').replace('rgb', 'rgba');
+                badgeEl.style.background = data.color + '26';
             }
 
             const mapCard = document.getElementById('mapCard');
