@@ -145,7 +145,7 @@
         .overlay-card-left {
             position: absolute; top: 12px; left: 12px; z-index: 10;
             background: rgba(6, 10, 18, 0.88); border: 1px solid var(--panel-border);
-            backdrop-filter: blur(12px); border-radius: 8px; padding: 10px 12px; width: 220px; pointer-events: auto;
+            backdrop-filter: blur(12px); border-radius: 8px; padding: 10px 12px; width: 230px; pointer-events: auto;
         }
         
         .overlay-card-right {
@@ -254,7 +254,7 @@
             <button class="nav-tab-btn" onclick="switchConstellation('all', this)">✨ ALL</button>
         </div>
 
-        <!-- 2. Centered Title (Clean Layout) -->
+        <!-- 2. Centered Title -->
         <div class="brand-title-box">
             <div class="brand-dot"></div>
             <span>GNSS Global Mission Control Center</span>
@@ -287,12 +287,13 @@
                 <button class="feature-btn" id="btn-spectrum" onclick="toggleFeatureMode('spectrum', this)">📊 Live Spectrum</button>
             </div>
 
+            <!-- Dynamic Space Weather HUD with IDs assigned -->
             <div class="overlay-card-left mono">
                 <div style="font-size: 10px; font-weight: 700; color: var(--accent-cyan); margin-bottom: 4px;">☀️ Space Weather HUD</div>
                 <div style="font-size: 9.5px; color: var(--text-muted); display:flex; justify-content:space-between; margin-bottom:6px;">
-                    <span>Kp: <b style="color:var(--accent-green);">2.1</b></span>
-                    <span>FLUX: <b style="color:var(--accent-blue);">142 SFU</b></span>
-                    <span>TEC: <b style="color:var(--accent-yellow);">12 TECU</b></span>
+                    <span>Kp: <b style="color:var(--accent-green);" id="space-kp">2.1</b></span>
+                    <span>FLUX: <b style="color:var(--accent-blue);" id="space-flux">142 SFU</b></span>
+                    <span>TEC: <b style="color:var(--accent-yellow);" id="space-tec">12 TECU</b></span>
                 </div>
                 <div style="font-size: 10px; font-weight: 700; color: var(--accent-blue); border-top: 1px dashed rgba(255,255,255,0.15); padding-top:4px;">🌐 CONSTELLATION MODE</div>
                 <div style="font-size: 11px; font-weight: 700; color: #fff;" id="constellation-label">GPS Constellation (USA)</div>
@@ -388,9 +389,11 @@
         setInterval(updateMyanmarTime, 1000);
         updateMyanmarTime();
 
+        // System Specific Space Weather Values
         const constellationData = {
             gps: { 
                 name: "GPS Constellation (USA)", satName: "SVN-62 / PRN-07", total: 31, active: 28, visible: 10, pdop: "1.67", hdop: "0.81", vdop: "1.46", fleet: [12, 8, 7, 4], color: "#38bdf8", 
+                kp: "2.1", flux: "142 SFU", tec: "12 TECU",
                 sats: [{ prn: 'G07', elevation: 75, azimuth: 45, snr: 46.8 }, { prn: 'G12', elevation: 60, azimuth: 120, snr: 44.2 }, { prn: 'G18', elevation: 40, azimuth: 210, snr: 41.5 }, { prn: 'G24', elevation: 80, azimuth: 310, snr: 48.1 }], 
                 globeSats: [
                     { name: 'GPS SVN-62 (PRN-07)', prn: 'G07', system: 'GPS (USA)', baseLat: 35.0, baseLng: 139.0, latAmplitude: 15, speed: 12, color: '#38bdf8', elevation: 75, azimuth: 45, snr: 46.8, altitude: '20,200 km', velocity: '3.88 km/s', freq: '1575.42 MHz (L1)', status: 'HEALTHY' }, 
@@ -399,6 +402,7 @@
             },
             bds: { 
                 name: "BEIDOU Constellation (China)", satName: "BDS-3 MEO-01", total: 56, active: 48, visible: 14, pdop: "1.35", hdop: "0.65", vdop: "1.18", fleet: [18, 15, 15, 8], color: "#ff3b5c", 
+                kp: "1.8", flux: "138 SFU", tec: "15 TECU",
                 sats: [{ prn: 'C01', elevation: 82, azimuth: 30, snr: 48.2 }, { prn: 'C03', elevation: 70, azimuth: 110, snr: 46.5 }, { prn: 'C07', elevation: 65, azimuth: 195, snr: 45.1 }], 
                 globeSats: [
                     { name: 'BDS-3 GEO-03 (PRN-C01)', prn: 'C01', system: 'BEIDOU (China)', baseLat: 0.0, baseLng: 110.5, latAmplitude: 0, speed: 0, color: '#ff3b5c', elevation: 82, azimuth: 30, snr: 48.2, altitude: '35,786 km', velocity: '3.07 km/s', freq: '1561.098 MHz (B1I)', status: 'GEO-LOCKED' }, 
@@ -407,6 +411,7 @@
             },
             galileo: { 
                 name: "GALILEO Constellation (Europe)", satName: "GSAT-0201", total: 28, active: 24, visible: 8, pdop: "1.92", hdop: "0.95", vdop: "1.67", fleet: [10, 8, 6, 4], color: "#00ff9d", 
+                kp: "2.4", flux: "145 SFU", tec: "10 TECU",
                 sats: [{ prn: 'E01', elevation: 70, azimuth: 60, snr: 44.1 }], 
                 globeSats: [
                     { name: 'GALILEO GSAT-0201 (E01)', prn: 'E01', system: 'GALILEO (Europe)', baseLat: 48.8, baseLng: 2.35, latAmplitude: 18, speed: 12, color: '#00ff9d', elevation: 70, azimuth: 60, snr: 44.1, altitude: '23,222 km', velocity: '3.42 km/s', freq: '1575.42 MHz (E1)', status: 'ACTIVE' }
@@ -414,6 +419,7 @@
             },
             glonass: { 
                 name: "GLONASS Constellation (Russia)", satName: "GLONASS-M 758", total: 24, active: 22, visible: 7, pdop: "2.15", hdop: "1.10", vdop: "1.85", fleet: [8, 8, 5, 3], color: "#c084fc", 
+                kp: "3.1", flux: "150 SFU", tec: "18 TECU",
                 sats: [{ prn: 'R08', elevation: 65, azimuth: 40, snr: 42.5 }], 
                 globeSats: [
                     { name: 'GLONASS-M No.758 (R08)', prn: 'R08', system: 'GLONASS (Russia)', baseLat: 55.7, baseLng: 37.6, latAmplitude: 25, speed: 14, color: '#c084fc', elevation: 65, azimuth: 40, snr: 42.5, altitude: '19,100 km', velocity: '3.95 km/s', freq: '1602.00 MHz (L1)', status: 'TRACKING' }
@@ -421,6 +427,7 @@
             },
             all: { 
                 name: "All Constellations (Multi-GNSS)", satName: "Multi-GNSS Active", total: 139, active: 122, visible: 39, pdop: "1.15", hdop: "0.52", vdop: "0.98", fleet: [48, 38, 24, 12], color: "#00f2ff", 
+                kp: "2.2", flux: "144 SFU", tec: "14 TECU",
                 sats: [{ prn: 'G07', elevation: 75, azimuth: 45, snr: 46.8 }, { prn: 'C03', elevation: 82, azimuth: 110, snr: 48.2 }, { prn: 'E01', elevation: 70, azimuth: 60, snr: 44.1 }, { prn: 'R08', elevation: 65, azimuth: 40, snr: 42.5 }], 
                 globeSats: [
                     { name: 'GPS SVN-62 (PRN-07)', prn: 'G07', system: 'GPS (USA)', baseLat: 35.0, baseLng: 139.0, latAmplitude: 15, speed: 12, color: '#38bdf8', elevation: 75, azimuth: 45, snr: 46.8, altitude: '20,200 km', velocity: '3.88 km/s', freq: '1575.42 MHz', status: 'HEALTHY' }, 
@@ -509,6 +516,37 @@
         }
         requestAnimationFrame(animateSatellites);
 
+        // Real-Time Dynamic Space Weather Simulation Fluctuations
+        function simulateSpaceWeatherFluctuations() {
+            const kpEl = document.getElementById('space-kp');
+            const fluxEl = document.getElementById('space-flux');
+            const tecEl = document.getElementById('space-tec');
+
+            if (kpEl && fluxEl && tecEl) {
+                let currentKp = parseFloat(kpEl.innerText);
+                let currentFlux = parseInt(fluxEl.innerText);
+                let currentTec = parseInt(tecEl.innerText);
+
+                // Small realistic real-time random variations
+                let newKp = (currentKp + (Math.random() * 0.2 - 0.1)).toFixed(1);
+                if (newKp < 1.0) newKp = 1.2;
+                if (newKp > 4.5) newKp = 3.8;
+
+                let newFlux = currentFlux + Math.floor(Math.random() * 3 - 1);
+                if (newFlux < 120) newFlux = 135;
+                if (newFlux > 165) newFlux = 150;
+
+                let newTec = currentTec + Math.floor(Math.random() * 3 - 1);
+                if (newTec < 8) newTec = 10;
+                if (newTec > 22) newTec = 18;
+
+                kpEl.innerText = newKp;
+                fluxEl.innerText = `${newFlux} SFU`;
+                tecEl.innerText = `${newTec} TECU`;
+            }
+        }
+        setInterval(simulateSpaceWeatherFluctuations, 3500);
+
         function renderSkyPlotCanvas(satellites) {
             const canvas = document.getElementById('skyplotCanvas');
             if (!canvas) return;
@@ -544,6 +582,11 @@
             document.getElementById('pdop-val').innerText = data.pdop;
             document.getElementById('hdop-val').innerText = data.hdop;
             document.getElementById('vdop-val').innerText = data.vdop;
+
+            // UPDATE SPACE WEATHER HUD VALUES PER CONSTELLATION
+            document.getElementById('space-kp').innerText = data.kp;
+            document.getElementById('space-flux').innerText = data.flux;
+            document.getElementById('space-tec').innerText = data.tec;
 
             const tbody = document.getElementById('sat-table-body');
             tbody.innerHTML = data.sats.map(s => `
