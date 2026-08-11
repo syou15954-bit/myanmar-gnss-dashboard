@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GNSS Global Mission Control Center</title>
-    <!-- Aerospace Libraries: Chart.js, Globe.gl & SGP4 Propagation Engine -->
+    <!-- Aerospace Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/globe.gl"></script>
     <script src="https://cdn.jsdelivr.net/npm/satellite.js@4.1.3/dist/satellite.min.js"></script>
@@ -12,17 +12,16 @@
     
     <style>
         :root {
-            /* Aerospace Telemetry Color System (NASA / SpaceX Style) */
-            --bg-dark: #090d16;
+            --bg-dark: #070a12;
             --panel-bg: rgba(15, 23, 42, 0.88);
-            --panel-border: rgba(56, 189, 248, 0.15);
+            --panel-border: rgba(56, 189, 248, 0.18);
             --accent-cyan: #38bdf8;
             --accent-blue: #60a5fa;
             --accent-red: #f43f5e;
             --accent-green: #10b981;
             --accent-yellow: #f59e0b;
             --accent-purple: #a855f7;
-            --text-main: #f1f5f9;
+            --text-main: #f8fafc;
             --text-muted: #64748b;
         }
 
@@ -43,12 +42,11 @@
             flex-direction: column;
             padding: 8px;
             gap: 8px;
-            background: radial-gradient(circle at 50% 30%, #0f172a 0%, #050811 100%);
+            background: radial-gradient(circle at 50% 30%, #0f172a 0%, #03050c 100%);
         }
 
         .mono { font-family: 'JetBrains Mono', monospace; }
 
-        /* Tactical Navigation Header */
         .top-nav {
             display: grid;
             grid-template-columns: auto 1fr auto;
@@ -59,7 +57,6 @@
             border-radius: 6px;
             padding: 6px 16px;
             flex-shrink: 0;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
             gap: 15px;
         }
 
@@ -84,7 +81,6 @@
         }
         .brand-dot { width: 8px; height: 8px; background: var(--accent-cyan); border-radius: 50%; box-shadow: 0 0 8px var(--accent-cyan); }
 
-        /* Main Viewport Grid */
         .viewport-main {
             flex: 1;
             display: flex;
@@ -106,7 +102,7 @@
 
         #globeViz { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
 
-        /* Center Feature Controls Overlay (3 Clean Buttons) */
+        /* Minimalist Controls Overlay Bar */
         .center-feature-bar {
             position: absolute;
             bottom: 12px;
@@ -115,18 +111,19 @@
             z-index: 15;
             display: flex;
             gap: 10px;
-            background: rgba(15, 23, 42, 0.92);
-            padding: 6px 16px;
+            background: rgba(15, 23, 42, 0.95);
+            padding: 5px 14px;
             border-radius: 20px;
             border: 1px solid var(--panel-border);
             backdrop-filter: blur(12px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
         }
 
         .feature-btn {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.02);
             color: #94a3b8;
             border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 5px 14px;
+            padding: 4px 12px;
             border-radius: 12px;
             font-size: 11px;
             font-weight: 700;
@@ -134,7 +131,7 @@
             transition: all 0.2s;
         }
         .feature-btn:hover { color: #fff; border-color: var(--accent-cyan); }
-        .feature-btn.active-mode { background: rgba(56, 189, 248, 0.25); color: var(--accent-cyan); border-color: var(--accent-cyan); box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
+        .feature-btn.active-mode { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border-color: var(--accent-cyan); }
 
         .overlay-card-left {
             position: absolute; top: 12px; left: 12px; z-index: 10;
@@ -149,10 +146,9 @@
         }
 
         .sat-marker { display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translate(-50%, -50%); z-index: 30; }
-        .sat-icon-wrapper { font-size: 16px; filter: drop-shadow(0 0 6px var(--accent-cyan)); }
-        .sat-tag { font-size: 8px; font-family: 'JetBrains Mono', monospace; background: rgba(9, 13, 22, 0.95); padding: 2px 5px; border-radius: 2px; white-space: nowrap; margin-top: 2px; }
+        .sat-icon-wrapper { font-size: 15px; filter: drop-shadow(0 0 5px var(--accent-cyan)); }
+        .sat-tag { font-size: 8px; font-family: 'JetBrains Mono', monospace; background: rgba(7, 10, 18, 0.92); padding: 1px 4px; border-radius: 2px; white-space: nowrap; margin-top: 1px; }
 
-        /* Bottom Dock Panels */
         .bottom-dock {
             flex: 1;
             display: grid;
@@ -195,7 +191,6 @@
         .upload-box { display: flex; gap: 6px; align-items: center; background: rgba(0,0,0,0.3); padding: 5px; border-radius: 4px; border: 1px dashed var(--accent-cyan); }
         .upload-btn { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 3px 8px; border-radius: 3px; font-size: 9.5px; font-weight: 700; cursor: pointer; }
 
-        /* Aerospace Telemetry Detail Modal Drawer */
         #detailModal {
             display: none;
             position: absolute;
@@ -203,10 +198,10 @@
             left: 50%;
             transform: translateX(-50%);
             z-index: 200;
-            width: 460px;
+            width: 450px;
             background: rgba(15, 23, 42, 0.96);
             border: 1px solid var(--accent-cyan);
-            border-radius: 8px;
+            border-radius: 6px;
             padding: 12px 16px;
             backdrop-filter: blur(16px);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
@@ -252,7 +247,7 @@
                 <div id="modal-content-body"></div>
             </div>
 
-            <!-- Cleaned 3 Core Feature Buttons -->
+            <!-- Clean Controls Bar -->
             <div class="center-feature-bar mono">
                 <button class="feature-btn" id="btn-stations" onclick="toggleFeatureMode('stations', this)">📡 CORS Stations</button>
                 <button class="feature-btn" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 SGP4 Orbit Tracks</button>
@@ -406,22 +401,14 @@
                     .showAtmosphere(true)
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.18)
-                    // Configured Accessors for CORS Points
                     .pointsData([])
                     .pointColor(d => d.color || '#10b981')
-                    .pointRadius(d => d.size || 0.6)
+                    .pointRadius(d => d.size || 0.5)
                     .pointAltitude(0.01)
-                    // Configured Accessors for Rings (CORS & TEC Heatmap)
-                    .ringsData([])
-                    .ringColor(d => d.color || '#10b981')
-                    .ringMaxRadius(d => d.maxRadius || 6)
-                    .ringPropagationSpeed(d => d.propagationSpeed || 1)
-                    .ringRepeatPeriod(d => d.repeatPeriod || 1500)
-                    // Fixed SGP4 Orbit Path Accessors
                     .pathsData([])
                     .pathPoints(d => d.coords)
                     .pathColor(d => d.color || '#38bdf8')
-                    .pathStroke(d => d.stroke || 1.8)
+                    .pathStroke(d => d.stroke || 1.2)
                     .htmlElementsData([])
                     .htmlElement(d => {
                         const el = document.createElement('div');
@@ -443,12 +430,11 @@
 
         window.addEventListener('resize', resizeGlobe);
 
-        // Generate Smooth SGP4 3D Circle Paths
         function generateCirclePath(incDeg, raanDeg, colorStr) {
             const points = [];
             const inc = (incDeg * Math.PI) / 180;
             const raan = (raanDeg * Math.PI) / 180;
-            for (let i = 0; i <= 360; i += 5) {
+            for (let i = 0; i <= 360; i += 6) {
                 const u = (i * Math.PI) / 180;
                 const x = Math.cos(u);
                 const y = Math.sin(u) * Math.cos(inc);
@@ -457,10 +443,9 @@
                 const lat = Math.asin(z);
                 points.push({ lat: (lat * 180) / Math.PI, lng: (lng * 180) / Math.PI });
             }
-            return { coords: points, color: colorStr, stroke: 1.8 };
+            return { coords: points, color: colorStr, stroke: 1.2 };
         }
 
-        // Active SGP4 Orbit Animation Loop Engine
         let lastFrameTime = 0;
         function animateSatellites(timestamp) {
             if (timestamp - lastFrameTime > 80) {
@@ -474,7 +459,7 @@
                     const colorMap = { G: '#38bdf8', C: '#f43f5e', E: '#10b981', R: '#a855f7' };
                     return {
                         prn: prn,
-                        name: `${prn} (SGP4 Real-Time)`,
+                        name: `${prn} (SGP4)`,
                         lat: sgp4Pos.lat + Math.sin(animTime) * 3,
                         lng: (sgp4Pos.lng + animTime * 15) % 360,
                         alt: sgp4Pos.alt,
@@ -489,7 +474,7 @@
                         endLat: sat.lat, endLng: sat.lng,
                         color: ['#38bdf8', sat.color]
                     }));
-                    myGlobe.arcsData(arcs).arcColor('color').arcDashLength(0.4).arcDashGap(0.2).arcDashAnimateTime(1200).arcStroke(1.0);
+                    myGlobe.arcsData(arcs).arcColor('color').arcDashLength(0.4).arcDashGap(0.2).arcDashAnimateTime(1200).arcStroke(0.8);
                 }
             }
             requestAnimationFrame(animateSatellites);
@@ -553,47 +538,33 @@
             document.getElementById('detailModal').style.display = 'block';
         }
 
-        // Refactored Feature Modes Toggler (3 Core Modes)
+        // Extremely Clean Feature Toggler
         function toggleFeatureMode(feature, btn) {
             if (!myGlobe) return;
             modes[feature] = !modes[feature];
             btn.classList.toggle('active-mode', modes[feature]);
 
             const corsPoints = [
-                { lat: 16.8661, lng: 96.1951, name: 'CORS Yangon Ground Station', color: '#10b981', size: 0.8 },
-                { lat: 19.7633, lng: 96.0785, name: 'CORS Naypyidaw Node', color: '#38bdf8', size: 0.7 },
-                { lat: 21.9588, lng: 96.0891, name: 'CORS Mandalay Station', color: '#60a5fa', size: 0.7 },
-                { lat: 20.7831, lng: 97.0381, name: 'CORS Taunggyi Station', color: '#f59e0b', size: 0.6 }
-            ];
-
-            const corsRings = [
-                { lat: 16.8661, lng: 96.1951, maxRadius: 8, propagationSpeed: 1, repeatPeriod: 1500, color: '#10b981' },
-                { lat: 19.7633, lng: 96.0785, maxRadius: 6, propagationSpeed: 1, repeatPeriod: 1500, color: '#38bdf8' },
-                { lat: 21.9588, lng: 96.0891, maxRadius: 6, propagationSpeed: 1, repeatPeriod: 1500, color: '#60a5fa' }
-            ];
-
-            const tecRings = [
-                { lat: 15.0, lng: 95.0, maxRadius: 20, propagationSpeed: 0.8, repeatPeriod: 1200, color: '#f59e0b' },
-                { lat: -15.0, lng: 110.0, maxRadius: 25, propagationSpeed: 0.8, repeatPeriod: 1200, color: '#f43f5e' },
-                { lat: 20.0, lng: 120.0, maxRadius: 22, propagationSpeed: 0.8, repeatPeriod: 1200, color: '#f59e0b' },
-                { lat: 0.0, lng: 80.0, maxRadius: 28, propagationSpeed: 0.6, repeatPeriod: 1500, color: '#a855f7' }
+                { lat: 16.8661, lng: 96.1951, name: 'CORS Yangon Station', color: '#10b981', size: 0.6 },
+                { lat: 19.7633, lng: 96.0785, name: 'CORS Naypyidaw Station', color: '#38bdf8', size: 0.5 },
+                { lat: 21.9588, lng: 96.0891, name: 'CORS Mandalay Station', color: '#60a5fa', size: 0.5 },
+                { lat: 20.7831, lng: 97.0381, name: 'CORS Taunggyi Station', color: '#f59e0b', size: 0.5 }
             ];
 
             // 1. CORS Stations Mode
             if (feature === 'stations') {
                 myGlobe.pointsData(modes.stations ? corsPoints : []);
-                updateActiveRings(corsRings, tecRings);
             }
 
-            // 2. SGP4 Orbit Tracks Mode (Fix rendering of glowing 3D orbits)
+            // 2. SGP4 Orbit Tracks Mode
             if (feature === 'tracks') {
                 if (modes.tracks) {
                     const orbitPaths = [
-                        generateCirclePath(55, 0, '#38bdf8'),
-                        generateCirclePath(55, 60, '#10b981'),
-                        generateCirclePath(55, 120, '#f43f5e'),
-                        generateCirclePath(55, 180, '#a855f7'),
-                        generateCirclePath(55, 240, '#f59e0b')
+                        generateCirclePath(55, 0, 'rgba(56, 189, 248, 0.6)'),
+                        generateCirclePath(55, 60, 'rgba(16, 185, 129, 0.6)'),
+                        generateCirclePath(55, 120, 'rgba(244, 63, 94, 0.6)'),
+                        generateCirclePath(55, 180, 'rgba(168, 85, 247, 0.6)'),
+                        generateCirclePath(55, 240, 'rgba(245, 158, 11, 0.6)')
                     ];
                     myGlobe.pathsData(orbitPaths);
                 } else {
@@ -601,22 +572,14 @@
                 }
             }
 
-            // 3. TEC Ionosphere Heatmap Mode (Prominent Equatorial Anomaly Heat Rings + Plasma Glow)
+            // 3. TEC Ionosphere Mode (Sleek Warm Ionosphere Glow)
             if (feature === 'heatmap') {
                 if (modes.heatmap) {
-                    myGlobe.atmosphereColor('#f59e0b').atmosphereAltitude(0.35);
+                    myGlobe.atmosphereColor('#f59e0b').atmosphereAltitude(0.28);
                 } else {
                     myGlobe.atmosphereColor('#38bdf8').atmosphereAltitude(0.18);
                 }
-                updateActiveRings(corsRings, tecRings);
             }
-        }
-
-        function updateActiveRings(corsRings, tecRings) {
-            let combinedRings = [];
-            if (modes.stations) combinedRings = combinedRings.concat(corsRings);
-            if (modes.heatmap) combinedRings = combinedRings.concat(tecRings);
-            myGlobe.ringsData(combinedRings);
         }
 
         function renderSkyPlotCanvas(satellites) {
