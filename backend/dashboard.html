@@ -33,7 +33,7 @@
             background-color: var(--bg-dark); 
             color: var(--text-main); 
             font-family: 'Pyidaungsu', -apple-system, sans-serif; 
-            font-size: 13px; /* တိုးမြှင့်ထားသော စာလုံးအရွယ်အစား */
+            font-size: 13px;
         }
 
         body {
@@ -46,7 +46,7 @@
 
         .mono { font-family: 'JetBrains Mono', monospace; }
 
-        /* Navigation Header */
+        /* Navigation Header with Centered Title */
         .top-nav {
             display: flex;
             justify-content: space-between;
@@ -58,14 +58,26 @@
             padding: 8px 16px;
             flex-shrink: 0;
             box-shadow: 0 0 15px rgba(0, 242, 255, 0.1);
+            position: relative;
         }
 
-        .brand-logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; }
+        /* Centered Brand Title */
+        .brand-logo-centered {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 15px;
+            color: #fff;
+            letter-spacing: 0.5px;
+            pointer-events: none;
+        }
         .brand-dot { width: 10px; height: 10px; background: var(--accent-cyan); border-radius: 50%; box-shadow: 0 0 12px var(--accent-cyan); }
 
-        .exec-status-title { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--accent-green); font-weight: 600; }
-
-        .nav-tabs { display: flex; gap: 6px; background: rgba(0, 0, 0, 0.6); padding: 4px; border-radius: 6px; border: 1px solid var(--panel-border); }
+        .nav-tabs { display: flex; gap: 6px; background: rgba(0, 0, 0, 0.6); padding: 4px; border-radius: 6px; border: 1px solid var(--panel-border); z-index: 2; }
         .nav-tab-btn {
             background: transparent; color: var(--text-muted); border: 1px solid transparent; padding: 4px 12px; border-radius: 4px;
             font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s;
@@ -141,8 +153,9 @@
             backdrop-filter: blur(12px); border-radius: 8px; padding: 10px 12px; width: 230px; pointer-events: auto;
         }
 
-        .sat-marker { display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translate(-50%, -50%); }
-        .sat-icon-wrapper { font-size: 16px; filter: drop-shadow(0 0 8px var(--accent-cyan)); }
+        .sat-marker { display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translate(-50%, -50%); z-index: 20; }
+        .sat-icon-wrapper { font-size: 18px; filter: drop-shadow(0 0 8px var(--accent-cyan)); transition: transform 0.2s; }
+        .sat-marker:hover .sat-icon-wrapper { transform: scale(1.3); }
         .sat-tag { font-size: 9px; font-family: 'JetBrains Mono', monospace; background: rgba(4, 6, 10, 0.95); padding: 2px 6px; border-radius: 3px; white-space: nowrap; margin-top: 2px; }
 
         /* Bottom Panels */
@@ -191,7 +204,7 @@
         .upload-box { display: flex; gap: 8px; align-items: center; background: rgba(0,0,0,0.4); padding: 6px 8px; border-radius: 6px; border: 1px dashed var(--accent-cyan); }
         .upload-btn { background: rgba(0,242,255,0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; cursor: pointer; }
 
-        /* Interactive Detail Modal Drawer */
+        /* Detail Modal Drawer */
         #detailModal {
             display: none;
             position: fixed;
@@ -199,45 +212,37 @@
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 9999;
-            width: 450px;
+            width: 480px;
             background: rgba(6, 10, 20, 0.96);
             border: 2px solid var(--accent-cyan);
             border-radius: 12px;
-            padding: 16px;
+            padding: 18px;
             backdrop-filter: blur(20px);
-            box-shadow: 0 0 30px rgba(0, 242, 255, 0.4);
+            box-shadow: 0 0 35px rgba(0, 242, 255, 0.4);
         }
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--panel-border); padding-bottom: 8px; margin-bottom: 10px; font-size: 14px; font-weight: 700; color: var(--accent-cyan); }
-        .modal-close { cursor: pointer; color: var(--text-muted); font-size: 16px; font-weight: 700; }
+        .modal-close { cursor: pointer; color: var(--text-muted); font-size: 18px; font-weight: 700; transition: color 0.2s; }
         .modal-close:hover { color: var(--accent-red); }
-        .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 11px; margin-top: 8px; }
-        .modal-box { background: rgba(0,0,0,0.5); padding: 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); }
+        .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 11.5px; margin-top: 8px; }
+        .modal-box { background: rgba(0,0,0,0.5); padding: 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08); }
     </style>
 </head>
 <body>
 
-    <!-- Interactive Detail Modal -->
+    <!-- Detail Interactive Modal -->
     <div id="detailModal" class="mono">
         <div class="modal-header">
-            <span id="modal-title">🔍 DETAILED TELEMETRY METRICS</span>
+            <span id="modal-title">🔍 SATELLITE TELEMETRY METRICS</span>
             <span class="modal-close" onclick="closeModal()">✕</span>
         </div>
         <div id="modal-content-body">
-            <!-- Dynamic Content Loaded Here -->
+            <!-- Dynamic Content Loaded On Click -->
         </div>
     </div>
 
     <!-- Navigation Header -->
     <header class="top-nav">
-        <div class="brand-logo">
-            <div class="brand-dot"></div>
-            <span>GNSS Global Mission Control Center</span>
-        </div>
-
-        <div class="exec-status-title">
-            <span>🟢 အလွန်ကောင်းမွန်ပါသည် (SYSTEM OPTIMAL)</span>
-        </div>
-
+        <!-- Left Nav Switcher -->
         <div class="nav-tabs mono">
             <button class="nav-tab-btn active" onclick="switchConstellation('gps', this)">🛰️ GPS</button>
             <button class="nav-tab-btn" onclick="switchConstellation('bds', this)">🛰️ BEIDOU</button>
@@ -246,7 +251,14 @@
             <button class="nav-tab-btn" onclick="switchConstellation('all', this)">✨ ALL</button>
         </div>
 
-        <div class="mono" style="font-size: 10px; color: var(--text-muted);">
+        <!-- Centered Main Title -->
+        <div class="brand-logo-centered">
+            <div class="brand-dot"></div>
+            <span>GNSS Global Mission Control Center</span>
+        </div>
+
+        <!-- Right Station Meta Info -->
+        <div class="mono" style="font-size: 10px; color: var(--text-muted); z-index: 2;">
             မြန်မာစံတော်ချိန်: <b id="mmt-time" style="color:var(--accent-cyan);">--:--:-- MMT</b> | ပင်မစခန်း: <b style="color:#fff;">ရန်ကုန် (16.86°N, 96.19°E)</b>
         </div>
     </header>
@@ -361,11 +373,11 @@
         updateMyanmarTime();
 
         const constellationData = {
-            gps: { name: "GPS Constellation (USA)", satName: "SVN-62 / PRN-07", total: 31, active: 28, visible: 10, pdop: "1.67", hdop: "0.81", vdop: "1.46", fleet: [12, 8, 7, 4], color: "#38bdf8", sats: [{ prn: 'G07', elevation: 75, azimuth: 45, snr: 46.8 }, { prn: 'G12', elevation: 60, azimuth: 120, snr: 44.2 }, { prn: 'G18', elevation: 40, azimuth: 210, snr: 41.5 }, { prn: 'G24', elevation: 80, azimuth: 310, snr: 48.1 }], globeSats: [{ name: 'GPS SVN-62', baseLat: 35.0, baseLng: 139.0, latAmplitude: 15, speed: 12, color: '#38bdf8' }, { name: 'GPS SVN-45', baseLat: 51.5, baseLng: -0.12, latAmplitude: 20, speed: 10, color: '#00ff9d' }] },
-            bds: { name: "BEIDOU Constellation (China)", satName: "BDS-3 MEO-01", total: 56, active: 48, visible: 14, pdop: "1.35", hdop: "0.65", vdop: "1.18", fleet: [18, 15, 15, 8], color: "#ff3b5c", sats: [{ prn: 'C01', elevation: 82, azimuth: 30, snr: 48.2 }, { prn: 'C03', elevation: 70, azimuth: 110, snr: 46.5 }, { prn: 'C07', elevation: 65, azimuth: 195, snr: 45.1 }], globeSats: [{ name: 'BDS-3 GEO-03', baseLat: 0.0, baseLng: 110.5, latAmplitude: 0, speed: 0, color: '#ff3b5c' }, { name: 'BDS-3 MEO-01', baseLat: 39.9, baseLng: 116.4, latAmplitude: 20, speed: 15, color: '#38bdf8' }] },
-            galileo: { name: "GALILEO Constellation (Europe)", satName: "GSAT-0201", total: 28, active: 24, visible: 8, pdop: "1.92", hdop: "0.95", vdop: "1.67", fleet: [10, 8, 6, 4], color: "#00ff9d", sats: [{ prn: 'E01', elevation: 70, azimuth: 60, snr: 44.1 }], globeSats: [{ name: 'GALILEO GSAT-0201', baseLat: 48.8, baseLng: 2.35, latAmplitude: 18, speed: 12, color: '#00ff9d' }] },
-            glonass: { name: "GLONASS Constellation (Russia)", satName: "GLONASS-M 758", total: 24, active: 22, visible: 7, pdop: "2.15", hdop: "1.10", vdop: "1.85", fleet: [8, 8, 5, 3], color: "#c084fc", sats: [{ prn: 'R08', elevation: 65, azimuth: 40, snr: 42.5 }], globeSats: [{ name: 'GLONASS-M No.758', baseLat: 55.7, baseLng: 37.6, latAmplitude: 25, speed: 14, color: '#c084fc' }] },
-            all: { name: "All Constellations (Multi-GNSS)", satName: "Multi-GNSS Active", total: 139, active: 122, visible: 39, pdop: "1.15", hdop: "0.52", vdop: "0.98", fleet: [48, 38, 24, 12], color: "#00f2ff", sats: [{ prn: 'G07', elevation: 75, azimuth: 45, snr: 46.8 }, { prn: 'C03', elevation: 82, azimuth: 110, snr: 48.2 }, { prn: 'E01', elevation: 70, azimuth: 60, snr: 44.1 }, { prn: 'R08', elevation: 65, azimuth: 40, snr: 42.5 }], globeSats: [{ name: 'GPS SVN-62', baseLat: 35.0, baseLng: 139.0, latAmplitude: 15, speed: 12, color: '#38bdf8' }, { name: 'BDS-3 GEO-03', baseLat: 0.0, baseLng: 110.5, latAmplitude: 0, speed: 0, color: '#ff3b5c' }, { name: 'GALILEO GSAT', baseLat: 48.8, baseLng: 2.35, latAmplitude: 18, speed: 12, color: '#00ff9d' }, { name: 'GLONASS-M', baseLat: 55.7, baseLng: 37.6, latAmplitude: 25, speed: 14, color: '#c084fc' }] }
+            gps: { name: "GPS Constellation (USA)", satName: "SVN-62 / PRN-07", total: 31, active: 28, visible: 10, pdop: "1.67", hdop: "0.81", vdop: "1.46", fleet: [12, 8, 7, 4], color: "#38bdf8", sats: [{ prn: 'G07', elevation: 75, azimuth: 45, snr: 46.8 }, { prn: 'G12', elevation: 60, azimuth: 120, snr: 44.2 }, { prn: 'G18', elevation: 40, azimuth: 210, snr: 41.5 }, { prn: 'G24', elevation: 80, azimuth: 310, snr: 48.1 }], globeSats: [{ name: 'GPS SVN-62 (PRN-07)', prn: 'G07', baseLat: 35.0, baseLng: 139.0, latAmplitude: 15, speed: 12, color: '#38bdf8', elevation: 75, azimuth: 45, snr: 46.8, altitude: '20,200 km', status: 'HEALTHY' }, { name: 'GPS SVN-45 (PRN-12)', prn: 'G12', baseLat: 51.5, baseLng: -0.12, latAmplitude: 20, speed: 10, color: '#00ff9d', elevation: 60, azimuth: 120, snr: 44.2, altitude: '20,180 km', status: 'TRACKING' }] },
+            bds: { name: "BEIDOU Constellation (China)", satName: "BDS-3 MEO-01", total: 56, active: 48, visible: 14, pdop: "1.35", hdop: "0.65", vdop: "1.18", fleet: [18, 15, 15, 8], color: "#ff3b5c", sats: [{ prn: 'C01', elevation: 82, azimuth: 30, snr: 48.2 }, { prn: 'C03', elevation: 70, azimuth: 110, snr: 46.5 }, { prn: 'C07', elevation: 65, azimuth: 195, snr: 45.1 }], globeSats: [{ name: 'BDS-3 GEO-03 (C01)', prn: 'C01', baseLat: 0.0, baseLng: 110.5, latAmplitude: 0, speed: 0, color: '#ff3b5c', elevation: 82, azimuth: 30, snr: 48.2, altitude: '35,786 km', status: 'GEO-LOCK' }, { name: 'BDS-3 MEO-01 (C03)', prn: 'C03', baseLat: 39.9, baseLng: 116.4, latAmplitude: 20, speed: 15, color: '#38bdf8', elevation: 70, azimuth: 110, snr: 46.5, altitude: '21,528 km', status: 'HEALTHY' }] },
+            galileo: { name: "GALILEO Constellation (Europe)", satName: "GSAT-0201", total: 28, active: 24, visible: 8, pdop: "1.92", hdop: "0.95", vdop: "1.67", fleet: [10, 8, 6, 4], color: "#00ff9d", sats: [{ prn: 'E01', elevation: 70, azimuth: 60, snr: 44.1 }], globeSats: [{ name: 'GALILEO GSAT-0201 (E01)', prn: 'E01', baseLat: 48.8, baseLng: 2.35, latAmplitude: 18, speed: 12, color: '#00ff9d', elevation: 70, azimuth: 60, snr: 44.1, altitude: '23,222 km', status: 'ACTIVE' }] },
+            glonass: { name: "GLONASS Constellation (Russia)", satName: "GLONASS-M 758", total: 24, active: 22, visible: 7, pdop: "2.15", hdop: "1.10", vdop: "1.85", fleet: [8, 8, 5, 3], color: "#c084fc", sats: [{ prn: 'R08', elevation: 65, azimuth: 40, snr: 42.5 }], globeSats: [{ name: 'GLONASS-M No.758 (R08)', prn: 'R08', baseLat: 55.7, baseLng: 37.6, latAmplitude: 25, speed: 14, color: '#c084fc', elevation: 65, azimuth: 40, snr: 42.5, altitude: '19,100 km', status: 'TRACKING' }] },
+            all: { name: "All Constellations (Multi-GNSS)", satName: "Multi-GNSS Active", total: 139, active: 122, visible: 39, pdop: "1.15", hdop: "0.52", vdop: "0.98", fleet: [48, 38, 24, 12], color: "#00f2ff", sats: [{ prn: 'G07', elevation: 75, azimuth: 45, snr: 46.8 }, { prn: 'C03', elevation: 82, azimuth: 110, snr: 48.2 }, { prn: 'E01', elevation: 70, azimuth: 60, snr: 44.1 }, { prn: 'R08', elevation: 65, azimuth: 40, snr: 42.5 }], globeSats: [{ name: 'GPS SVN-62 (PRN-07)', prn: 'G07', baseLat: 35.0, baseLng: 139.0, latAmplitude: 15, speed: 12, color: '#38bdf8', elevation: 75, azimuth: 45, snr: 46.8, altitude: '20,200 km', status: 'HEALTHY' }, { name: 'BDS-3 GEO-03 (C01)', prn: 'C01', baseLat: 0.0, baseLng: 110.5, latAmplitude: 0, speed: 0, color: '#ff3b5c', elevation: 82, azimuth: 30, snr: 48.2, altitude: '35,786 km', status: 'GEO-LOCK' }, { name: 'GALILEO GSAT (E01)', prn: 'E01', baseLat: 48.8, baseLng: 2.35, latAmplitude: 18, speed: 12, color: '#00ff9d', elevation: 70, azimuth: 60, snr: 44.1, altitude: '23,222 km', status: 'ACTIVE' }, { name: 'GLONASS-M (R08)', prn: 'R08', baseLat: 55.7, baseLng: 37.6, latAmplitude: 25, speed: 14, color: '#c084fc', elevation: 65, azimuth: 40, snr: 42.5, altitude: '19,100 km', status: 'TRACKING' }] }
         };
 
         function resizeGlobe() {
@@ -396,7 +408,11 @@
                             <div class="sat-icon-wrapper">🛰️</div>
                             <div class="sat-tag" style="color:${d.color}; border:1px solid ${d.color};">${d.name}</div>
                         `;
-                        el.onclick = () => openSatModal(d);
+                        // Click satellite marker opens detail modal
+                        el.onclick = (e) => {
+                            e.stopPropagation();
+                            openSatModal(d);
+                        };
                         return el;
                     })
                     .ringsData([{ lat: 16.8661, lng: 96.1951, maxRadius: 16, propagationSpeed: 1.2, repeatPeriod: 2000, color: '#00ff9d' }])
@@ -501,28 +517,30 @@
             }
         }
 
-        // Modal Functions for Interactions
+        // Modal Control Functions
         function closeModal() {
             document.getElementById('detailModal').style.display = 'none';
         }
 
         function openSatModal(sat) {
-            document.getElementById('modal-title').innerText = `🛰️ SATELLITE: ${sat.name}`;
+            document.getElementById('modal-title').innerText = `🛰️ TELEMETRY METRICS: ${sat.name || 'SATELLITE'}`;
             document.getElementById('modal-content-body').innerHTML = `
                 <div class="modal-grid">
-                    <div class="modal-box">ORBIT VELOCITY: <b style="color:var(--accent-cyan);">3.87 km/s</b></div>
-                    <div class="modal-box">ALTITUDE: <b style="color:var(--accent-green);">20,200 km</b></div>
-                    <div class="modal-box">LATITUDE: <b style="color:#fff;">${sat.baseLat.toFixed(2)}°</b></div>
-                    <div class="modal-box">LONGITUDE: <b style="color:#fff;">${sat.baseLng.toFixed(2)}°</b></div>
-                    <div class="modal-box">DOPPLER SHIFT: <b style="color:var(--accent-yellow);">+1.42 kHz</b></div>
-                    <div class="modal-box">STATUS: <b style="color:var(--accent-green);">SIGNAL LOCKED</b></div>
+                    <div class="modal-box">PRN CODE: <b style="color:var(--accent-cyan);">${sat.prn || 'G--'}</b></div>
+                    <div class="modal-box">ALTITUDE: <b style="color:var(--accent-green);">${sat.altitude || '20,200 km'}</b></div>
+                    <div class="modal-box">LATITUDE: <b style="color:#fff;">${(sat.lat || sat.baseLat || 0).toFixed(2)}°</b></div>
+                    <div class="modal-box">LONGITUDE: <b style="color:#fff;">${(sat.lng || sat.baseLng || 0).toFixed(2)}°</b></div>
+                    <div class="modal-box">ELEVATION: <b style="color:var(--accent-yellow);">${sat.elevation || 45}°</b></div>
+                    <div class="modal-box">AZIMUTH: <b style="color:var(--accent-blue);">${sat.azimuth || 120}°</b></div>
+                    <div class="modal-box">SIGNAL (C/N0): <b style="color:var(--accent-cyan);">${sat.snr || 45.0} dB-Hz</b></div>
+                    <div class="modal-box">STATUS: <b style="color:var(--accent-green);">${sat.status || 'ACTIVE'}</b></div>
                 </div>
             `;
             document.getElementById('detailModal').style.display = 'block';
         }
 
         function openRowModal(prn, sys, el, az, snr) {
-            document.getElementById('modal-title').innerText = `📡 DETAILED DATA: ${prn} (${sys})`;
+            document.getElementById('modal-title').innerText = `📡 DETAILED STREAM LOG: ${prn} (${sys})`;
             document.getElementById('modal-content-body').innerHTML = `
                 <div class="modal-grid">
                     <div class="modal-box">ELEVATION ANGLE: <b style="color:var(--accent-cyan);">${el}°</b></div>
@@ -537,6 +555,34 @@
         }
 
         function showFeatureDetail(feature) {
+            if (!myGlobe) return;
+
+            if (feature === 'stations') {
+                myGlobe.pointsData([
+                    { lat: 16.8661, lng: 96.1951, name: 'Yangon Station', color: '#00ff9d', size: 0.8 },
+                    { lat: 19.7633, lng: 96.0785, name: 'Naypyidaw Node', color: '#00f2ff', size: 0.6 },
+                    { lat: 21.9588, lng: 96.0891, name: 'Mandalay Node', color: '#38bdf8', size: 0.6 }
+                ]).pointColor('color').pointRadius('size');
+
+            } else if (feature === 'tracks') {
+                const orbitLines = [
+                    [{ lat: -50, lng: -180 }, { lat: 0, lng: -90 }, { lat: 50, lng: 0 }, { lat: 0, lng: 90 }, { lat: -50, lng: 180 }],
+                    [{ lat: 50, lng: -180 }, { lat: 0, lng: -90 }, { lat: -50, lng: 0 }, { lat: 0, lng: 90 }, { lat: 50, lng: 180 }]
+                ];
+                myGlobe.pathsData(orbitLines).pathColor(() => '#00f2ff').pathStroke(1.5);
+
+            } else if (feature === 'heatmap') {
+                myGlobe.atmosphereColor('#ff3b5c').atmosphereAltitude(0.35);
+
+            } else if (feature === 'spectrum') {
+                if (waveformChart) {
+                    waveformChart.config.type = 'bar';
+                    waveformChart.data.labels = ['L1 (1575MHz)', 'L2 (1227MHz)', 'L5 (1176MHz)', 'B1I', 'B2a'];
+                    waveformChart.data.datasets[0].data = [46.8, 42.1, 44.5, 48.0, 43.2];
+                    waveformChart.update();
+                }
+            }
+
             const titles = {
                 stations: "📡 GROUND STATIONS NETWORK",
                 tracks: "🌐 ORBIT TRACKS & PREDICTION",
@@ -544,10 +590,10 @@
                 spectrum: "📊 LIVE SIGNAL SPECTRUM"
             };
             const details = {
-                stations: "Yangon Station Active (16.86°N, 96.19°E). Secondary tracking links connected to Naypyidaw & Mandalay nodes.",
-                tracks: "SGP4 Propagator Engine running. Orbit decay and range rate estimations within nominal thresholds.",
-                heatmap: "Total Electron Content (TEC) ionospheric delay model active. Current ionosphere drift: 12 TECU.",
-                spectrum: "Multi-frequency L1/L2/L5 and B1I/B2a/B3I signal-to-noise ratio monitoring in real-time."
+                stations: "Yangon Main Station Active (16.86°N, 96.19°E). Secondary tracking nodes connected to Naypyidaw & Mandalay.",
+                tracks: "SGP4 Orbit Propagator Engine running. 3D Ground Tracks updated in real-time.",
+                heatmap: "Total Electron Content (TEC) ionospheric delay model activated. Atmosphere glow updated to thermal spectrum.",
+                spectrum: "Multi-frequency L1/L2/L5 and B1I/B2a/B3I signal-to-noise ratio spectrum analysis."
             };
             document.getElementById('modal-title').innerText = titles[feature];
             document.getElementById('modal-content-body').innerHTML = `
@@ -559,7 +605,7 @@
         }
 
         async function uploadAndCompare() {
-            alert("RINEX Processing Engine Activated!");
+            alert("RINEX Processing Module Activated!");
         }
 
         function initCharts() {
