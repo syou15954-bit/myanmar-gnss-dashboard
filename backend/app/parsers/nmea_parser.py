@@ -1,9 +1,33 @@
-# myanmar-gnss-dashboard/backend/app/parsers/nmea_parser.py
 import pynmea2
+import sqlite3
+import json
 
 class NMEAGNSSTracker:
-    def __init__(self):
+    def __init__(self, db_path="gnss_local.db", max_logs=5000):
+        # Database ဖိုင်နာမည်နှင့် အများဆုံးသိမ်းဆည်းမည့် မှတ်တမ်းအရေအတွက် (Limit)
+        self.db_path = db_path
+        self.max_logs = max_logs
+        self.init_db()  # Database Table တည်ဆောက်ခြင်း
         self.reset()
+
+    def init_db(self):
+        """SQLite Database နှင့် Table ကို မရှိသေးပါက အလိုအလျောက် တည်ဆောက်ပေးမည်"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS gnss_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                lat REAL,
+                lon REAL,
+                alt REAL,
+                gps_count INTEGER,
+                bds_count INTEGER,
+                satellites_json TEXT
+            )
+        ''')
+        conn.commit()
+        conn.close()
 
     def reset(self):
         self.satellites = []
@@ -71,3 +95,47 @@ class NMEAGNSSTracker:
             "bds_satellites_count": self.bds_count,
             "satellites_detail": self.satellites
         }
+
+    def save_to_db(self):
+        """
+        ထုတ်ယူထားသော Data များကို SQLite ထဲသို့ သိမ်းမည်။
+        မှတ်တမ်း ၅၀၀၀ ကျော်ပါက အဟောင်းဆုံးကို အလိုအလျောက် ဖျက်မည် (FIFO)။
+        """
+        summary = self.get_summary()
+        
+        # Data လုံးဝမရှိပါက Database ထဲ မသိမ်းပါ
+        if summary["coordinates"]["lat"] is None and summary["total_satellites"] == 0:
+            return False
+
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        # Data အသစ်ကို ထည့်သွင်းခြင်း
+        cursor.execute('''
+            INSERT INTO gnss_logs (lat, lon, alt, gps_count, bds_count, satellites_json)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (
+            summary["coordinates"]["lat"],
+            summary["coordinates"]["lon"],
+            summary["coordinates"]["alt"],
+            summary["gps_satellites_count"],
+            summary["bds_satellites_count"],
+            json.dumps(summary["satellites_detail"])
+        ))
+
+        # FIFO Limit စစ်ဆေးခြင်း: max_logs (၅၀၀၀) ထက်ကျော်လွန်ပါက အဟောင်းဆုံး row များကို ဖျက်ပစ်မည်
+        cursor.execute(f'''
+            DELETE FROM gnss_logs 
+            WHERE id NOT IN (
+                SELECT id FROM gnss_logs 
+                ORDER BY id DESC 
+                LIMIT {self.max_logs}
+            )
+        ''')
+
+        conn.commit()
+        conn.close()
+        
+        # Save လုပ်ပြီးပါက Memory ပေါ်ရှိ data များကို ရှင်းလင်းမည်
+        self.reset() 
+        return True
