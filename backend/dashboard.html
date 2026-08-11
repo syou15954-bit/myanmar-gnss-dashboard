@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GNSS Global Mission Control Center</title>
-    <!-- Chart.js & Globe.gl Standalone Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/globe.gl"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Pyidaungsu:wght@400;600;700&display=swap" rel="stylesheet">
@@ -129,53 +128,15 @@
             width: 100%;
         }
 
-        .left-col {
-            grid-column: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            min-height: 0;
-            overflow: hidden;
-        }
-
-        .center-col {
-            grid-column: 2;
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .right-col {
-            grid-column: 3;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            min-height: 0;
-            overflow: hidden;
-        }
-
-        .bottom-row {
-            grid-column: 1 / -1;
-            min-height: 0;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
+        .left-col { grid-column: 1; display: flex; flex-direction: column; gap: 5px; min-height: 0; overflow: hidden; }
+        .center-col { grid-column: 2; display: flex; flex-direction: column; min-height: 0; position: relative; overflow: hidden; }
+        .right-col { grid-column: 3; display: flex; flex-direction: column; gap: 5px; min-height: 0; overflow: hidden; }
+        .bottom-row { grid-column: 1 / -1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
 
         .card { 
-            background: var(--card-bg); 
-            border-radius: 6px; 
-            padding: 6px 9px; 
-            border: 1px solid var(--card-border); 
-            position: relative;
-            backdrop-filter: blur(12px);
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-            flex: 1;
-            overflow: hidden;
+            background: var(--card-bg); border-radius: 6px; padding: 6px 9px; 
+            border: 1px solid var(--card-border); position: relative; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; min-height: 0; flex: 1; overflow: hidden;
             box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
         }
 
@@ -186,92 +147,36 @@
         .card-accent-cyan { border-top: 2px solid var(--accent-cyan); }
 
         .card-header { 
-            font-size: 10.5px; 
-            font-weight: 700; 
-            color: var(--text-main); 
-            margin-bottom: 3px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding-bottom: 2px;
-            flex-shrink: 0;
+            font-size: 10.5px; font-weight: 700; color: var(--text-main); margin-bottom: 3px; 
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 2px; flex-shrink: 0;
         }
 
         .card-header-title { display: flex; align-items: center; gap: 5px; }
 
-        .tab-bar {
-            display: flex;
-            gap: 4px;
-        }
+        .tab-bar { display: flex; gap: 4px; }
         .tab-btn {
-            background: #1e293b;
-            color: var(--text-muted);
-            border: 1px solid #334155;
-            padding: 2px 8px;
-            border-radius: 3px;
-            font-size: 9px;
-            font-weight: 700;
-            cursor: pointer;
+            background: #1e293b; color: var(--text-muted); border: 1px solid #334155;
+            padding: 2px 8px; border-radius: 3px; font-size: 9px; font-weight: 700; cursor: pointer;
         }
-        .tab-btn.active {
-            background: rgba(6, 182, 212, 0.25);
-            color: var(--accent-cyan);
-            border-color: var(--accent-cyan);
-        }
-        .tab-content {
-            display: none;
-            flex: 1;
-            min-height: 0;
-            position: relative;
-        }
-        .tab-content.active {
-            display: flex;
-            flex-direction: column;
-        }
+        .tab-btn.active { background: rgba(6, 182, 212, 0.25); color: var(--accent-cyan); border-color: var(--accent-cyan); }
+        .tab-content { display: none; flex: 1; min-height: 0; position: relative; }
+        .tab-content.active { display: flex; flex-direction: column; }
 
-        .chart-container { 
-            position: relative;
-            flex: 1; 
-            width: 100%; 
-            min-height: 0;
-        }
-        .chart-container canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100% !important;
-            height: 100% !important;
-        }
+        .chart-container { position: relative; flex: 1; width: 100%; min-height: 0; }
+        .chart-container canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
 
         .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; text-align: center; margin-bottom: 3px; flex-shrink: 0; }
         .stat-box { background: rgba(30, 41, 59, 0.6); padding: 3px; border-radius: 3px; }
         .stat-lbl { font-size: 8px; color: var(--text-muted); font-weight: 600; }
         .stat-val { font-size: 11.5px; font-weight: 800; margin-top: 1px; }
 
-        #globeViz {
-            flex: 1;
-            width: 100%;
-            height: 100%;
-            border-radius: 5px;
-            overflow: hidden;
-            background: #000;
-            position: relative;
-            min-height: 0;
-        }
+        #globeViz { flex: 1; width: 100%; height: 100%; border-radius: 5px; overflow: hidden; background: #000; position: relative; min-height: 0; }
         
         .globe-legend-box {
-            position: absolute;
-            bottom: 6px;
-            left: 6px;
-            z-index: 10;
-            background: rgba(3, 7, 18, 0.92);
-            border: 1px solid var(--card-border);
-            backdrop-filter: blur(8px);
-            padding: 5px 8px;
-            border-radius: 4px;
-            font-size: 8px;
-            pointer-events: none;
+            position: absolute; bottom: 6px; left: 6px; z-index: 10;
+            background: rgba(3, 7, 18, 0.92); border: 1px solid var(--card-border);
+            backdrop-filter: blur(8px); padding: 5px 8px; border-radius: 4px; font-size: 8px; pointer-events: none;
         }
         .legend-row { display: flex; align-items: center; gap: 4px; margin-bottom: 2px; font-weight: 600; }
 
@@ -290,87 +195,26 @@
         .dop-mini-card { background: rgba(30, 41, 59, 0.5); padding: 3px; border-radius: 3px; text-align: center; }
         .dop-mini-val { font-size: 12px; font-weight: 700; color: var(--accent-blue); }
 
-        .rinex-bottom-layout {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            height: 100%;
-        }
+        .rinex-bottom-layout { display: flex; gap: 10px; align-items: center; height: 100%; }
         .upload-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            background: rgba(30, 41, 59, 0.4);
-            padding: 6px 10px;
-            border-radius: 4px;
-            border: 1px dashed var(--accent-cyan);
-            width: 220px;
-            flex-shrink: 0;
+            display: flex; flex-direction: column; gap: 4px; background: rgba(30, 41, 59, 0.4);
+            padding: 6px 10px; border-radius: 4px; border: 1px dashed var(--accent-cyan); width: 220px; flex-shrink: 0;
         }
-        .file-input-wrapper input[type="file"] {
-            color: var(--text-muted);
-            font-size: 9px;
-            cursor: pointer;
-            width: 100%;
-        }
+        .file-input-wrapper input[type="file"] { color: var(--text-muted); font-size: 9px; cursor: pointer; width: 100%; }
 
-        .sat-marker {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            transform: translate(-50%, -50%);
-        }
-        .sat-icon-wrapper {
-            font-size: 14px;
-            filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.9));
-        }
-        .sat-tag {
-            font-size: 8px;
-            font-family: 'JetBrains Mono', monospace;
-            background: rgba(3, 7, 18, 0.92);
-            padding: 1px 4px;
-            border-radius: 2px;
-            white-space: nowrap;
-            margin-top: 1px;
-        }
+        .sat-marker { display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translate(-50%, -50%); }
+        .sat-icon-wrapper { font-size: 14px; filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.9)); }
+        .sat-tag { font-size: 8px; font-family: 'JetBrains Mono', monospace; background: rgba(3, 7, 18, 0.92); padding: 1px 4px; border-radius: 2px; white-space: nowrap; margin-top: 1px; }
 
         #satHudModal {
-            display: none;
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 100;
-            background: rgba(3, 7, 18, 0.94);
-            border: 1px solid var(--accent-cyan);
-            padding: 8px 12px;
-            border-radius: 5px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 0 12px rgba(6, 182, 212, 0.35);
-            width: 210px;
+            display: none; position: absolute; top: 10px; right: 10px; z-index: 100;
+            background: rgba(3, 7, 18, 0.94); border: 1px solid var(--accent-cyan);
+            padding: 8px 12px; border-radius: 5px; backdrop-filter: blur(10px);
+            box-shadow: 0 0 12px rgba(6, 182, 212, 0.35); width: 210px;
         }
-        .hud-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding-bottom: 3px;
-            margin-bottom: 5px;
-            font-weight: 700;
-            color: var(--accent-cyan);
-        }
-        .hud-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4px;
-            font-size: 9px;
-        }
-        .hud-item {
-            background: rgba(30,41,59,0.5);
-            padding: 3px;
-            border-radius: 3px;
-            text-align: center;
-        }
+        .hud-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 3px; margin-bottom: 5px; font-weight: 700; color: var(--accent-cyan); }
+        .hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 9px; }
+        .hud-item { background: rgba(30,41,59,0.5); padding: 3px; border-radius: 3px; text-align: center; }
     </style>
 </head>
 <body>
@@ -457,9 +301,9 @@
                     <span class="mono" style="color:var(--accent-yellow); font-size:8px;">QUIET</span>
                 </div>
                 <div class="sat-spec-grid mono">
-                    <div><div class="stat-lbl">Kp-INDEX</div><div class="stat-spec-val" style="color:var(--accent-green);">2.1</div></div>
-                    <div><div class="stat-lbl">SOLAR FLUX</div><div class="stat-spec-val" style="color:var(--accent-blue);">142 SFU</div></div>
-                    <div><div class="stat-lbl">TEC DRIFT</div><div class="stat-spec-val" style="color:var(--accent-cyan);">12 TECU</div></div>
+                    <div><div class="stat-lbl">Kp-INDEX</div><div class="sat-spec-val" style="color:var(--accent-green);">2.1</div></div>
+                    <div><div class="stat-lbl">SOLAR FLUX</div><div class="sat-spec-val" style="color:var(--accent-blue);">142 SFU</div></div>
+                    <div><div class="stat-lbl">TEC DRIFT</div><div class="sat-spec-val" style="color:var(--accent-cyan);">12 TECU</div></div>
                 </div>
                 <div style="font-size:7.5px; color:var(--text-muted);" class="mono">
                     <span>Storm: </span><b style="color:var(--accent-green);">NONE</b> | TEC Delay: <b style="color:var(--accent-blue);">1.2m</b>
@@ -637,7 +481,7 @@
             const points = [];
             const inc = (incDeg * Math.PI) / 180;
             const raan = (raanDeg * Math.PI) / 180;
-            for (let i = 0; i <= 360; i += 5) {
+            for (let i = 0; i <= 360; i += 10) { // Optimized step size to reduce lag
                 const u = (i * Math.PI) / 180;
                 const x = Math.cos(u);
                 const y = Math.sin(u) * Math.cos(inc);
@@ -654,7 +498,7 @@
             for (let c = 0; c < count; c++) {
                 const points = [];
                 const phaseOffset = c * (360 / count);
-                for (let lng = -180; lng <= 180; lng += 4) {
+                for (let lng = -180; lng <= 180; lng += 8) { // Optimized step size
                     const lat = maxLat * Math.sin(((lng + phaseOffset) * Math.PI) / 180);
                     points.push({ lat: lat, lng: lng });
                 }
@@ -712,8 +556,7 @@
                         return el;
                     })
                     .ringsData([
-                        { lat: 16.8661, lng: 96.1951, maxRadius: 16, propagationSpeed: 1.2, repeatPeriod: 2000, color: '#22c55e' },
-                        { lat: 16.8661, lng: 96.1951, maxRadius: 8, propagationSpeed: 2, repeatPeriod: 1200, color: '#ef4444' }
+                        { lat: 16.8661, lng: 96.1951, maxRadius: 16, propagationSpeed: 1.2, repeatPeriod: 2000, color: '#22c55e' }
                     ])
                     .ringColor(d => d.color)
                     .ringMaxRadius(d => d.maxRadius)
@@ -723,37 +566,35 @@
                     .pathPoints(d => d)
                     .pathPointLat(p => p.lat)
                     .pathPointLng(p => p.lng)
-                    .pathColor(() => 'rgba(192, 132, 252, 0.55)')
-                    .pathStroke(1.2)
-                    .polygonsData([
-                        { type: "Polygon", coordinates: [[[80, -180], [80, 0], [-80, 0], [-80, -180], [80, -180]]] }
-                    ])
-                    .polygonCapColor(() => 'rgba(56, 189, 248, 0.04)')
-                    .polygonSideColor(() => 'rgba(0,0,0,0)')
-                    .polygonStrokeColor(() => 'rgba(6, 182, 212, 0.15)');
+                    .pathColor(() => 'rgba(192, 132, 252, 0.45)')
+                    .pathStroke(1.0);
 
                 myGlobe.controls().autoRotate = true;
-                myGlobe.controls().autoRotateSpeed = 0.5;
+                myGlobe.controls().autoRotateSpeed = 0.4;
             }
         } catch (e) {
             console.error("Globe Error:", e);
         }
 
-        function animateSatellites() {
-            animTime += 0.0012;
-            if (activeSatList.length > 0 && myGlobe) {
-                const dynamicSats = activeSatList.map((sat, i) => {
-                    let newLng = sat.baseLng;
-                    let newLat = sat.baseLat;
-                    if (sat.speed > 0) {
-                        newLng = (sat.baseLng + animTime * sat.speed * 8) % 360;
-                        if (newLng > 180) newLng -= 360;
-                        newLat = sat.baseLat + Math.sin(animTime * 2.5 + i) * sat.latAmplitude;
-                    }
-                    return { ...sat, lat: newLat, lng: newLng };
-                });
-                myGlobe.htmlElementsData(dynamicSats);
-                requestAnimationFrame(animateSatellites);
+        // Optimized lightweight animation loop to prevent browser freeze
+        let lastFrameTime = 0;
+        function animateSatellites(timestamp) {
+            if (timestamp - lastFrameTime > 60) { // Throttled to ~16 FPS to save CPU
+                lastFrameTime = timestamp;
+                animTime += 0.002;
+                if (activeSatList.length > 0 && myGlobe) {
+                    const dynamicSats = activeSatList.map((sat, i) => {
+                        let newLng = sat.baseLng;
+                        let newLat = sat.baseLat;
+                        if (sat.speed > 0) {
+                            newLng = (sat.baseLng + animTime * sat.speed * 6) % 360;
+                            if (newLng > 180) newLng -= 360;
+                            newLat = sat.baseLat + Math.sin(animTime * 2 + i) * sat.latAmplitude;
+                        }
+                        return { ...sat, lat: newLat, lng: newLng };
+                    });
+                    myGlobe.htmlElementsData(dynamicSats);
+                }
             }
             requestAnimationFrame(animateSatellites);
         }
