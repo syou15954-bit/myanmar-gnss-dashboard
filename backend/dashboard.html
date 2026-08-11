@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GNSS Global Mission Control Center</title>
-    <!-- Chart.js & Globe.gl Standalone Libraries -->
+    <!-- Chart.js, Globe.gl & Three.js Standalone Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/three"></script>
     <script src="https://unpkg.com/globe.gl"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Pyidaungsu:wght@400;600;700&display=swap" rel="stylesheet">
     
@@ -41,12 +42,11 @@
             flex-direction: column;
             padding: 8px;
             gap: 8px;
-            background: radial-gradient(circle at 50% 30%, #0a1124 0%, #020306 100%);
+            background: radial-gradient(circle at 50% 30%, #0c152d 0%, #020306 100%);
         }
 
         .mono { font-family: 'JetBrains Mono', monospace; }
 
-        /* Navigation Header */
         .top-nav {
             display: flex;
             justify-content: space-between;
@@ -84,7 +84,6 @@
         .nav-tab-btn:hover { color: #fff; background: rgba(255,255,255,0.05); }
         .nav-tab-btn.active { background: rgba(0, 242, 255, 0.2); color: var(--accent-cyan); border-color: var(--accent-cyan); }
 
-        /* Main Viewport Grid */
         .viewport-main {
             flex: 1;
             display: flex;
@@ -106,7 +105,6 @@
 
         #globeViz { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
 
-        /* Center Feature Controls Overlay */
         .center-feature-bar {
             position: absolute;
             bottom: 12px;
@@ -145,7 +143,6 @@
             box-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
         }
 
-        /* Floating Overlays */
         .overlay-card-left {
             position: absolute; top: 12px; left: 12px; z-index: 10;
             background: rgba(6, 10, 18, 0.88); border: 1px solid var(--panel-border);
@@ -158,7 +155,6 @@
             backdrop-filter: blur(12px); border-radius: 8px; padding: 10px 12px; width: 230px; pointer-events: auto;
         }
 
-        /* Interactive Orbiting Satellite Markers */
         .sat-marker {
             display: flex;
             flex-direction: column;
@@ -181,7 +177,6 @@
             box-shadow: 0 0 10px rgba(0,0,0,0.8);
         }
 
-        /* Bottom Dock Panels */
         .bottom-dock {
             flex: 1;
             display: grid;
@@ -226,7 +221,6 @@
         .upload-box { display: flex; gap: 8px; align-items: center; background: rgba(0,0,0,0.4); padding: 6px 8px; border-radius: 6px; border: 1px dashed var(--accent-cyan); }
         .upload-btn { background: rgba(0,242,255,0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; cursor: pointer; }
 
-        /* Sleek Satellite Telemetry Detail Modal Drawer */
         #detailModal {
             display: none;
             position: absolute;
@@ -251,9 +245,7 @@
 </head>
 <body>
 
-    <!-- Navigation Header -->
     <header class="top-nav">
-        <!-- Left Nav Switcher -->
         <div class="nav-tabs mono">
             <button class="nav-tab-btn active" onclick="switchConstellation('gps', this)">🛰️ GPS</button>
             <button class="nav-tab-btn" onclick="switchConstellation('bds', this)">🛰️ BEIDOU</button>
@@ -262,36 +254,30 @@
             <button class="nav-tab-btn" onclick="switchConstellation('all', this)">✨ ALL</button>
         </div>
 
-        <!-- Centered Main Title -->
         <div class="brand-logo-centered">
             <div class="brand-dot"></div>
             <span>GNSS Global Mission Control Center</span>
         </div>
 
-        <!-- Right Station Meta Info -->
         <div class="mono" style="font-size: 10px; color: var(--text-muted); z-index: 2;">
             မြန်မာစံတော်ချိန်: <b id="mmt-time" style="color:var(--accent-cyan);">--:--:-- MMT</b> | ပင်မစခန်း: <b style="color:#fff;">ရန်ကုန် (16.86°N, 96.19°E)</b>
         </div>
     </header>
 
-    <!-- Main Viewport -->
     <main class="viewport-main">
         
         <section class="globe-stage">
             <div id="globeViz"></div>
 
-            <!-- Satellite Telemetry Detail Modal -->
             <div id="detailModal" class="mono">
                 <div class="modal-header">
                     <span id="modal-title">🛰️ REAL-TIME SATELLITE TELEMETRY</span>
                     <span class="modal-close" onclick="closeModal()">✕</span>
                 </div>
                 <div id="modal-content-body">
-                    <!-- Dynamic Content Loaded When Satellite Clicked -->
                 </div>
             </div>
 
-            <!-- Center Feature Toggle Overlay Buttons -->
             <div class="center-feature-bar mono">
                 <button class="feature-btn" id="btn-stations" onclick="toggleFeatureMode('stations', this)">📡 Ground Stations</button>
                 <button class="feature-btn" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 Orbit Tracks</button>
@@ -325,7 +311,6 @@
             </div>
         </section>
 
-        <!-- Bottom Panels -->
         <section class="bottom-dock">
             
             <div class="glass-panel">
@@ -384,8 +369,8 @@
         let myGlobe = null;
         let activeSatList = [];
         let animTime = 0;
+        let moonMesh = null;
 
-        // Toggle States for Feature Modes
         let modes = {
             stations: false,
             tracks: false,
@@ -461,7 +446,7 @@
                 myGlobe = Globe()(container)
                     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
-                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.25 })
+                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.05 }) // Enlarge Earth to fill black void
                     .showAtmosphere(true)
                     .atmosphereColor('#00f2ff')
                     .atmosphereAltitude(0.18)
@@ -473,7 +458,6 @@
                             <div class="sat-icon-wrapper">🛰️</div>
                             <div class="sat-tag" style="color:${d.color}; border:1px solid ${d.color};">${d.name}</div>
                         `;
-                        // DIRECT SATELLITE CLICK TRIGGER FOR DETAIL MODAL
                         el.onclick = (e) => {
                             e.stopPropagation();
                             openSatModal(d);
@@ -486,6 +470,32 @@
 
                 myGlobe.controls().autoRotate = true;
                 myGlobe.controls().autoRotateSpeed = 0.4;
+
+                // Add 3D Moon & GEO Orbit Shell directly to Three.js Scene
+                setTimeout(() => {
+                    const scene = myGlobe.scene();
+                    if (scene && typeof THREE !== 'undefined') {
+                        // 1. Add 3D Moon Object Orbiting Earth
+                        const moonGeo = new THREE.SphereGeometry(12, 32, 32);
+                        const moonMat = new THREE.MeshStandardMaterial({ color: #e2e8f0, roughness: 0.8 });
+                        moonMesh = new THREE.Mesh(moonGeo, moonMat);
+                        scene.add(moonMesh);
+
+                        // 2. Add 3D GEO Orbit Ring Shell (35,786 km Orbit Shell)
+                        const ringGeo = new THREE.TorusGeometry(260, 0.6, 16, 100);
+                        const ringMat = new THREE.MeshBasicMaterial({ color: 0x00f2ff, opacity: 0.35, transparent: true });
+                        const geoRing = new THREE.Mesh(ringGeo, ringMat);
+                        geoRing.rotation.x = Math.PI / 2;
+                        scene.add(geoRing);
+
+                        // 3. Add MEO Orbit Ring Shell (GPS/BDS Altitude Ring)
+                        const ringGeo2 = new THREE.TorusGeometry(190, 0.5, 16, 100);
+                        const ringMat2 = new THREE.MeshBasicMaterial({ color: 0x38bdf8, opacity: 0.25, transparent: true });
+                        const meoRing = new THREE.Mesh(ringGeo2, ringMat2);
+                        meoRing.rotation.x = Math.PI / 3;
+                        scene.add(meoRing);
+                    }
+                }, 800);
 
                 setTimeout(resizeGlobe, 100);
                 setTimeout(resizeGlobe, 500);
@@ -518,6 +528,14 @@
                         color: ['#00f2ff', sat.color || '#38bdf8']
                     }));
                     myGlobe.arcsData(arcs).arcColor('color').arcDashLength(0.4).arcDashGap(0.2).arcDashAnimateTime(1200).arcStroke(1.2);
+
+                    // Animate 3D Moon Orbit Position in Space
+                    if (moonMesh) {
+                        const moonDist = 380;
+                        moonMesh.position.x = moonDist * Math.cos(animTime * 0.5);
+                        moonMesh.position.z = moonDist * Math.sin(animTime * 0.5);
+                        moonMesh.position.y = 80 * Math.sin(animTime * 0.5);
+                    }
                 }
             }
             requestAnimationFrame(animateSatellites);
@@ -586,7 +604,6 @@
             document.getElementById('detailModal').style.display = 'none';
         }
 
-        // Comprehensive Satellite Telemetry Modal Triggered On Orbiting Satellite Click
         function openSatModal(sat) {
             document.getElementById('modal-title').innerText = `🛰️ SATELLITE TELEMETRY: ${sat.name || 'GNSS SATELLITE'}`;
             document.getElementById('modal-content-body').innerHTML = `
@@ -608,7 +625,6 @@
             document.getElementById('detailModal').style.display = 'block';
         }
 
-        // DYNAMIC FEATURE MODE TOGGLER (Direct 3D Globe & Chart Visual Mode Switches)
         function toggleFeatureMode(feature, btn) {
             if (!myGlobe) return;
             modes[feature] = !modes[feature];
@@ -619,7 +635,6 @@
                 btn.classList.remove('active-mode');
             }
 
-            // 1. Ground Stations Mode
             if (feature === 'stations') {
                 if (modes.stations) {
                     myGlobe.pointsData([
@@ -636,7 +651,6 @@
                 }
             }
 
-            // 2. 3D Orbit Tracks Mode
             if (feature === 'tracks') {
                 if (modes.tracks) {
                     const orbitPaths = [
@@ -651,7 +665,6 @@
                 }
             }
 
-            // 3. TEC Ionosphere Heatmap Atmosphere Glow Mode
             if (feature === 'heatmap') {
                 if (modes.heatmap) {
                     myGlobe.atmosphereColor('#ff3b5c').atmosphereAltitude(0.35);
@@ -660,7 +673,6 @@
                 }
             }
 
-            // 4. Live Multi-Frequency Spectrum Bar Graph Mode
             if (feature === 'spectrum') {
                 if (waveformChart) {
                     if (modes.spectrum) {
