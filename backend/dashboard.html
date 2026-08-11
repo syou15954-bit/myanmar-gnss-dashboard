@@ -12,7 +12,7 @@
     <style>
         :root {
             --bg-dark: #030712;
-            --card-bg: rgba(15, 23, 42, 0.94);
+            --card-bg: rgba(15, 23, 42, 0.95);
             --card-border: #1e293b;
             --accent-blue: #38bdf8;
             --accent-green: #22c55e;
@@ -33,7 +33,7 @@
             background-color: var(--bg-dark); 
             color: #cbd5e1; 
             font-family: 'Pyidaungsu', -apple-system, sans-serif; 
-            font-size: 11px; /* Increased font readability */
+            font-size: 11px;
         }
 
         body {
@@ -118,12 +118,12 @@
             padding: 2px 8px; border-radius: 4px; font-size: 9px; font-weight: 700; cursor: pointer;
         }
 
-        /* Perfectly Balanced Grid: 360px Side Panels for Better Readability */
+        /* Balanced Grid: 360px Side Panels & 150px Bottom Row */
         .dashboard-main {
             flex: 1;
             display: grid;
             grid-template-columns: 360px 1fr 360px !important;
-            grid-template-rows: 1fr 140px !important;
+            grid-template-rows: 1fr 150px !important;
             gap: 5px;
             min-height: 0;
             overflow: hidden;
@@ -165,11 +165,10 @@
             flex-direction: column;
         }
 
-        /* Panel Cards with Better Spacing */
         .card { 
             background: var(--card-bg); 
             border-radius: 6px; 
-            padding: 5px 8px; 
+            padding: 6px 9px; 
             border: 1px solid var(--card-border); 
             position: relative;
             backdrop-filter: blur(12px);
@@ -178,7 +177,7 @@
             min-height: 0;
             flex: 1;
             overflow: hidden;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
         }
 
         .card-accent-blue { border-top: 2px solid var(--accent-blue); }
@@ -188,7 +187,7 @@
         .card-accent-cyan { border-top: 2px solid var(--accent-cyan); }
 
         .card-header { 
-            font-size: 10px; 
+            font-size: 10.5px; 
             font-weight: 700; 
             color: var(--text-main); 
             margin-bottom: 3px; 
@@ -202,7 +201,6 @@
 
         .card-header-title { display: flex; align-items: center; gap: 5px; }
 
-        /* Tab Switcher Styling */
         .tab-bar {
             display: flex;
             gap: 4px;
@@ -213,7 +211,7 @@
             border: 1px solid #334155;
             padding: 2px 8px;
             border-radius: 3px;
-            font-size: 8.5px;
+            font-size: 9px;
             font-weight: 700;
             cursor: pointer;
         }
@@ -249,10 +247,9 @@
 
         .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; text-align: center; margin-bottom: 3px; flex-shrink: 0; }
         .stat-box { background: rgba(30, 41, 59, 0.6); padding: 3px; border-radius: 3px; }
-        .stat-lbl { font-size: 7.5px; color: var(--text-muted); font-weight: 600; }
-        .stat-val { font-size: 11px; font-weight: 800; margin-top: 1px; }
+        .stat-lbl { font-size: 8px; color: var(--text-muted); font-weight: 600; }
+        .stat-val { font-size: 11.5px; font-weight: 800; margin-top: 1px; }
 
-        /* Globe Strict Container */
         #globeViz {
             flex: 1;
             width: 100%;
@@ -269,51 +266,51 @@
             bottom: 6px;
             left: 6px;
             z-index: 10;
-            background: rgba(3, 7, 18, 0.9);
+            background: rgba(3, 7, 18, 0.92);
             border: 1px solid var(--card-border);
             backdrop-filter: blur(8px);
-            padding: 4px 8px;
+            padding: 5px 8px;
             border-radius: 4px;
-            font-size: 8.5px;
+            font-size: 9px;
             pointer-events: none;
         }
         .legend-row { display: flex; align-items: center; gap: 4px; margin-bottom: 2px; font-weight: 600; }
 
-        .badge { padding: 1px 4px; border-radius: 3px; font-size: 7.5px; font-weight: 700; }
+        .badge { padding: 1px 4px; border-radius: 3px; font-size: 8px; font-weight: 700; }
         .badge-excellent { background: rgba(34, 197, 94, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green); }
 
-        .alert-item { padding: 3px 6px; border-radius: 3px; margin-bottom: 3px; font-size: 8.5px; display: flex; justify-content: space-between; align-items: center; }
+        .alert-item { padding: 3px 6px; border-radius: 3px; margin-bottom: 3px; font-size: 9px; display: flex; justify-content: space-between; align-items: center; }
         .bg-critical { background: rgba(239, 68, 68, 0.12); border-left: 2px solid var(--accent-red); color: #fca5a5; }
         .bg-warning { background: rgba(245, 158, 11, 0.12); border-left: 2px solid var(--accent-yellow); color: #fde047; }
         .bg-info { background: rgba(59, 130, 246, 0.12); border-left: 2px solid var(--accent-blue); color: #93c5fd; }
 
         .sat-spec-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; background: rgba(30, 41, 59, 0.5); padding: 3px; border-radius: 3px; text-align: center; margin-bottom: 3px; flex-shrink: 0; }
-        .sat-spec-val { font-size: 11px; font-weight: 700; color: var(--text-main); }
+        .sat-spec-val { font-size: 11.5px; font-weight: 700; color: var(--text-main); }
 
         .dop-mini-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; flex: 1; align-content: center; }
         .dop-mini-card { background: rgba(30, 41, 59, 0.5); padding: 3px; border-radius: 3px; text-align: center; }
-        .dop-mini-val { font-size: 11.5px; font-weight: 700; color: var(--accent-blue); }
+        .dop-mini-val { font-size: 12px; font-weight: 700; color: var(--accent-blue); }
 
         .rinex-bottom-layout {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             align-items: center;
             height: 100%;
         }
         .upload-controls {
             display: flex;
             flex-direction: column;
-            gap: 3px;
+            gap: 4px;
             background: rgba(30, 41, 59, 0.4);
-            padding: 4px 8px;
+            padding: 6px 10px;
             border-radius: 4px;
             border: 1px dashed var(--accent-cyan);
-            width: 210px;
+            width: 220px;
             flex-shrink: 0;
         }
         .file-input-wrapper input[type="file"] {
             color: var(--text-muted);
-            font-size: 8.5px;
+            font-size: 9px;
             cursor: pointer;
             width: 100%;
         }
@@ -330,7 +327,7 @@
             filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.9));
         }
         .sat-tag {
-            font-size: 7.5px;
+            font-size: 8px;
             font-family: 'JetBrains Mono', monospace;
             background: rgba(3, 7, 18, 0.92);
             padding: 1px 4px;
@@ -351,7 +348,7 @@
             border-radius: 5px;
             backdrop-filter: blur(10px);
             box-shadow: 0 0 12px rgba(6, 182, 212, 0.35);
-            width: 200px;
+            width: 210px;
         }
         .hud-header {
             display: flex;
@@ -366,8 +363,8 @@
         .hud-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 3px;
-            font-size: 8.5px;
+            gap: 4px;
+            font-size: 9px;
         }
         .hud-item {
             background: rgba(30,41,59,0.5);
@@ -485,7 +482,7 @@
             </div>
         </div>
 
-        <!-- Center Column: 3D Globe Feature (Zoomed Out / Altitude 2.8) -->
+        <!-- Center Column: 3D Globe Feature (Altitude 2.4 - Balanced Scale) -->
         <div class="center-col">
             <div class="card card-accent-green" style="padding: 2px;">
                 <div class="card-header" style="margin: 2px 6px;">
@@ -805,7 +802,7 @@
                 myGlobe = Globe()(container)
                     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
-                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.8 }) /* Zoomed out so globe is balanced */
+                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.4 }) /* Balanced Zoom: Altitude 2.4 */
                     .showAtmosphere(true)
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.18)
@@ -903,7 +900,7 @@
             const ctx = canvas.getContext('2d');
             const cx = canvas.width / 2;
             const cy = canvas.height / 2;
-            const radius = 35;
+            const radius = 38;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -921,7 +918,7 @@
             ctx.stroke();
 
             ctx.fillStyle = '#64748b';
-            ctx.font = 'bold 7px JetBrains Mono';
+            ctx.font = 'bold 7.5px JetBrains Mono';
             ctx.fillText('N', cx - 3, cy - radius - 2);
             ctx.fillText('E', cx + radius + 2, cy + 3);
 
@@ -1139,7 +1136,7 @@
         if (document.readyState === 'complete' || document.readyState === 'active') {
             setTimeout(initCharts, 150);
         } else {
-            document.addEventListener('DOMContentLoaded', () =>setTimeout(initCharts, 150));
+            document.addEventListener('DOMContentLoaded', () => setTimeout(initCharts, 150));
         }
     </script>
 </body>
