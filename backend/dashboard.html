@@ -100,12 +100,12 @@
         .header-brand { display: flex; align-items: center; gap: 6px; }
         .header-brand h1 { font-size: 13px; color: var(--text-main); font-weight: 700; white-space: nowrap; }
 
-        .header-controls { display: flex; align-items: center; gap: 4px; }
+        .header-controls { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
         .header-info { font-size: 8.5px; color: var(--text-muted); white-space: nowrap; text-align: right; }
 
         .nav-btn {
             background: #1e293b; color: var(--text-muted); border: 1px solid #334155;
-            padding: 2px 8px; border-radius: 4px; font-size: 9px; font-weight: 700; cursor: pointer;
+            padding: 2px 7px; border-radius: 4px; font-size: 8.5px; font-weight: 700; cursor: pointer;
             transition: all 0.2s; display: inline-flex; align-items: center; gap: 3px;
         }
         .nav-btn:hover, .nav-btn.active {
@@ -115,10 +115,10 @@
         .fullscreen-btn {
             background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(34, 197, 94, 0.25));
             color: #ffffff; border: 1px solid var(--accent-blue);
-            padding: 2px 8px; border-radius: 4px; font-size: 9px; font-weight: 700; cursor: pointer;
+            padding: 2px 7px; border-radius: 4px; font-size: 8.5px; font-weight: 700; cursor: pointer;
         }
 
-        /* Balanced Grid: 360px Side Panels & 150px Bottom Row */
+        /* Balanced Grid Layout */
         .dashboard-main {
             flex: 1;
             display: grid;
@@ -271,7 +271,7 @@
             backdrop-filter: blur(8px);
             padding: 5px 8px;
             border-radius: 4px;
-            font-size: 9px;
+            font-size: 8px;
             pointer-events: none;
         }
         .legend-row { display: flex; align-items: center; gap: 4px; margin-bottom: 2px; font-weight: 600; }
@@ -404,6 +404,8 @@
                 <button class="nav-btn" onclick="switchConstellation('bds', this)">🛰️ BEIDOU (CN)</button>
                 <button class="nav-btn" onclick="switchConstellation('galileo', this)">🛰️ GALILEO (EU)</button>
                 <button class="nav-btn" onclick="switchConstellation('glonass', this)">🛰️ GLONASS (RU)</button>
+                <!-- NEW FEATURE: All Constellations Combined View Button -->
+                <button class="nav-btn" onclick="switchConstellation('all', this)">✨ All Constellations</button>
                 
                 <button class="nav-btn" id="sound-btn" onclick="toggleAudio()" style="border-color:var(--accent-yellow); color:var(--accent-yellow);">
                     🔊 Sound: OFF
@@ -482,13 +484,13 @@
             </div>
         </div>
 
-        <!-- Center Column: 3D Globe Feature (Altitude 2.4 - Balanced Scale) -->
+        <!-- Center Column: 3D Globe with Advanced Features (Terminator, Heatmap, Ground Tracks, Coverage Footprint) -->
         <div class="center-col">
             <div class="card card-accent-green" style="padding: 2px;">
                 <div class="card-header" style="margin: 2px 6px;">
                     <div class="card-header-title">
                         <span>🌍</span>
-                        <span>3D ကမ္ဘာ့ဂြိုဟ်တု ပတ်လမ်းနှင့် ချိတ်ဆက်မှု မြေပုံ</span>
+                        <span>3D ကမ္ဘာ့ဂြိုဟ်တု ပတ်လမ်းနှင့် အာကာသရာသီဥတု မြေပုံ</span>
                     </div>
                     <span class="badge badge-excellent" id="constellation-label">GPS Constellation (USA)</span>
                 </div>
@@ -510,16 +512,17 @@
                 </div>
 
                 <div class="globe-legend-box">
-                    <div class="legend-row"><span>📡</span> <b style="color:#ef4444;">🔴 ရန်ကုန် ပင်မစခန်း</b> (Yangon Station)</div>
-                    <div class="legend-row"><span>🛰️</span> <b style="color:#38bdf8;">🔵 ဂြိုဟ်တုများ (Hover/Click)</b></div>
-                    <div class="legend-row"><span>⭕</span> <b style="color:#06b6d4;">🔵 ပတ်လမ်းများ</b> (3D Rings)</div>
+                    <div class="legend-row"><span>📡</span> <b style="color:#ef4444;">🔴 ရန်ကုန် Ground Station (Footprint)</b></div>
+                    <div class="legend-row"><span>🌐</span> <b style="color:#38bdf8;">☀️ နေ့/ည Terminator & TEC Heatmap</b></div>
+                    <div class="legend-row"><span>〰️</span> <b style="color:#c084fc;">📉 Ground Tracks (Sine Waves)</b></div>
+                    <div class="legend-row"><span>🛰️</span> <b style="color:#22c55e;">✨ All Constellations Mode</b></div>
                 </div>
             </div>
         </div>
 
         <!-- Right Column -->
         <div class="right-col">
-            <!-- 4. Skyplot -->
+            <!-- 4. Skyplot (Enhanced Canvas width/height = 110) -->
             <div class="card card-accent-cyan">
                 <div class="card-header">
                     <div class="card-header-title">
@@ -529,7 +532,7 @@
                     <span class="mono" id="sky-count" style="color:var(--accent-cyan); font-size:8px;">Sats: 10</span>
                 </div>
                 <div style="display:flex; justify-content:center; align-items:center; flex:1; min-height:0;">
-                    <canvas id="skyplotCanvas" width="95" height="95"></canvas>
+                    <canvas id="skyplotCanvas" width="110" height="110"></canvas>
                 </div>
             </div>
 
@@ -589,7 +592,6 @@
                         <span>📊</span>
                         <span>Mission Control Analytical Data & RINEX Processing</span>
                     </div>
-                    <!-- Tab Switcher Feature -->
                     <div class="tab-bar">
                         <button class="tab-btn active" onclick="switchTab('rinexTab', this)">📂 RINEX Analysis</button>
                         <button class="tab-btn" onclick="switchTab('snrTab', this)">📶 Multi-Frequency SNR</button>
@@ -705,7 +707,8 @@
                     { name: 'GPS SVN-53', baseLat: -22.9, baseLng: -43.1, latAmplitude: 10, speed: 14, color: '#38bdf8' },
                     { name: 'GPS SVN-71', baseLat: 1.35, baseLng: 103.8, latAmplitude: 25, speed: 9, color: '#38bdf8' }
                 ],
-                orbitPlanes: [ generateCirclePath(55, 0), generateCirclePath(55, 60) ]
+                orbitPlanes: [ generateCirclePath(55, 0), generateCirclePath(55, 60) ],
+                groundTracks: generateSineGroundTracks(55, 4)
             },
             bds: {
                 name: "BEIDOU Constellation (China)", satName: "BDS-3 MEO-01",
@@ -726,7 +729,8 @@
                     { name: 'BDS-3 IGSO-02', baseLat: 22.3, baseLng: 118.1, latAmplitude: 30, speed: 8, color: '#22c55e' },
                     { name: 'BDS-3 MEO-01', baseLat: 39.9, baseLng: 116.4, latAmplitude: 20, speed: 15, color: '#38bdf8' }
                 ],
-                orbitPlanes: [ generateCirclePath(0, 0), generateCirclePath(55, 110) ]
+                orbitPlanes: [ generateCirclePath(0, 0), generateCirclePath(55, 110) ],
+                groundTracks: generateSineGroundTracks(35, 4)
             },
             galileo: {
                 name: "GALILEO Constellation (Europe)", satName: "GSAT-0201",
@@ -738,7 +742,8 @@
                 globeSats: [
                     { name: 'GALILEO GSAT-0201', baseLat: 48.8, baseLng: 2.35, latAmplitude: 18, speed: 12, color: '#38bdf8' }
                 ],
-                orbitPlanes: [ generateCirclePath(56, 0) ]
+                orbitPlanes: [ generateCirclePath(56, 0) ],
+                groundTracks: generateSineGroundTracks(56, 3)
             },
             glonass: {
                 name: "GLONASS Constellation (Russia)", satName: "GLONASS-M 758",
@@ -750,7 +755,26 @@
                 globeSats: [
                     { name: 'GLONASS-M No.758', baseLat: 55.7, baseLng: 37.6, latAmplitude: 25, speed: 14, color: '#38bdf8' }
                 ],
-                orbitPlanes: [ generateCirclePath(64.8, 0) ]
+                orbitPlanes: [ generateCirclePath(64.8, 0) ],
+                groundTracks: generateSineGroundTracks(64.8, 3)
+            },
+            all: {
+                name: "All Constellations Combined (GPS + BDS + GAL + GLO)", satName: "Multi-GNSS Active",
+                total: 139, active: 122, degraded: 11, offline: 6, visible: 39,
+                pdop: "1.15", hdop: "0.52", vdop: "0.98", gdop: "1.32", tdop: "0.62",
+                fleet: [48, 38, 24, 12],
+                alerts: [
+                    { type: 'info', tag: '[စနစ်]', msg: 'Multi-GNSS Combined Tracking အောင်မြင်သည်', time: '11:00' }
+                ],
+                sats: [{ elevation_deg: 85, azimuth_deg: 45, visible: true }],
+                globeSats: [
+                    { name: 'GPS SVN-62', baseLat: 35.0, baseLng: 139.0, latAmplitude: 15, speed: 12, color: '#38bdf8' },
+                    { name: 'BDS-3 GEO-03', baseLat: 0.0, baseLng: 110.5, latAmplitude: 0, speed: 0, color: '#ef4444' },
+                    { name: 'GALILEO GSAT', baseLat: 48.8, baseLng: 2.35, latAmplitude: 18, speed: 12, color: '#22c55e' },
+                    { name: 'GLONASS-M 758', baseLat: 55.7, baseLng: 37.6, latAmplitude: 25, speed: 14, color: '#c084fc' }
+                ],
+                orbitPlanes: [ generateCirclePath(55, 0), generateCirclePath(0, 0), generateCirclePath(56, 45) ],
+                groundTracks: generateSineGroundTracks(55, 5)
             }
         };
 
@@ -768,6 +792,21 @@
                 points.push({ lat: (lat * 180) / Math.PI, lng: (lng * 180) / Math.PI });
             }
             return points;
+        }
+
+        // Generate Sine Wave Sub-Satellite Ground Tracks
+        function generateSineGroundTracks(maxLat, count) {
+            const tracks = [];
+            for (let c = 0; c < count; c++) {
+                const points = [];
+                const phaseOffset = c * (360 / count);
+                for (let lng = -180; lng <= 180; lng += 4) {
+                    const lat = maxLat * Math.sin(((lng + phaseOffset) * Math.PI) / 180);
+                    points.push({ lat: lat, lng: lng });
+                }
+                tracks.push(points);
+            }
+            return tracks;
         }
 
         function toggleFullscreen() {
@@ -794,7 +833,7 @@
         let myGlobe = null;
         let activeSatList = [];
         let animTime = 0;
-        const groundStation = { lat: 16.8661, lng: 96.1951, size: 0.8, color: '#ef4444', label: '📡 🔴 ရန်ကုန် ပင်မစခန်း (Yangon Station)' };
+        const groundStation = { lat: 16.8661, lng: 96.1951, size: 0.9, color: '#ef4444', label: '📡 🔴 ရန်ကုန် Ground Station' };
 
         try {
             const container = document.getElementById('globeViz');
@@ -802,10 +841,11 @@
                 myGlobe = Globe()(container)
                     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
-                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.4 }) /* Balanced Zoom: Altitude 2.4 */
+                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.4 })
                     .showAtmosphere(true)
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.18)
+                    // Custom HTML Satellite Markers
                     .htmlElementsData([])
                     .htmlElement(d => {
                         const el = document.createElement('div');
@@ -818,17 +858,33 @@
                         el.onmouseenter = () => openSatHud(d);
                         return el;
                     })
-                    .ringsData([groundStation])
-                    .ringColor(() => '#ef4444')
-                    .ringMaxRadius(8)
-                    .ringPropagationSpeed(2)
-                    .ringRepeatPeriod(1200)
+                    // Ground Station Coverage Footprint (Yangon Horizon Visibility Ring)
+                    .ringsData([
+                        { lat: 16.8661, lng: 96.1951, maxRadius: 16, propagationSpeed: 1.2, repeatPeriod: 2000, color: '#22c55e' },
+                        { lat: 16.8661, lng: 96.1951, maxRadius: 8, propagationSpeed: 2, repeatPeriod: 1200, color: '#ef4444' }
+                    ])
+                    .ringColor(d => d.color)
+                    .ringMaxRadius(d => d.maxRadius)
+                    .ringPropagationSpeed(d => d.propagationSpeed)
+                    .ringRepeatPeriod(d => d.repeatPeriod)
+                    // Orbital Paths & Ground Tracks (Sine Waves)
                     .pathsData([])
                     .pathPoints(d => d)
                     .pathPointLat(p => p.lat)
                     .pathPointLng(p => p.lng)
-                    .pathColor(() => 'rgba(6, 182, 212, 0.45)')
-                    .pathStroke(1.2);
+                    .pathColor(() => 'rgba(192, 132, 252, 0.55)')
+                    .pathStroke(1.2)
+                    // Dynamic Sun Terminator / Ionospheric TEC Heatmap Mock Layer (Polygons)
+                    .polygonsData([
+                        {
+                            // Mock Day/Night Terminator / Asia-Pacific TEC Hotspot zone
+                            type: "Polygon",
+                            coordinates: [[[80, -180], [80, 0], [-80, 0], [-80, -180], [80, -180]]]
+                        }
+                    ])
+                    .polygonCapColor(() => 'rgba(56, 189, 248, 0.04)')
+                    .polygonSideColor(() => 'rgba(0,0,0,0)')
+                    .polygonStrokeColor(() => 'rgba(6, 182, 212, 0.15)');
 
                 myGlobe.controls().autoRotate = true;
                 myGlobe.controls().autoRotateSpeed = 0.5;
@@ -870,10 +926,16 @@
         }
         requestAnimationFrame(animateSatellites);
 
-        function updateGlobeData(satList, orbitPlanes) {
+        function updateGlobeData(satList, orbitPlanes, groundTracks) {
             if (!myGlobe) return;
             activeSatList = satList || [];
-            if (orbitPlanes) myGlobe.pathsData(orbitPlanes);
+            
+            // Combine Orbit Planes and Sine Wave Ground Tracks into pathsData
+            let allPaths = [];
+            if (orbitPlanes) allPaths = allPaths.concat(orbitPlanes);
+            if (groundTracks) allPaths = allPaths.concat(groundTracks);
+            
+            myGlobe.pathsData(allPaths);
         }
 
         function openSatHud(sat) {
@@ -900,7 +962,7 @@
             const ctx = canvas.getContext('2d');
             const cx = canvas.width / 2;
             const cy = canvas.height / 2;
-            const radius = 38;
+            const radius = 42; // Enhanced radius for 110x110 canvas
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -918,7 +980,7 @@
             ctx.stroke();
 
             ctx.fillStyle = '#64748b';
-            ctx.font = 'bold 7.5px JetBrains Mono';
+            ctx.font = 'bold 8px JetBrains Mono';
             ctx.fillText('N', cx - 3, cy - radius - 2);
             ctx.fillText('E', cx + radius + 2, cy + 3);
 
@@ -931,12 +993,12 @@
                     const y = cy + r * Math.sin(azRad);
 
                     ctx.beginPath();
-                    ctx.arc(x, y, 3.5, 0, 2 * Math.PI);
+                    ctx.arc(x, y, 4, 0, 2 * Math.PI);
                     ctx.fillStyle = 'rgba(56, 189, 248, 0.35)';
                     ctx.fill();
 
                     ctx.beginPath();
-                    ctx.arc(x, y, 1.8, 0, 2 * Math.PI);
+                    ctx.arc(x, y, 2, 0, 2 * Math.PI);
                     ctx.fillStyle = '#38bdf8';
                     ctx.fill();
                 });
@@ -979,7 +1041,7 @@
             document.getElementById('vis-sats-val').innerText = data.visible;
 
             renderSkyPlotCanvas(data.sats);
-            updateGlobeData(data.globeSats, data.orbitPlanes);
+            updateGlobeData(data.globeSats, data.orbitPlanes, data.groundTracks);
 
             if (fleetChart && fleetChart.data) {
                 fleetChart.data.datasets[0].data = data.fleet;
