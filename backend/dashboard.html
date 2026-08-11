@@ -179,6 +179,53 @@
         }
         .legend-row { display: flex; align-items: center; gap: 4px; margin-bottom: 2px; font-weight: 600; }
 
+        /* Sci-Fi Globe Side Overlay Panel */
+        .globe-side-overlay {
+            position: absolute;
+            top: 28px;
+            right: 8px;
+            width: 175px;
+            background: rgba(3, 7, 18, 0.88);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 5px;
+            padding: 8px;
+            backdrop-filter: blur(8px);
+            z-index: 12;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.25);
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            pointer-events: auto;
+        }
+        .overlay-sec-title {
+            font-size: 8.5px;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            border-bottom: 1px solid rgba(6, 182, 212, 0.3);
+            padding-bottom: 3px;
+            letter-spacing: 0.5px;
+        }
+        .sat-wireframe-box {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px dashed rgba(6, 182, 212, 0.5);
+            border-radius: 4px;
+            padding: 6px;
+            text-align: center;
+        }
+        .sat-3d-icon {
+            font-size: 22px;
+            filter: drop-shadow(0 0 8px #06b6d4);
+            animation: float-anim 3s ease-in-out infinite;
+        }
+        @keyframes float-anim {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-3px); }
+        }
+        .sat-model-id { font-size: 9px; font-weight: 700; color: #fff; margin-top: 2px; }
+        .sat-status-tag { font-size: 7.5px; color: var(--accent-green); font-weight: 600; }
+        .overlay-data-list { display: flex; flex-direction: column; gap: 3px; font-size: 8px; }
+        .overlay-row { display: flex; justify-content: space-between; color: var(--text-muted); }
+
         .badge { padding: 2px 6px; border-radius: 4px; font-size: 8.5px; font-weight: 700; border: 1px solid transparent; }
 
         .alert-item { padding: 3px 6px; border-radius: 3px; margin-bottom: 3px; font-size: 9px; display: flex; justify-content: space-between; align-items: center; }
@@ -205,16 +252,15 @@
         .sat-tag { font-size: 8px; font-family: 'JetBrains Mono', monospace; background: rgba(3, 7, 18, 0.92); padding: 1px 4px; border-radius: 2px; white-space: nowrap; margin-top: 1px; }
 
         #satHudModal {
-            display: none; position: absolute; top: 10px; right: 10px; z-index: 100;
+            display: none; position: absolute; top: 10px; left: 10px; z-index: 100;
             background: rgba(3, 7, 18, 0.94); border: 1px solid var(--accent-cyan);
             padding: 8px 12px; border-radius: 5px; backdrop-filter: blur(10px);
-            box-shadow: 0 0 12px rgba(6, 182, 212, 0.35); width: 210px;
+            box-shadow: 0 0 12px rgba(6, 182, 212, 0.35); width: 200px;
         }
         .hud-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 3px; margin-bottom: 5px; font-weight: 700; color: var(--accent-cyan); }
         .hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 9px; }
         .hud-item { background: rgba(30,41,59,0.5); padding: 3px; border-radius: 3px; text-align: center; }
 
-        /* New Styles for Database Card */
         .db-status-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; font-size: 9.5px; }
         .db-progress-bg { background: rgba(30, 41, 59, 0.8); height: 5px; border-radius: 3px; width: 100%; overflow: hidden; margin-top: 3px; border: 1px solid #334155; }
         .db-progress-bar { background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)); height: 100%; width: 28%; border-radius: 3px; }
@@ -244,7 +290,6 @@
                 <h1>GNSS Global Mission Control Center</h1>
             </div>
 
-            <!-- Constellation Buttons with Specific Colors -->
             <div class="header-controls">
                 <button class="nav-btn active" onclick="switchConstellation('gps', this)" style="border-color: #38bdf8; color: #38bdf8;">🛰️ GPS</button>
                 <button class="nav-btn" onclick="switchConstellation('bds', this)" style="border-color: #ef4444; color: #ef4444;">🛰️ BEIDOU</button>
@@ -316,12 +361,33 @@
         </div>
 
         <div class="center-col">
-            <div class="card" id="mapCard" style="border-top: 2px solid #38bdf8; padding: 2px;">
+            <div class="card" id="mapCard" style="border-top: 2px solid #38bdf8; padding: 2px; position: relative;">
                 <div class="card-header" style="margin: 2px 6px; display: flex; justify-content: space-between; align-items: center;">
-                    <div class="card-header-title"><span>🌍</span> <span>3D ကမ္ဘာ့ဂြိုဟ်တု ပတ်လမ်းနှင့် အာကာသရာသီဥတု မြေပုံ</span></div>
+                    <div class="card-header-title"><span>🌍</span> <span>3D HOLOGRAPHIC SATELLITE TRACKING & MISSION CONTROL</span></div>
                     <span class="badge" id="constellation-label" style="color: #38bdf8; border-color: #38bdf8; background: #38bdf826;">GPS Constellation (USA)</span>
                 </div>
-                <div id="globeViz"></div>
+                
+                <div style="position: relative; flex: 1; width: 100%; height: 100%; min-height: 0;">
+                    <div id="globeViz"></div>
+
+                    <!-- Sci-Fi Telemetry Overlay Panel directly inside globe card -->
+                    <div class="globe-side-overlay mono">
+                        <div class="overlay-sec-title">📡 ACTIVE SV TELEMETRY</div>
+                        <div class="sat-wireframe-box">
+                            <div class="sat-3d-icon">🛰️</div>
+                            <div class="sat-model-id" id="overlay-sat-id">GPS SVN-62</div>
+                            <div class="sat-status-tag">SIGNAL LOCKED (OPTIMAL)</div>
+                        </div>
+                        <div class="overlay-data-list">
+                            <div class="overlay-row"><span>ORBIT PLANE:</span><b style="color:var(--accent-cyan);">PLANE-A</b></div>
+                            <div class="overlay-row"><span>FREQ:</span><b style="color:var(--accent-green);">1575.42 MHz</b></div>
+                            <div class="overlay-row"><span>RANGE RATE:</span><b style="color:var(--accent-yellow);">+0.82 km/s</b></div>
+                            <div class="overlay-row"><span>LINK STATUS:</span><b style="color:var(--accent-blue);">STABLE</b></div>
+                            <div class="overlay-row"><span>DOPPLER:</span><b style="color:var(--accent-purple);">+1.42 kHz</b></div>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="satHudModal" class="mono">
                     <div class="hud-header">
                         <span id="hud-sat-title">GPS SVN-62</span>
@@ -334,11 +400,12 @@
                         <div class="hud-item"><div class="stat-lbl">SIGNAL (C/N0)</div><div style="color:var(--accent-cyan);" id="hud-sat-cn0">44.8 dB-Hz</div></div>
                     </div>
                 </div>
+
                 <div class="globe-legend-box">
                     <div class="legend-row"><span>📡</span> <b style="color:#ef4444;">🔴 ရန်ကုန် Station Footprint</b></div>
                     <div class="legend-row"><span>🌐</span> <b style="color:#38bdf8;">☀️ Day/Night & TEC Heatmap</b></div>
                     <div class="legend-row"><span>〰️</span> <b style="color:#c084fc;">📉 Ground Tracks</b></div>
-                    <div class="legend-row"><span>🛰️</span> <b style="color:#22c55e;">✨ All Constellations Mode (Live Sync)</b></div>
+                    <div class="legend-row"><span>🛰️</span> <b style="color:#22c55e;">✨ Animated Signal Arcs & Telemetry Overlay</b></div>
                 </div>
             </div>
         </div>
@@ -377,7 +444,6 @@
                 </div>
             </div>
 
-            <!-- New Redesigned Database Server Card -->
             <div class="card card-accent-green">
                 <div class="card-header">
                     <div class="card-header-title">
@@ -412,7 +478,6 @@
                     </div>
                 </div>
             </div>
-            <!-- End of Redesigned Database Card -->
         </div>
 
         <div class="bottom-row">
@@ -598,8 +663,8 @@
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
                     .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.1 })
                     .showAtmosphere(true)
-                    .atmosphereColor('#38bdf8')
-                    .atmosphereAltitude(0.18)
+                    .atmosphereColor('#06b6d4')
+                    .atmosphereAltitude(0.22)
                     .htmlElementsData([])
                     .htmlElement(d => {
                         const el = document.createElement('div');
@@ -623,8 +688,8 @@
                     .pathPoints(d => d)
                     .pathPointLat(p => p.lat)
                     .pathPointLng(p => p.lng)
-                    .pathColor(() => 'rgba(192, 132, 252, 0.45)')
-                    .pathStroke(1.0);
+                    .pathColor(() => 'rgba(6, 182, 212, 0.45)')
+                    .pathStroke(1.2);
 
                 myGlobe.controls().autoRotate = true;
                 myGlobe.controls().autoRotateSpeed = 0.4;
@@ -650,6 +715,27 @@
                         return { ...sat, lat: newLat, lng: newLng };
                     });
                     myGlobe.htmlElementsData(dynamicSats);
+
+                    // Update Animated Signal Arcs from Satellites to Yangon Station
+                    const yangonLat = 16.8661;
+                    const yangonLng = 96.1951;
+                    const arcs = dynamicSats.map(sat => ({
+                        startLat: yangonLat,
+                        startLng: yangonLng,
+                        endLat: sat.lat,
+                        endLng: sat.lng,
+                        color: ['#06b6d4', sat.color || '#38bdf8']
+                    }));
+
+                    myGlobe
+                        .arcsData(arcs)
+                        .arcColor('color')
+                        .arcDashLength(0.4)
+                        .arcDashGap(0.2)
+                        .arcDashInitialGap(() => Math.random())
+                        .arcDashAnimateTime(1500)
+                        .arcStroke(1.2)
+                        .arcAltitude(0.25);
                 }
             }
             requestAnimationFrame(animateSatellites);
@@ -670,6 +756,7 @@
             const modal = document.getElementById('satHudModal');
             if (modal) {
                 document.getElementById('hud-sat-title').innerText = sat.name;
+                document.getElementById('overlay-sat-id').innerText = sat.name;
                 document.getElementById('hud-sat-alt').innerText = "20,200 km";
                 document.getElementById('hud-sat-az').innerText = `${(Math.abs(sat.lng * 1.8) % 360).toFixed(1)}°`;
                 document.getElementById('hud-sat-el').innerText = `${(35 + Math.abs(Math.sin(sat.lat)) * 50).toFixed(1)}°`;
@@ -757,6 +844,7 @@
             document.getElementById('banner-vis-sats').innerText = `${data.visible} စီး`;
             document.getElementById('sky-count').innerText = `Sats: ${data.visible}`;
             document.getElementById('sat-telemetry-name').innerText = data.satName;
+            document.getElementById('overlay-sat-id').innerText = data.satName;
 
             const alertsContainer = document.getElementById('alerts-container');
             if (alertsContainer && data.alerts) {
