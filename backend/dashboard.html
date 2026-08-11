@@ -311,7 +311,8 @@
         </div>
 
         <div class="center-col">
-            <div class="card card-accent-green" style="padding: 2px;">
+            <!-- Map Card with Dynamic Top Border Accent Color -->
+            <div class="card" id="mapCard" style="border-top: 2px solid #38bdf8; padding: 2px;">
                 <div class="card-header" style="margin: 2px 6px;">
                     <div class="card-header-title"><span>🌍</span> <span>3D ကမ္ဘာ့ဂြိုဟ်တု ပတ်လမ်းနှင့် အာကာသရာသီဥတု မြေပုံ</span></div>
                     <span class="badge" id="constellation-label" style="color: #38bdf8; border-color: #38bdf8; background: rgba(56, 189, 248, 0.15);">GPS Constellation (USA)</span>
@@ -568,7 +569,7 @@
                 myGlobe = Globe()(container)
                     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
-                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.4 })
+                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.1 })
                     .showAtmosphere(true)
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.18)
@@ -709,12 +710,18 @@
                 satsToRender = data.sats.map(s => ({...s, color: data.color || '#38bdf8'}));
             }
 
+            // Dynamic Center Label Badge & Map Card Accent Border Color Update
             const badgeEl = document.getElementById('constellation-label');
             if (badgeEl) {
                 badgeEl.innerText = data.name;
                 badgeEl.style.color = data.color;
                 badgeEl.style.borderColor = data.color;
                 badgeEl.style.background = data.color.replace(')', ', 0.15)').replace('rgb', 'rgba');
+            }
+
+            const mapCard = document.getElementById('mapCard');
+            if (mapCard) {
+                mapCard.style.borderTopColor = data.color;
             }
 
             document.getElementById('total-sats').innerText = data.total;
