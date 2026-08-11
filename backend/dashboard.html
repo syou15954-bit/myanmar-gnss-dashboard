@@ -115,29 +115,35 @@
             z-index: 15;
             display: flex;
             gap: 8px;
-            background: rgba(4, 8, 16, 0.88);
-            padding: 5px 12px;
+            background: rgba(4, 8, 16, 0.92);
+            padding: 6px 14px;
             border-radius: 20px;
-            border: 1px solid rgba(0, 242, 255, 0.3);
+            border: 1px solid rgba(0, 242, 255, 0.4);
             backdrop-filter: blur(12px);
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.15);
         }
 
         .feature-btn {
             background: rgba(0, 242, 255, 0.08);
             color: #cbd5e1;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 10.5px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 5px 14px;
+            border-radius: 14px;
+            font-size: 11px;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.2s;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
         }
         .feature-btn:hover { background: rgba(0, 242, 255, 0.25); color: #fff; border-color: var(--accent-cyan); }
+        .feature-btn.active-mode {
+            background: rgba(0, 242, 255, 0.3);
+            color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+        }
 
         /* Floating Overlays */
         .overlay-card-left {
@@ -162,18 +168,8 @@
             z-index: 30;
             transition: transform 0.2s;
         }
-        .sat-marker:hover {
-            transform: translate(-50%, -50%) scale(1.25);
-        }
-        .sat-icon-wrapper {
-            font-size: 18px;
-            filter: drop-shadow(0 0 8px var(--accent-cyan));
-            animation: pulse-sat 2s infinite ease-in-out;
-        }
-        @keyframes pulse-sat {
-            0%, 100% { filter: drop-shadow(0 0 6px var(--accent-cyan)); }
-            50% { filter: drop-shadow(0 0 12px var(--accent-green)); }
-        }
+        .sat-marker:hover { transform: translate(-50%, -50%) scale(1.3); }
+        .sat-icon-wrapper { font-size: 18px; filter: drop-shadow(0 0 8px var(--accent-cyan)); }
         .sat-tag {
             font-size: 8.5px;
             font-family: 'JetBrains Mono', monospace;
@@ -230,7 +226,7 @@
         .upload-box { display: flex; gap: 8px; align-items: center; background: rgba(0,0,0,0.4); padding: 6px 8px; border-radius: 6px; border: 1px dashed var(--accent-cyan); }
         .upload-btn { background: rgba(0,242,255,0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; cursor: pointer; }
 
-        /* Professional Telemetry Detail Modal Drawer */
+        /* Sleek Satellite Telemetry Detail Modal Drawer */
         #detailModal {
             display: none;
             position: absolute;
@@ -284,7 +280,7 @@
         <section class="globe-stage">
             <div id="globeViz"></div>
 
-            <!-- Professional Telemetry Detail Modal -->
+            <!-- Satellite Telemetry Detail Modal -->
             <div id="detailModal" class="mono">
                 <div class="modal-header">
                     <span id="modal-title">🛰️ REAL-TIME SATELLITE TELEMETRY</span>
@@ -295,12 +291,12 @@
                 </div>
             </div>
 
-            <!-- Center Interactive Feature Overlay Buttons -->
+            <!-- Center Feature Toggle Overlay Buttons -->
             <div class="center-feature-bar mono">
-                <button class="feature-btn" onclick="showFeatureDetail('stations')">📡 Ground Stations</button>
-                <button class="feature-btn" onclick="showFeatureDetail('tracks')">🌐 Orbit Tracks</button>
-                <button class="feature-btn" onclick="showFeatureDetail('heatmap')">🔥 TEC Heatmap</button>
-                <button class="feature-btn" onclick="showFeatureDetail('spectrum')">📊 Live Spectrum</button>
+                <button class="feature-btn" id="btn-stations" onclick="toggleFeatureMode('stations', this)">📡 Ground Stations</button>
+                <button class="feature-btn" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 Orbit Tracks</button>
+                <button class="feature-btn" id="btn-heatmap" onclick="toggleFeatureMode('heatmap', this)">🔥 TEC Heatmap</button>
+                <button class="feature-btn" id="btn-spectrum" onclick="toggleFeatureMode('spectrum', this)">📊 Live Spectrum</button>
             </div>
 
             <div class="overlay-card-left mono">
@@ -364,7 +360,7 @@
 
             <div class="glass-panel">
                 <div class="panel-title">
-                    <span>🎯 တည်နေရာ တိကျမှု (DOP) & RINEX Processing</span>
+                    <span id="chart-panel-title">🎯 တည်နေရာ တိကျမှု (DOP) & Signal Waveform</span>
                 </div>
                 <div class="dop-grid mono" style="margin-bottom:6px;">
                     <div class="dop-card"><div style="font-size:8px; color:var(--text-muted);">PDOP</div><div class="dop-val" id="pdop-val">1.67</div></div>
@@ -388,6 +384,14 @@
         let myGlobe = null;
         let activeSatList = [];
         let animTime = 0;
+
+        // Toggle States for Feature Modes
+        let modes = {
+            stations: false,
+            tracks: false,
+            heatmap: false,
+            spectrum: false
+        };
 
         function updateMyanmarTime() {
             const now = new Date();
@@ -460,7 +464,7 @@
                     .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.25 })
                     .showAtmosphere(true)
                     .atmosphereColor('#00f2ff')
-                    .atmosphereAltitude(0.18) // Crisp clear atmosphere view for Myanmar
+                    .atmosphereAltitude(0.18)
                     .htmlElementsData([])
                     .htmlElement(d => {
                         const el = document.createElement('div');
@@ -476,10 +480,7 @@
                         };
                         return el;
                     })
-                    // Sleek Yangon Station Beacon (No heavy green ring blinding Myanmar)
-                    .pointsData([
-                        { lat: 16.8661, lng: 96.1951, name: 'Yangon Ground Station', color: '#00ff9d', size: 0.6 }
-                    ])
+                    .pointsData([])
                     .pointColor('color')
                     .pointRadius('size');
 
@@ -581,7 +582,6 @@
             }
         }
 
-        // Modal Control Functions
         function closeModal() {
             document.getElementById('detailModal').style.display = 'none';
         }
@@ -608,54 +608,93 @@
             document.getElementById('detailModal').style.display = 'block';
         }
 
-        function showFeatureDetail(feature) {
+        // DYNAMIC FEATURE MODE TOGGLER (Direct 3D Globe & Chart Visual Mode Switches)
+        function toggleFeatureMode(feature, btn) {
             if (!myGlobe) return;
+            modes[feature] = !modes[feature];
 
+            if (modes[feature]) {
+                btn.classList.add('active-mode');
+            } else {
+                btn.classList.remove('active-mode');
+            }
+
+            // 1. Ground Stations Mode
             if (feature === 'stations') {
-                myGlobe.pointsData([
-                    { lat: 16.8661, lng: 96.1951, name: 'Yangon Station', color: '#00ff9d', size: 0.8 },
-                    { lat: 19.7633, lng: 96.0785, name: 'Naypyidaw Node', color: '#00f2ff', size: 0.6 },
-                    { lat: 21.9588, lng: 96.0891, name: 'Mandalay Node', color: '#38bdf8', size: 0.6 }
-                ]).pointColor('color').pointRadius('size');
-
-            } else if (feature === 'tracks') {
-                const orbitLines = [
-                    [{ lat: -50, lng: -180 }, { lat: 0, lng: -90 }, { lat: 50, lng: 0 }, { lat: 0, lng: 90 }, { lat: -50, lng: 180 }],
-                    [{ lat: 50, lng: -180 }, { lat: 0, lng: -90 }, { lat: -50, lng: 0 }, { lat: 0, lng: 90 }, { lat: 50, lng: 180 }]
-                ];
-                myGlobe.pathsData(orbitLines).pathColor(() => '#00f2ff').pathStroke(1.5);
-
-            } else if (feature === 'heatmap') {
-                myGlobe.atmosphereColor('#00f2ff').atmosphereAltitude(0.25);
-
-            } else if (feature === 'spectrum') {
-                if (waveformChart) {
-                    waveformChart.config.type = 'bar';
-                    waveformChart.data.labels = ['L1 (1575MHz)', 'L2 (1227MHz)', 'L5 (1176MHz)', 'B1I', 'B2a'];
-                    waveformChart.data.datasets[0].data = [46.8, 42.1, 44.5, 48.0, 43.2];
-                    waveformChart.update();
+                if (modes.stations) {
+                    myGlobe.pointsData([
+                        { lat: 16.8661, lng: 96.1951, name: 'Yangon Station', color: '#00ff9d', size: 0.8 },
+                        { lat: 19.7633, lng: 96.0785, name: 'Naypyidaw Node', color: '#00f2ff', size: 0.6 },
+                        { lat: 21.9588, lng: 96.0891, name: 'Mandalay Node', color: '#38bdf8', size: 0.6 }
+                    ]).ringsData([
+                        { lat: 16.8661, lng: 96.1951, maxRadius: 8, propagationSpeed: 1, repeatPeriod: 1500, color: '#00ff9d' },
+                        { lat: 19.7633, lng: 96.0785, maxRadius: 6, propagationSpeed: 1, repeatPeriod: 1500, color: '#00f2ff' },
+                        { lat: 21.9588, lng: 96.0891, maxRadius: 6, propagationSpeed: 1, repeatPeriod: 1500, color: '#38bdf8' }
+                    ]);
+                } else {
+                    myGlobe.pointsData([]).ringsData([]);
                 }
             }
 
-            const titles = {
-                stations: "📡 GROUND STATIONS NETWORK",
-                tracks: "🌐 ORBIT TRACKS & PREDICTION",
-                heatmap: "🔥 TEC IONOSPHERE HEATMAP",
-                spectrum: "📊 LIVE SIGNAL SPECTRUM"
-            };
-            const details = {
-                stations: "Yangon Main Station Active (16.86°N, 96.19°E). Secondary tracking nodes connected to Naypyidaw & Mandalay.",
-                tracks: "SGP4 Orbit Propagator Engine running. 3D Ground Tracks updated in real-time.",
-                heatmap: "Total Electron Content (TEC) ionospheric delay model activated.",
-                spectrum: "Multi-frequency L1/L2/L5 and B1I/B2a/B3I signal-to-noise ratio spectrum analysis."
-            };
-            document.getElementById('modal-title').innerText = titles[feature];
-            document.getElementById('modal-content-body').innerHTML = `
-                <div style="font-size:11px; line-height:1.6; color:#f8fafc; background:rgba(0,0,0,0.4); padding:10px; border-radius:6px;">
-                    ${details[feature]}
-                </div>
-            `;
-            document.getElementById('detailModal').style.display = 'block';
+            // 2. 3D Orbit Tracks Mode
+            if (feature === 'tracks') {
+                if (modes.tracks) {
+                    const orbitPaths = [
+                        generateCirclePath(55, 0),
+                        generateCirclePath(55, 60),
+                        generateCirclePath(55, 120),
+                        generateCirclePath(55, 180)
+                    ];
+                    myGlobe.pathsData(orbitPaths).pathColor(() => '#00f2ff').pathStroke(1.2);
+                } else {
+                    myGlobe.pathsData([]);
+                }
+            }
+
+            // 3. TEC Ionosphere Heatmap Atmosphere Glow Mode
+            if (feature === 'heatmap') {
+                if (modes.heatmap) {
+                    myGlobe.atmosphereColor('#ff3b5c').atmosphereAltitude(0.35);
+                } else {
+                    myGlobe.atmosphereColor('#00f2ff').atmosphereAltitude(0.18);
+                }
+            }
+
+            // 4. Live Multi-Frequency Spectrum Bar Graph Mode
+            if (feature === 'spectrum') {
+                if (waveformChart) {
+                    if (modes.spectrum) {
+                        document.getElementById('chart-panel-title').innerText = '📊 Live Multi-Frequency Signal Spectrum (SNR)';
+                        waveformChart.config.type = 'bar';
+                        waveformChart.data.labels = ['L1 (1575MHz)', 'L2 (1227MHz)', 'L5 (1176MHz)', 'B1I (1561MHz)', 'B2a (1176MHz)'];
+                        waveformChart.data.datasets[0].data = [46.8, 42.1, 44.5, 48.0, 43.2];
+                        waveformChart.data.datasets[0].backgroundColor = '#00f2ff';
+                    } else {
+                        document.getElementById('chart-panel-title').innerText = '🎯 တည်နေရာ တိကျမှု (DOP) & Signal Waveform';
+                        waveformChart.config.type = 'line';
+                        waveformChart.data.labels = ['00s', '05s', '10s', '15s', '20s'];
+                        waveformChart.data.datasets[0].data = [42, 45, 41, 48, 44];
+                        waveformChart.data.datasets[0].borderColor = '#00f2ff';
+                    }
+                    waveformChart.update();
+                }
+            }
+        }
+
+        function generateCirclePath(incDeg, raanDeg) {
+            const points = [];
+            const inc = (incDeg * Math.PI) / 180;
+            const raan = (raanDeg * Math.PI) / 180;
+            for (let i = 0; i <= 360; i += 10) {
+                const u = (i * Math.PI) / 180;
+                const x = Math.cos(u);
+                const y = Math.sin(u) * Math.cos(inc);
+                const z = Math.sin(u) * Math.sin(inc);
+                const lng = Math.atan2(y, x) + raan;
+                const lat = Math.asin(z);
+                points.push({ lat: (lat * 180) / Math.PI, lng: (lng * 180) / Math.PI });
+            }
+            return points;
         }
 
         async function uploadAndCompare() {
