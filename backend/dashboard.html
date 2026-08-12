@@ -358,6 +358,7 @@
 
     <script>
         let currentSystem = 'gps';
+        let selectedSatPrn = 'G07'; // Global tracker for currently selected satellite
         let fleetChart = null, waveformChart = null;
         let myGlobe = null;
         let animTime = 0;
@@ -381,6 +382,25 @@
             all: { name: "All Constellations (Multi-GNSS)", satName: "Multi-GNSS Live Stream", total: 139, active: 122, visible: 39, pdop: "1.15", hdop: "0.52", vdop: "0.98", fleet: [48, 38, 24, 12], color: "#00ff66", kp: "2.2", flux: "144 SFU", tec: "14 TECU", sats: [{ prn: 'G07', elevation: 75, azimuth: 45, snr: 46.8 }, { prn: 'C01', elevation: 82, azimuth: 30, snr: 48.2 }, { prn: 'E01', elevation: 70, azimuth: 60, snr: 44.1 }, { prn: 'R08', elevation: 65, azimuth: 40, snr: 42.5 }] }
         };
 
+        // Live Satellite Selector Engine
+        function selectSatellite(prn) {
+            selectedSatPrn = prn;
+            const satNames = {
+                'G07': 'GPS SVN-62 (PRN-07)',
+                'G12': 'GPS SVN-65 (PRN-12)',
+                'C01': 'BDS-3 GEO-03 (C01)',
+                'C03': 'BDS-3 MEO-01 (C03)',
+                'E01': 'GALILEO GSAT-0201 (E01)',
+                'R08': 'GLONASS-M No.758 (R08)'
+            };
+            const displayName = satNames[prn] || `${prn} Satellite`;
+            document.getElementById('tle-sat-name').innerText = displayName;
+
+            if (TLE_DATABASE[prn]) {
+                document.getElementById('tle-display').innerHTML = `${TLE_DATABASE[prn].line1}<br>${TLE_DATABASE[prn].line2}`;
+            }
+        }
+
         function propagateSGP4(prn, timeOffsetSec = 0) {
             const tle = TLE_DATABASE[prn];
             if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 20200 };
@@ -399,7 +419,6 @@
             };
         }
 
-        // Full 12-Hour Continuous Bright Neon Green Orbit Generator
         function generateSatOrbitTrack(prn) {
             const points = [];
             for (let sec = -21600; sec <= 21600; sec += 240) {
@@ -442,12 +461,10 @@
                     .showAtmosphere(true)
                     .atmosphereColor('#00f2ff')
                     .atmosphereAltitude(0.22)
-                    // High-Visibility Cyan Country Polygon Outlines
                     .polygonCapColor(() => 'rgba(0, 242, 255, 0.22)')
                     .polygonSideColor(() => 'rgba(0, 242, 255, 0.08)')
                     .polygonStrokeColor(() => '#00f2ff')
                     .polygonAltitude(0.012)
-                    // HTML Satellite Elements Accessors
                     .htmlElementsData([])
                     .htmlLat(d => d.lat)
                     .htmlLng(d => d.lng)
@@ -459,17 +476,19 @@
                             <div class="sat-icon-wrapper">🛰️</div>
                             <div class="sat-tag">${d.name}</div>
                         `;
-                        el.onclick = (e) => { e.stopPropagation(); openSatModal(d); };
+                        // Click satellite icon to select and update HUD live telemetry
+                        el.onclick = (e) => {
+                            e.stopPropagation();
+                            selectSatellite(d.prn);
+                        };
                         return el;
                     })
-                    // CORS Points Accessors
                     .pointsData([])
                     .pointLat(d => d.lat)
                     .pointLng(d => d.lng)
                     .pointColor(d => d.color || '#00ff66')
                     .pointRadius(d => d.size || 0.5)
                     .pointAltitude(0.01)
-                    // SGP4 Orbit Paths Accessors
                     .pathsData([])
                     .pathPoints(d => d.coords)
                     .pathPointLat(p => p.lat)
@@ -478,7 +497,6 @@
                     .pathColor(d => d.color || '#00ff66')
                     .pathStroke(d => d.stroke || 2.2);
 
-                // Fetch GeoJSON Country Boundaries with Fail-Safe Fallbacks
                 fetch('https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson')
                     .then(res => res.json())
                     .then(countries => {
@@ -508,10 +526,14 @@
 
                 const activePrns = currentSystem === 'all' ? ['G07', 'C01', 'E01', 'R08'] : constellationData[currentSystem].sats.map(s => s.prn);
                 
+                // Active HUD target fallback check
+                let targetPrnForHud = activePrns.includes(selectedSatPrn) ? selectedSatPrn : activePrns[0];
+
                 const liveSats = activePrns.map(prn => {
                     const sgp4Pos = propagateSGP4(prn);
                     
-                    if (prn === activePrns[0]) {
+                    // Live update HUD Panel for currently selected satellite
+                    if (prn === targetPrnForHud) {
                         document.getElementById('hud-lat').innerText = `${sgp4Pos.lat.toFixed(4)}° N`;
                         document.getElementById('hud-lng').innerText = `${sgp4Pos.lng.toFixed(4)}° E`;
                         document.getElementById('hud-alt').innerText = `${sgp4Pos.alt.toLocaleString()} km`;
@@ -548,17 +570,15 @@
             if(btn) btn.classList.add('active');
 
             const data = constellationData[sys] || constellationData.gps;
-            document.getElementById('tle-sat-name').innerText = data.satName;
             document.getElementById('total-sats').innerText = data.total;
             document.getElementById('active-sats').innerText = data.active;
             document.getElementById('pdop-val').innerText = data.pdop;
             document.getElementById('hdop-val').innerText = data.hdop;
             document.getElementById('vdop-val').innerText = data.vdop;
 
-            const activePrn = data.sats[0] ? data.sats[0].prn : 'G07';
-            if (TLE_DATABASE[activePrn]) {
-                document.getElementById('tle-display').innerHTML = `${TLE_DATABASE[activePrn].line1}<br>${TLE_DATABASE[activePrn].line2}`;
-            }
+            // Auto-select first satellite of chosen constellation
+            const defaultPrn = data.sats[0] ? data.sats[0].prn : 'G07';
+            selectSatellite(defaultPrn);
 
             const tbody = document.getElementById('sat-table-body');
             tbody.innerHTML = data.sats.map(s => `
@@ -589,21 +609,6 @@
         }
 
         function closeModal() { document.getElementById('detailModal').style.display = 'none'; }
-
-        function openSatModal(sat) {
-            document.getElementById('modal-title').innerText = `🛰️ SGP4 TELEMETRY: ${sat.name}`;
-            document.getElementById('modal-content-body').innerHTML = `
-                <div class="modal-grid">
-                    <div class="modal-box">PROPAGATOR: <b style="color:var(--accent-green);">SGP4 / NORAD TLE</b></div>
-                    <div class="modal-box">PRN CODE: <b style="color:var(--accent-green);">${sat.prn}</b></div>
-                    <div class="modal-box">ALTITUDE: <b style="color:var(--accent-cyan);">${sat.rawAlt || 20200} km</b></div>
-                    <div class="modal-box">LATITUDE: <b style="color:#fff;">${sat.lat.toFixed(4)}°</b></div>
-                    <div class="modal-box">LONGITUDE: <b style="color:#fff;">${sat.lng.toFixed(4)}°</b></div>
-                    <div class="modal-box">STATUS: <b style="color:var(--accent-green);">100% ACCURATE LOCK</b></div>
-                </div>
-            `;
-            document.getElementById('detailModal').style.display = 'block';
-        }
 
         function toggleFeatureMode(feature, btn) {
             if (!myGlobe) return;
