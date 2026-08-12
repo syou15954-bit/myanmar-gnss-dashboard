@@ -156,10 +156,10 @@
             line-height: 1.3; border-radius: 2px; margin-top: 4px;
         }
 
-        .hud-stat-line { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 3px; color: #a0aec0; }
+        .hud-stat-line { display: flex; justify-content: space-between; align-items: center; font-size: 10px; margin-bottom: 3px; color: #a0aec0; }
         .hud-stat-val { font-weight: 700; color: #fff; }
 
-        .sat-marker { display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translate(-50%, -50%); z-index: 30; }
+        .sat-marker { display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translate(-50%, -50%); z-index: 30; pointer-events: auto; }
         .sat-icon-wrapper { font-size: 14px; filter: drop-shadow(0 0 8px var(--accent-green)); }
         .sat-tag { font-size: 8px; font-family: 'JetBrains Mono', monospace; background: rgba(0, 242, 255, 0.1); color: var(--accent-cyan); border: 1px solid var(--panel-border); padding: 1px 5px; border-radius: 2px; white-space: nowrap; margin-top: 1px; font-weight:700; transition: all 0.2s; }
         
@@ -200,9 +200,11 @@
         .cyber-table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 2px; }
         .cyber-table th { text-align: left; color: var(--text-muted); padding: 4px; border-bottom: 1px solid var(--panel-border); font-size: 9.5px; }
         .cyber-table td { padding: 4px; border-bottom: 1px solid rgba(255,255,255,0.02); }
+        .cyber-table tr { cursor: pointer; transition: background 0.15s; }
+        .cyber-table tr:hover { background: rgba(0, 242, 255, 0.1); }
         
         .table-row-selected {
-            background: rgba(0, 255, 102, 0.18) !important;
+            background: rgba(0, 255, 102, 0.22) !important;
             border-left: 3px solid var(--accent-green) !important;
         }
 
@@ -281,11 +283,22 @@
                 <button class="feature-btn" id="btn-heatmap" onclick="toggleFeatureMode('heatmap', this)">🔥 TEC Ionosphere</button>
             </div>
 
-            <!-- Left HUD: TLE Data Display -->
+            <!-- Left HUD: TLE Data Display with Dropdown Selector -->
             <div class="hud-card hud-left-tle mono">
                 <div class="hud-card-title">
                     <span>► TLE DATA INPUT</span>
                     <span style="color:var(--accent-cyan); font-size:8px;">NORAD/CelesTrak</span>
+                </div>
+                <div class="hud-stat-line" style="margin-bottom: 5px;">
+                    <span>TARGET SAT:</span>
+                    <select id="sat-dropdown" class="mono" style="background:#020a14; color:var(--accent-green); border:1px solid var(--accent-green); font-size:9.5px; padding:2px 4px; border-radius:2px; cursor:pointer;" onchange="selectSatellite(this.value)">
+                        <option value="G07">G07 (GPS SVN-62)</option>
+                        <option value="G12">G12 (GPS SVN-65)</option>
+                        <option value="C01">C01 (BDS-3 GEO-03)</option>
+                        <option value="C03">C03 (BDS-3 MEO-01)</option>
+                        <option value="E01">E01 (GALILEO GSAT-0201)</option>
+                        <option value="R08">R08 (GLONASS-M No.758)</option>
+                    </select>
                 </div>
                 <div class="hud-stat-line"><span>SELECTED:</span><b class="hud-stat-val" id="tle-sat-name">GPS SVN-62 (PRN-07)</b></div>
                 <div class="tle-box" id="tle-display">
@@ -396,9 +409,11 @@
             all: { name: "All Constellations (Multi-GNSS)", satName: "Multi-GNSS Live Stream", total: 139, active: 122, visible: 39, pdop: "1.15", hdop: "0.52", vdop: "0.98", fleet: [48, 38, 24, 12], color: "#00ff66", kp: "2.2", flux: "144 SFU", tec: "14 TECU", sats: [{ prn: 'G07', elevation: 75, azimuth: 45, snr: 46.8 }, { prn: 'C01', elevation: 82, azimuth: 30, snr: 48.2 }, { prn: 'E01', elevation: 70, azimuth: 60, snr: 44.1 }, { prn: 'R08', elevation: 65, azimuth: 40, snr: 42.5 }] }
         };
 
-        // Live Target Selection & Highlight Sync Engine
+        // Guaranteed Satellite Selection & Sync
         function selectSatellite(prn) {
+            if (!prn) return;
             selectedSatPrn = prn;
+            
             const satNames = {
                 'G07': 'GPS SVN-62 (PRN-07)',
                 'G12': 'GPS SVN-65 (PRN-12)',
@@ -409,7 +424,11 @@
             };
             const displayName = satNames[prn] || `${prn} Satellite`;
             
-            // Update HUD Headers and TLE Data
+            // Sync Dropdown Value
+            const dropdown = document.getElementById('sat-dropdown');
+            if (dropdown && dropdown.value !== prn) { dropdown.value = prn; }
+
+            // Sync HUD Headers and TLE Data
             document.getElementById('tle-sat-name').innerText = displayName;
             document.getElementById('hud-sat-title').innerText = `► SATELLITE INFO (${prn})`;
 
@@ -417,15 +436,28 @@
                 document.getElementById('tle-display').innerHTML = `${TLE_DATABASE[prn].line1}<br>${TLE_DATABASE[prn].line2}`;
             }
 
-            // Highlight corresponding row in database table
+            // Sync Table Row Selection
             document.querySelectorAll('#sat-table-body tr').forEach(row => {
-                if (row.cells[0] && row.cells[0].innerText === prn) {
+                if (row.getAttribute('data-prn') === prn) {
                     row.classList.add('table-row-selected');
                 } else {
                     row.classList.remove('table-row-selected');
                 }
             });
         }
+
+        // Table Row Event Delegation (100% Reliable Click)
+        document.addEventListener('DOMContentLoaded', () => {
+            const tbody = document.getElementById('sat-table-body');
+            if (tbody) {
+                tbody.addEventListener('click', (e) => {
+                    const row = e.target.closest('tr');
+                    if (row && row.getAttribute('data-prn')) {
+                        selectSatellite(row.getAttribute('data-prn'));
+                    }
+                });
+            }
+        });
 
         function propagateSGP4(prn, timeOffsetSec = 0) {
             const tle = TLE_DATABASE[prn];
@@ -498,6 +530,7 @@
                     .htmlElement(d => {
                         const el = document.createElement('div');
                         el.className = 'sat-marker';
+                        el.setAttribute('data-prn', d.prn);
                         const isTarget = d.prn === selectedSatPrn;
                         
                         el.innerHTML = `
@@ -507,7 +540,8 @@
                             </div>
                         `;
                         
-                        el.onclick = (e) => {
+                        // Robust Click + Touch listener for 3D Marker
+                        el.onmousedown = el.onclick = (e) => {
                             e.stopPropagation();
                             selectSatellite(d.prn);
                         };
@@ -605,7 +639,7 @@
 
             const tbody = document.getElementById('sat-table-body');
             tbody.innerHTML = data.sats.map(s => `
-                <tr onclick="selectSatellite('${s.prn}')" style="cursor:pointer;">
+                <tr data-prn="${s.prn}">
                     <td><b>${s.prn}</b></td>
                     <td>${sys.toUpperCase()}</td>
                     <td>${s.elevation}°</td>
