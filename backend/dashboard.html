@@ -370,13 +370,13 @@
             };
         }
 
-        // Fixed SGP4 Orbit Track Generator Engine
+        // Full 12-Hour Closed Orbit Generator Engine (-6 hrs to +6 hrs)
         function generateSatOrbitTrack(prn) {
             const points = [];
             const colorMap = { G: '#38bdf8', C: '#f43f5e', E: '#10b981', R: '#a855f7' };
             
-            // Corrected Loop Condition
-            for (let sec = 0; sec <= 7200; sec += 120) {
+            // Full 12-hour period (-21600s to +21600s in 5-minute steps)
+            for (let sec = -21600; sec <= 21600; sec += 300) {
                 const pos = propagateSGP4(prn, sec);
                 points.push({
                     lat: pos.lat,
@@ -526,7 +526,6 @@
             renderSkyPlotCanvas(data.sats);
             resizeGlobe();
 
-            // Refresh tracks if active
             if (modes.tracks) {
                 const activePrns = currentSystem === 'all' ? ['G07', 'C01', 'E01', 'R08'] : constellationData[currentSystem].sats.map(s => s.prn);
                 const orbitPaths = activePrns.map(prn => generateSatOrbitTrack(prn));
