@@ -177,23 +177,22 @@
         .hud-stat-line { display: flex; justify-content: space-between; align-items: center; font-size: 10px; margin-bottom: 4px; color: var(--text-muted); }
         .hud-stat-val { font-weight: 700; color: var(--text-main); }
 
-        /* Instant Response Sat Marker */
+        /* Distinct Space Satellite Marker */
         .sat-marker { 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             cursor: pointer; transform: translate(-50%, -50%); z-index: 30; pointer-events: auto;
             width: 32px; height: 32px; border-radius: 50%; background: transparent;
         }
-        .sat-dot-glow {
-            width: 8px; height: 8px; border-radius: 50%;
-            transition: transform 0.15s ease-in-out; pointer-events: none;
+        .sat-icon-emoji {
+            font-size: 11px; filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.8));
+            transition: transform 0.15s ease-in-out;
         }
-        .sat-marker:hover .sat-dot-glow {
-            transform: scale(2.2);
-            box-shadow: 0 0 16px #fff;
+        .sat-marker:hover .sat-icon-emoji {
+            transform: scale(1.6);
         }
         .sat-tag-hover { 
             display: none;
-            position: absolute; top: 30px;
+            position: absolute; top: 32px;
             font-size: 8.5px; font-family: 'JetBrains Mono', monospace; 
             background: rgba(2, 6, 23, 0.95); padding: 2px 6px; border-radius: 3px; 
             white-space: nowrap; font-weight: 700; pointer-events: none;
@@ -201,6 +200,13 @@
         }
         .sat-marker:hover .sat-tag-hover, .sat-tag-hover.target-active {
             display: block !important;
+        }
+
+        .target-active {
+            background: rgba(56, 189, 248, 0.35) !important;
+            color: #ffffff !important;
+            border: 1.5px solid var(--accent-cyan) !important;
+            box-shadow: 0 0 12px var(--accent-cyan) !important;
         }
 
         .bottom-dock {
@@ -413,12 +419,13 @@
         let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass', 'other']);
         let currentLiveSatObjects = [];
 
+        // Ground-based CORS Stations with Distinct Radar Ring Representation
         const CORS_STATIONS_DATA = [
-            { lat: 16.8661, lng: 96.1951, name: 'CORS Yangon Base Station', color: '#10b981', size: 0.8 },
-            { lat: 19.7633, lng: 96.0785, name: 'CORS Naypyidaw Central Station', color: '#38bdf8', size: 0.7 },
-            { lat: 21.9588, lng: 96.0891, name: 'CORS Mandalay North Station', color: '#c084fc', size: 0.7 },
-            { lat: 20.7831, lng: 97.0381, name: 'CORS Taunggyi East Station', color: '#f59e0b', size: 0.7 },
-            { lat: 12.4707, lng: 98.6003, name: 'CORS Myeik South Station', color: '#ef4444', size: 0.7 }
+            { lat: 16.8661, lng: 96.1951, name: '📡 CORS Yangon Base Station', color: '#00f2ff', size: 3.5 },
+            { lat: 19.7633, lng: 96.0785, name: '📡 CORS Naypyidaw Central Station', color: '#00f2ff', size: 3.0 },
+            { lat: 21.9588, lng: 96.0891, name: '📡 CORS Mandalay North Station', color: '#00f2ff', size: 3.0 },
+            { lat: 20.7831, lng: 97.0381, name: '📡 CORS Taunggyi East Station', color: '#00f2ff', size: 3.0 },
+            { lat: 12.4707, lng: 98.6003, name: '📡 CORS Myeik South Station', color: '#00f2ff', size: 3.0 }
         ];
 
         const TEC_IONOSPHERE_DATA = [
@@ -673,7 +680,15 @@
             btn.classList.toggle('active-mode', modes[feature]);
 
             if (feature === 'stations') {
-                myGlobe.pointsData(modes.stations ? CORS_STATIONS_DATA : []);
+                if (modes.stations) {
+                    myGlobe.ringsData(CORS_STATIONS_DATA)
+                           .ringColor(d => d.color)
+                           .ringMaxRadius(d => d.size)
+                           .ringPropagationSpeed(2.5)
+                           .ringRepeatPeriod(800);
+                } else if (!modes.heatmap) {
+                    myGlobe.ringsData([]);
+                }
             }
 
             if (feature === 'heatmap') {
@@ -686,7 +701,7 @@
                            .ringRepeatPeriod(1000);
                 } else {
                     myGlobe.atmosphereColor('#38bdf8').atmosphereAltitude(0.22);
-                    myGlobe.ringsData([]);
+                    myGlobe.ringsData(modes.stations ? CORS_STATIONS_DATA : []);
                 }
             }
 
@@ -715,7 +730,6 @@
                 }
             });
 
-            // Instantly draw selected orbit ring on single click
             updateTargetOrbitPath(id);
         }
 
@@ -879,13 +893,12 @@
                         const countryColor = getSatColor(d.fullName);
                         
                         el.innerHTML = `
-                            <div class="sat-dot-glow" style="background: ${countryColor}; box-shadow: 0 0 8px ${countryColor};"></div>
+                            <div class="sat-icon-emoji">${isTarget ? '🎯' : '🛰️'}</div>
                             <div class="sat-tag-hover ${isTarget ? 'target-active' : ''}" style="border: 1px solid ${countryColor}; color: ${countryColor};">
-                                ${isTarget ? '🎯 ' + d.name : d.name}
+                                ${isTarget ? '🎯 TARGET: ' + d.name : '🛰️ ' + d.name}
                             </div>
                         `;
                         
-                        // Instant Single Click Execution
                         const handleSatClick = (e) => {
                             e.stopPropagation();
                             e.preventDefault();
