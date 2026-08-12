@@ -20,7 +20,7 @@
             --accent-red: #ff3366;
             --accent-yellow: #ffcc00;
             --text-main: #e2e8f0;
-            --text-muted: #4a5568;
+            --text-muted: #64748b;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -161,7 +161,7 @@
 
         .sat-marker { display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translate(-50%, -50%); z-index: 30; }
         .sat-icon-wrapper { font-size: 14px; filter: drop-shadow(0 0 8px var(--accent-green)); }
-        .sat-tag { font-size: 8px; font-family: 'JetBrains Mono', monospace; background: rgba(0, 255, 102, 0.15); color: var(--accent-green); border: 1px solid var(--accent-green); padding: 1px 5px; border-radius: 2px; white-space: nowrap; margin-top: 1px; font-weight:700; }
+        .sat-tag { font-size: 8px; font-family: 'JetBrains Mono', monospace; background: rgba(0, 255, 102, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green); padding: 1px 5px; border-radius: 2px; white-space: nowrap; margin-top: 1px; font-weight:700; }
 
         .bottom-dock {
             flex: 1;
@@ -381,52 +381,6 @@
             all: { name: "All Constellations (Multi-GNSS)", satName: "Multi-GNSS Live Stream", total: 139, active: 122, visible: 39, pdop: "1.15", hdop: "0.52", vdop: "0.98", fleet: [48, 38, 24, 12], color: "#00ff66", kp: "2.2", flux: "144 SFU", tec: "14 TECU", sats: [{ prn: 'G07', elevation: 75, azimuth: 45, snr: 46.8 }, { prn: 'C01', elevation: 82, azimuth: 30, snr: 48.2 }, { prn: 'E01', elevation: 70, azimuth: 60, snr: 44.1 }, { prn: 'R08', elevation: 65, azimuth: 40, snr: 42.5 }] }
         };
 
-        // High-Contrast Glowing Cyan/White Dot Matrix Texture Generator
-        function generateCyanMatrixTexture() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 2048; canvas.height = 1024;
-            const ctx = canvas.getContext('2d');
-            
-            // Deep space ocean background
-            ctx.fillStyle = '#020b18';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Glowing Cyan Grid Lines
-            ctx.strokeStyle = 'rgba(0, 242, 255, 0.22)';
-            ctx.lineWidth = 1;
-            for (let x = 0; x < canvas.width; x += 32) {
-                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-            }
-            for (let y = 0; y < canvas.height; y += 32) {
-                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-            }
-
-            // Draw brilliant cyan & white dot matrix continent landmasses
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.src = 'https://unpkg.com/three-globe/example/img/earth-dark.jpg';
-            img.onload = () => {
-                const tempCanvas = document.createElement('canvas');
-                tempCanvas.width = 2048; tempCanvas.height = 1024;
-                const tempCtx = tempCanvas.getContext('2d');
-                tempCtx.drawImage(img, 0, 0, 2048, 1024);
-                const imgData = tempCtx.getImageData(0, 0, 2048, 1024);
-                
-                for (let y = 0; y < 1024; y += 6) {
-                    for (let x = 0; x < 2048; x += 6) {
-                        const idx = (y * 2048 + x) * 4;
-                        const brightness = (imgData.data[idx] + imgData.data[idx+1] + imgData.data[idx+2]) / 3;
-                        if (brightness > 12) {
-                            ctx.fillStyle = '#00ffff';
-                            ctx.fillRect(x, y, 3.5, 3.5);
-                        }
-                    }
-                }
-                if (myGlobe) myGlobe.globeImageUrl(canvas.toDataURL());
-            };
-            return canvas.toDataURL();
-        }
-
         function propagateSGP4(prn, timeOffsetSec = 0) {
             const tle = TLE_DATABASE[prn];
             if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 20200 };
@@ -481,14 +435,18 @@
         try {
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
-                const initialTexture = generateCyanMatrixTexture();
                 myGlobe = Globe()(container)
-                    .globeImageUrl(initialTexture)
+                    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
                     .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.18 })
                     .showAtmosphere(true)
-                    .atmosphereColor('#00d2ff')
+                    .atmosphereColor('#00f2ff')
                     .atmosphereAltitude(0.25)
+                    // Render Sharp GeoJSON Vector Country Boundaries
+                    .polygonCapColor(() => 'rgba(0, 242, 255, 0.08)')
+                    .polygonSideColor(() => 'rgba(0, 242, 255, 0.02)')
+                    .polygonStrokeColor(() => '#00f2ff')
+                    .polygonAltitude(0.006)
                     // HTML Satellite Elements Accessors
                     .htmlElementsData([])
                     .htmlLat(d => d.lat)
@@ -519,6 +477,14 @@
                     .pathPointAlt(p => p.alt)
                     .pathColor(d => d.color || '#00ff66')
                     .pathStroke(d => d.stroke || 2.2);
+
+                // Fetch & Draw Clear Country Vector Outlines
+                fetch('https://unpkg.com/three-globe/example/files/ne_110m_admin_0_countries.geojson')
+                    .then(res => res.json())
+                    .then(countries => {
+                        if (myGlobe) myGlobe.polygonsData(countries.features);
+                    })
+                    .catch(err => console.error("GeoJSON Error:", err));
 
                 myGlobe.controls().autoRotate = true;
                 myGlobe.controls().autoRotateSpeed = 0.3;
@@ -664,7 +630,7 @@
                 if (modes.heatmap) {
                     myGlobe.atmosphereColor('#ffcc00').atmosphereAltitude(0.28);
                 } else {
-                    myGlobe.atmosphereColor('#00d2ff').atmosphereAltitude(0.25);
+                    myGlobe.atmosphereColor('#00f2ff').atmosphereAltitude(0.25);
                 }
             }
         }
