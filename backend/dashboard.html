@@ -388,6 +388,22 @@
         let TLE_DATABASE = {};
         let CONSTELLATION_SATS = { gps: [], bds: [], galileo: [], glonass: [], all: [] };
 
+        const CORS_STATIONS_DATA = [
+            { lat: 16.8661, lng: 96.1951, name: 'CORS Yangon Base Station', color: '#00ff66', size: 0.8 },
+            { lat: 19.7633, lng: 96.0785, name: 'CORS Naypyidaw Central Station', color: '#00f2ff', size: 0.7 },
+            { lat: 21.9588, lng: 96.0891, name: 'CORS Mandalay North Station', color: '#a855f7', size: 0.7 },
+            { lat: 20.7831, lng: 97.0381, name: 'CORS Taunggyi East Station', color: '#ffcc00', size: 0.7 },
+            { lat: 12.4707, lng: 98.6003, name: 'CORS Myeik South Station', color: '#ff3366', size: 0.7 }
+        ];
+
+        const TEC_IONOSPHERE_DATA = [
+            { lat: 16.8, lng: 96.1, size: 4.5, color: 'rgba(255, 80, 0, 0.45)' },
+            { lat: 19.7, lng: 96.0, size: 5.0, color: 'rgba(255, 160, 0, 0.4)' },
+            { lat: 21.9, lng: 96.1, size: 4.2, color: 'rgba(255, 210, 0, 0.35)' },
+            { lat: 12.4, lng: 98.6, size: 5.5, color: 'rgba(255, 50, 50, 0.5)' },
+            { lat: 25.3, lng: 97.3, size: 3.8, color: 'rgba(255, 120, 0, 0.35)' }
+        ];
+
         function getSatColor(satName) {
             let uname = (satName || '').toUpperCase();
             if (uname.includes('GPS') || uname.includes('NAVSTAR')) return '#00ff66';
@@ -487,7 +503,6 @@
             document.getElementById('tle-status-badge').innerText = `LOCAL FALLBACK (${fallbackList.length} SATS)`;
         }
 
-        // Full 360-Degree 3D Orbital Ring Generator (Supports GEO, MEO, HEO)
         function generateSatOrbitTrack(id) {
             const sat = TLE_DATABASE[id];
             if (!sat || typeof satellite === 'undefined') return { coords: [], color: '#00ff66', stroke: 3.5 };
@@ -495,14 +510,13 @@
             const satrec = satellite.twoline2satrec(sat.line1, sat.line2);
             const satColor = getSatColor(sat.name);
             
-            // Calculate orbital period
             const meanMotionRadMin = satrec.no_kozai || satrec.no || 0.004;
             const periodMin = (2 * Math.PI) / meanMotionRadMin;
             const periodSec = periodMin * 60;
             
             const points = [];
             const now = new Date();
-            const currentGmst = satellite.gstime(now); // Fixed GMST for spatial 3D orbit ring rendering
+            const currentGmst = satellite.gstime(now);
             
             const numSteps = 120;
             const stepSec = periodSec / numSteps;
@@ -534,6 +548,34 @@
             }
             const track = generateSatOrbitTrack(id);
             myGlobe.pathsData([track]);
+        }
+
+        function toggleFeatureMode(feature, btn) {
+            if (!myGlobe) return;
+            modes[feature] = !modes[feature];
+            btn.classList.toggle('active-mode', modes[feature]);
+
+            if (feature === 'stations') {
+                myGlobe.pointsData(modes.stations ? CORS_STATIONS_DATA : []);
+            }
+
+            if (feature === 'heatmap') {
+                if (modes.heatmap) {
+                    myGlobe.atmosphereColor('#ff5500').atmosphereAltitude(0.38);
+                    myGlobe.ringsData(TEC_IONOSPHERE_DATA)
+                           .ringColor(d => d.color)
+                           .ringMaxRadius(d => d.size)
+                           .ringPropagationSpeed(1.8)
+                           .ringRepeatPeriod(1000);
+                } else {
+                    myGlobe.atmosphereColor('#00f2ff').atmosphereAltitude(0.22);
+                    myGlobe.ringsData([]);
+                }
+            }
+
+            if (feature === 'tracks') {
+                updateTargetOrbitPath(selectedSatId);
+            }
         }
 
         function selectSatellite(id) {
@@ -649,8 +691,8 @@
                     .pointLat(d => d.lat)
                     .pointLng(d => d.lng)
                     .pointColor(d => d.color || '#00ff66')
-                    .pointRadius(d => d.size || 0.5)
-                    .pointAltitude(0.01)
+                    .pointRadius(d => d.size || 0.6)
+                    .pointAltitude(0.02)
                     .pathsData([])
                     .pathPoints(d => d.coords)
                     .pathPointLat(p => p.lat)
@@ -746,16 +788,6 @@
         }
 
         function closeModal() { document.getElementById('detailModal').style.display = 'none'; }
-
-        function toggleFeatureMode(feature, btn) {
-            if (!myGlobe) return;
-            modes[feature] = !modes[feature];
-            btn.classList.toggle('active-mode', modes[feature]);
-
-            if (feature === 'tracks') {
-                updateTargetOrbitPath(selectedSatId);
-            }
-        }
 
         function initCharts() {
             if (typeof Chart === 'undefined') return;
