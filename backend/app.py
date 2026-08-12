@@ -5,7 +5,6 @@ from flask import Flask, render_template, jsonify
 
 app = Flask(__name__, template_folder='.', static_folder='.')
 
-# CelesTrak TLE Cache Config (Cache for 4 Hours)
 TLE_CACHE = {}
 LAST_FETCH_TIME = 0
 CACHE_DURATION = 14400 
@@ -30,7 +29,7 @@ def parse_tle_raw(tle_text):
             norad_id = line1[2:7].strip()
             sats.append({
                 'id': norad_id,
-                'name': sat_name,
+                'name': f"{sat_name} ({norad_id})",
                 'line1': line1,
                 'line2': line2
             })
@@ -60,7 +59,6 @@ def get_live_tles():
     global TLE_CACHE, LAST_FETCH_TIME
     now = time.time()
 
-    # Return cached TLEs if fetched within 4 hours
     if TLE_CACHE and (now - LAST_FETCH_TIME < CACHE_DURATION):
         return jsonify({'status': 'cached', 'data': TLE_CACHE})
 
@@ -69,10 +67,11 @@ def get_live_tles():
 
     for const, url in CELESTRAK_URLS.items():
         try:
-            res = requests.get(url, headers=headers, timeout=8)
+            res = requests.get(url, headers=headers, timeout=5)
             if res.status_code == 200:
                 parsed = parse_tle_raw(res.text)
-                fetched_data[const] = parsed
+                if parsed:
+                    fetched_data[const] = parsed
         except Exception as e:
             print(f"Failed to fetch {const} TLE: {e}")
 

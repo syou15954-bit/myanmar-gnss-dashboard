@@ -271,11 +271,11 @@
                 <button class="feature-btn" id="btn-heatmap" onclick="toggleFeatureMode('heatmap', this)">🔥 TEC Ionosphere</button>
             </div>
 
-            <!-- Left HUD: TLE Data Display with Dynamic Dropdown -->
+            <!-- Left HUD: TLE Data Display -->
             <div class="hud-card hud-left-tle mono">
                 <div class="hud-card-title">
                     <span>► TLE DATA INPUT</span>
-                    <span style="color:var(--accent-cyan); font-size:8px;" id="tle-status-badge">CELESTRAK LIVE</span>
+                    <span style="color:var(--accent-cyan); font-size:8px;" id="tle-status-badge">SGP4 READY</span>
                 </div>
                 <div class="hud-stat-line" style="margin-bottom: 5px;">
                     <span>TARGET SAT:</span>
@@ -284,7 +284,7 @@
                     </select>
                 </div>
                 <div class="hud-stat-line"><span>SELECTED:</span><b class="hud-stat-val" id="tle-sat-name">--</b></div>
-                <div class="tle-box" id="tle-display">Loading NORAD TLE Stream...</div>
+                <div class="tle-box" id="tle-display">Fetching NORAD TLE Data...</div>
             </div>
 
             <!-- Right HUD (Top): Upcoming Passes -->
@@ -370,15 +370,17 @@
         let myGlobe = null;
         let modes = { stations: false, tracks: false, heatmap: false };
 
-        // Global Dynamic TLE Stores
         let TLE_DATABASE = {};
         let CONSTELLATION_SATS = { gps: [], bds: [], galileo: [], glonass: [], all: [] };
 
+        // Fallback Dataset with valid 'id' properties
         const DEFAULT_FALLBACK_TLES = {
-            '33591': { name: 'GPS SVN-62 (G07)', line1: '1 33591U 09015A   26223.41203412  .00000032  00000-0  00000+0 0  9993', line2: '2 33591  55.1234 120.4321 0012345  45.1234 315.1234  2.00561234 12342' },
-            '43245': { name: 'BDS-3 GEO-03 (C01)', line1: '1 43245U 18018A   26223.11112222  .00000020  00000-0  00000+0 0  9998', line2: '2 43245   1.8543  80.1234 0002134 180.1234 180.4321  1.00271234  5432' },
-            '37846': { name: 'GALILEO GSAT-0201 (E01)', line1: '1 37846U 11060A   26223.22223333  .00000010  00000-0  00000+0 0  9992', line2: '2 37846  56.0123 300.1234 0002341  30.1234 330.1234  1.70481234  4321' },
-            '40351': { name: 'GLONASS-M No.758 (R08)', line1: '1 40351U 14084A   26223.66667777  .00000040  00000-0  00000+0 0  9997', line2: '2 40351  64.8123  45.1234 0015678  60.1234 300.4321  2.13101234  9988' }
+            '33591': { id: '33591', name: 'GPS SVN-62 (PRN-07)', line1: '1 33591U 09015A   26223.41203412  .00000032  00000-0  00000+0 0  9993', line2: '2 33591  55.1234 120.4321 0012345  45.1234 315.1234  2.00561234 12342' },
+            '36585': { id: '36585', name: 'GPS SVN-65 (PRN-12)', line1: '1 36585U 10022A   26223.51234123  .00000015  00000-0  00000+0 0  9991', line2: '2 36585  55.2341 180.5432 0009876  90.4321 270.5432  2.00564321 11223' },
+            '43245': { id: '43245', name: 'BDS-3 GEO-03 (C01)', line1: '1 43245U 18018A   26223.11112222  .00000020  00000-0  00000+0 0  9998', line2: '2 43245   1.8543  80.1234 0002134 180.1234 180.4321  1.00271234  5432' },
+            '44204': { id: '44204', name: 'BDS-3 MEO-01 (C03)', line1: '1 44204U 19027A   26223.33334444  .00000018  00000-0  00000+0 0  9994', line2: '2 44204  55.3123 210.1234 0011223 120.4321 240.1234  1.86231234  8765' },
+            '37846': { id: '37846', name: 'GALILEO GSAT-0201 (E01)', line1: '1 37846U 11060A   26223.22223333  .00000010  00000-0  00000+0 0  9992', line2: '2 37846  56.0123 300.1234 0002341  30.1234 330.1234  1.70481234  4321' },
+            '40351': { id: '40351', name: 'GLONASS-M No.758 (R08)', line1: '1 40351U 14084A   26223.66667777  .00000040  00000-0  00000+0 0  9997', line2: '2 40351  64.8123  45.1234 0015678  60.1234 300.4321  2.13101234  9988' }
         };
 
         async function loadCelesTrakTLEs() {
@@ -386,7 +388,7 @@
                 const res = await fetch('/api/tle');
                 const json = await res.json();
                 
-                if (json && json.data) {
+                if (json && json.data && Object.keys(json.data).length > 0) {
                     let allList = [];
                     for (const [key, list] of Object.entries(json.data)) {
                         CONSTELLATION_SATS[key] = list;
@@ -397,17 +399,24 @@
                     }
                     CONSTELLATION_SATS.all = allList;
                     document.getElementById('tle-status-badge').innerText = 'CELESTRAK LIVE';
+                } else {
+                    useFallbackData();
                 }
             } catch (err) {
                 console.warn("Using Fallback Local TLEs:", err);
-                TLE_DATABASE = DEFAULT_FALLBACK_TLES;
-                CONSTELLATION_SATS.gps = [DEFAULT_FALLBACK_TLES['33591']];
-                CONSTELLATION_SATS.bds = [DEFAULT_FALLBACK_TLES['43245']];
-                CONSTELLATION_SATS.galileo = [DEFAULT_FALLBACK_TLES['37846']];
-                CONSTELLATION_SATS.glonass = [DEFAULT_FALLBACK_TLES['40351']];
-                CONSTELLATION_SATS.all = Object.values(DEFAULT_FALLBACK_TLES);
+                useFallbackData();
             }
             switchConstellation(currentSystem, document.querySelector('.nav-tab-btn.active'));
+        }
+
+        function useFallbackData() {
+            TLE_DATABASE = DEFAULT_FALLBACK_TLES;
+            CONSTELLATION_SATS.gps = [DEFAULT_FALLBACK_TLES['33591'], DEFAULT_FALLBACK_TLES['36585']];
+            CONSTELLATION_SATS.bds = [DEFAULT_FALLBACK_TLES['43245'], DEFAULT_FALLBACK_TLES['44204']];
+            CONSTELLATION_SATS.galileo = [DEFAULT_FALLBACK_TLES['37846']];
+            CONSTELLATION_SATS.glonass = [DEFAULT_FALLBACK_TLES['40351']];
+            CONSTELLATION_SATS.all = Object.values(DEFAULT_FALLBACK_TLES);
+            document.getElementById('tle-status-badge').innerText = 'LOCAL FALLBACK';
         }
 
         function selectSatellite(id) {
@@ -576,7 +585,7 @@
 
                     return {
                         id: s.id,
-                        name: s.name.substring(0, 10),
+                        name: s.name.substring(0, 12),
                         lat: sgp4Pos.lat,
                         lng: sgp4Pos.lng,
                         alt: 0.22,
@@ -599,7 +608,7 @@
 
             const satList = CONSTELLATION_SATS[sys] || CONSTELLATION_SATS.all;
             document.getElementById('total-sats').innerText = satList.length;
-            document.getElementById('active-sats').innerText = Math.max(0, satList.length - 2);
+            document.getElementById('active-sats').innerText = Math.max(0, satList.length);
 
             // Populate Dropdown Menu
             const dropdown = document.getElementById('sat-dropdown');
@@ -609,7 +618,7 @@
             const tbody = document.getElementById('sat-table-body');
             tbody.innerHTML = satList.slice(0, 20).map(s => `
                 <tr data-id="${s.id}">
-                    <td><b>${s.name.substring(0, 14)}</b></td>
+                    <td><b>${s.name.substring(0, 16)}</b></td>
                     <td>${sys.toUpperCase()}</td>
                     <td>75°</td>
                     <td>45°</td>
