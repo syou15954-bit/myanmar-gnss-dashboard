@@ -161,7 +161,16 @@
 
         .sat-marker { display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translate(-50%, -50%); z-index: 30; }
         .sat-icon-wrapper { font-size: 14px; filter: drop-shadow(0 0 8px var(--accent-green)); }
-        .sat-tag { font-size: 8px; font-family: 'JetBrains Mono', monospace; background: rgba(0, 255, 102, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green); padding: 1px 5px; border-radius: 2px; white-space: nowrap; margin-top: 1px; font-weight:700; }
+        .sat-tag { font-size: 8px; font-family: 'JetBrains Mono', monospace; background: rgba(0, 242, 255, 0.1); color: var(--accent-cyan); border: 1px solid var(--panel-border); padding: 1px 5px; border-radius: 2px; white-space: nowrap; margin-top: 1px; font-weight:700; transition: all 0.2s; }
+        
+        /* Active Target Visual Highlight */
+        .sat-tag.target-active {
+            background: rgba(0, 255, 102, 0.35) !important;
+            color: #ffffff !important;
+            border: 1.5px solid var(--accent-green) !important;
+            box-shadow: 0 0 12px var(--accent-green) !important;
+            font-size: 9px !important;
+        }
 
         .bottom-dock {
             flex: 1;
@@ -192,6 +201,11 @@
         .cyber-table th { text-align: left; color: var(--text-muted); padding: 4px; border-bottom: 1px solid var(--panel-border); font-size: 9.5px; }
         .cyber-table td { padding: 4px; border-bottom: 1px solid rgba(255,255,255,0.02); }
         
+        .table-row-selected {
+            background: rgba(0, 255, 102, 0.18) !important;
+            border-left: 3px solid var(--accent-green) !important;
+        }
+
         .status-pill { padding: 1px 5px; border-radius: 2px; font-size: 8.5px; font-weight: 700; }
         .pill-green { background: rgba(0, 255, 102, 0.15); color: var(--accent-green); border: 1px solid var(--accent-green); }
 
@@ -295,7 +309,7 @@
             <!-- Right HUD (Bottom): Live Satellite Info -->
             <div class="hud-card hud-right-info mono">
                 <div class="hud-card-title">
-                    <span>► SATELLITE INFO</span>
+                    <span id="hud-sat-title">► SATELLITE INFO (G07)</span>
                     <span style="color:var(--accent-cyan); font-size:8px;">SGP4 LIVE</span>
                 </div>
                 <div class="hud-stat-line"><span>LATITUDE:</span><b class="hud-stat-val" id="hud-lat">16.8661° N</b></div>
@@ -358,7 +372,7 @@
 
     <script>
         let currentSystem = 'gps';
-        let selectedSatPrn = 'G07'; // Global tracker for currently selected satellite
+        let selectedSatPrn = 'G07';
         let fleetChart = null, waveformChart = null;
         let myGlobe = null;
         let animTime = 0;
@@ -382,7 +396,7 @@
             all: { name: "All Constellations (Multi-GNSS)", satName: "Multi-GNSS Live Stream", total: 139, active: 122, visible: 39, pdop: "1.15", hdop: "0.52", vdop: "0.98", fleet: [48, 38, 24, 12], color: "#00ff66", kp: "2.2", flux: "144 SFU", tec: "14 TECU", sats: [{ prn: 'G07', elevation: 75, azimuth: 45, snr: 46.8 }, { prn: 'C01', elevation: 82, azimuth: 30, snr: 48.2 }, { prn: 'E01', elevation: 70, azimuth: 60, snr: 44.1 }, { prn: 'R08', elevation: 65, azimuth: 40, snr: 42.5 }] }
         };
 
-        // Live Satellite Selector Engine
+        // Live Target Selection & Highlight Sync Engine
         function selectSatellite(prn) {
             selectedSatPrn = prn;
             const satNames = {
@@ -394,11 +408,23 @@
                 'R08': 'GLONASS-M No.758 (R08)'
             };
             const displayName = satNames[prn] || `${prn} Satellite`;
+            
+            // Update HUD Headers and TLE Data
             document.getElementById('tle-sat-name').innerText = displayName;
+            document.getElementById('hud-sat-title').innerText = `► SATELLITE INFO (${prn})`;
 
             if (TLE_DATABASE[prn]) {
                 document.getElementById('tle-display').innerHTML = `${TLE_DATABASE[prn].line1}<br>${TLE_DATABASE[prn].line2}`;
             }
+
+            // Highlight corresponding row in database table
+            document.querySelectorAll('#sat-table-body tr').forEach(row => {
+                if (row.cells[0] && row.cells[0].innerText === prn) {
+                    row.classList.add('table-row-selected');
+                } else {
+                    row.classList.remove('table-row-selected');
+                }
+            });
         }
 
         function propagateSGP4(prn, timeOffsetSec = 0) {
@@ -472,11 +498,15 @@
                     .htmlElement(d => {
                         const el = document.createElement('div');
                         el.className = 'sat-marker';
+                        const isTarget = d.prn === selectedSatPrn;
+                        
                         el.innerHTML = `
                             <div class="sat-icon-wrapper">🛰️</div>
-                            <div class="sat-tag">${d.name}</div>
+                            <div class="sat-tag ${isTarget ? 'target-active' : ''}">
+                                ${isTarget ? '🎯 ' + d.name + ' [TARGET]' : d.name}
+                            </div>
                         `;
-                        // Click satellite icon to select and update HUD live telemetry
+                        
                         el.onclick = (e) => {
                             e.stopPropagation();
                             selectSatellite(d.prn);
@@ -525,14 +555,11 @@
                 animTime += 0.002;
 
                 const activePrns = currentSystem === 'all' ? ['G07', 'C01', 'E01', 'R08'] : constellationData[currentSystem].sats.map(s => s.prn);
-                
-                // Active HUD target fallback check
                 let targetPrnForHud = activePrns.includes(selectedSatPrn) ? selectedSatPrn : activePrns[0];
 
                 const liveSats = activePrns.map(prn => {
                     const sgp4Pos = propagateSGP4(prn);
                     
-                    // Live update HUD Panel for currently selected satellite
                     if (prn === targetPrnForHud) {
                         document.getElementById('hud-lat').innerText = `${sgp4Pos.lat.toFixed(4)}° N`;
                         document.getElementById('hud-lng').innerText = `${sgp4Pos.lng.toFixed(4)}° E`;
@@ -576,13 +603,9 @@
             document.getElementById('hdop-val').innerText = data.hdop;
             document.getElementById('vdop-val').innerText = data.vdop;
 
-            // Auto-select first satellite of chosen constellation
-            const defaultPrn = data.sats[0] ? data.sats[0].prn : 'G07';
-            selectSatellite(defaultPrn);
-
             const tbody = document.getElementById('sat-table-body');
             tbody.innerHTML = data.sats.map(s => `
-                <tr>
+                <tr onclick="selectSatellite('${s.prn}')" style="cursor:pointer;">
                     <td><b>${s.prn}</b></td>
                     <td>${sys.toUpperCase()}</td>
                     <td>${s.elevation}°</td>
@@ -591,6 +614,9 @@
                     <td><span class="status-pill pill-green">SGP4 TRACKING</span></td>
                 </tr>
             `).join('');
+
+            const defaultPrn = data.sats[0] ? data.sats[0].prn : 'G07';
+            selectSatellite(defaultPrn);
 
             renderSkyPlotCanvas(data.sats);
             resizeGlobe();
