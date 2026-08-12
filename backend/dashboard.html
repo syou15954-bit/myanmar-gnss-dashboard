@@ -12,9 +12,9 @@
     
     <style>
         :root {
-            --bg-dark: #04080d;
-            --panel-bg: rgba(6, 15, 23, 0.92);
-            --panel-border: rgba(0, 255, 102, 0.25);
+            --bg-dark: #02060d;
+            --panel-bg: rgba(4, 12, 20, 0.94);
+            --panel-border: rgba(0, 242, 255, 0.25);
             --accent-green: #00ff66;
             --accent-cyan: #00f2ff;
             --accent-red: #ff3366;
@@ -40,7 +40,7 @@
             flex-direction: column;
             padding: 8px;
             gap: 8px;
-            background: radial-gradient(circle at 50% 30%, #0a1520 0%, #020408 100%);
+            background: radial-gradient(circle at 50% 30%, #061527 0%, #010408 100%);
         }
 
         .mono { font-family: 'JetBrains Mono', monospace; }
@@ -56,7 +56,7 @@
             padding: 6px 16px;
             flex-shrink: 0;
             gap: 15px;
-            box-shadow: 0 0 15px rgba(0, 255, 102, 0.1);
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.1);
         }
 
         .nav-tabs { display: flex; gap: 4px; background: rgba(0, 0, 0, 0.6); padding: 3px; border-radius: 4px; border: 1px solid var(--panel-border); }
@@ -64,7 +64,7 @@
             background: transparent; color: #718096; border: 1px solid transparent; padding: 3px 10px; border-radius: 2px;
             font-size: 10.5px; font-weight: 700; cursor: pointer; transition: all 0.2s;
         }
-        .nav-tab-btn:hover { color: #fff; background: rgba(0, 255, 102, 0.1); }
+        .nav-tab-btn:hover { color: #fff; background: rgba(0, 242, 255, 0.1); }
         .nav-tab-btn.active { background: rgba(0, 255, 102, 0.18); color: var(--accent-green); border-color: var(--accent-green); box-shadow: 0 0 8px rgba(0, 255, 102, 0.3); }
 
         .brand-title-box {
@@ -109,18 +109,18 @@
             z-index: 15;
             display: flex;
             gap: 10px;
-            background: rgba(4, 8, 13, 0.95);
+            background: rgba(2, 6, 13, 0.95);
             padding: 5px 14px;
             border-radius: 4px;
             border: 1px solid var(--panel-border);
             backdrop-filter: blur(12px);
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
         }
 
         .feature-btn {
-            background: rgba(0, 255, 102, 0.03);
+            background: rgba(0, 242, 255, 0.04);
             color: #a0aec0;
-            border: 1px solid rgba(0, 255, 102, 0.2);
+            border: 1px solid rgba(0, 242, 255, 0.25);
             padding: 4px 12px;
             border-radius: 2px;
             font-size: 11px;
@@ -128,22 +128,22 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        .feature-btn:hover { color: #fff; border-color: var(--accent-green); }
+        .feature-btn:hover { color: #fff; border-color: var(--accent-cyan); }
         .feature-btn.active-mode { background: rgba(0, 255, 102, 0.2); color: var(--accent-green); border-color: var(--accent-green); box-shadow: 0 0 10px rgba(0, 255, 102, 0.3); }
 
         /* Tactical HUD Panels */
         .hud-card {
             position: absolute; z-index: 10;
-            background: rgba(4, 10, 16, 0.92); border: 1px solid var(--panel-border);
+            background: rgba(2, 8, 16, 0.92); border: 1px solid var(--panel-border);
             backdrop-filter: blur(12px); border-radius: 4px; padding: 10px 12px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.6);
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.15);
         }
 
         .hud-card-title {
             font-size: 10px; font-weight: 700; color: var(--accent-green);
             letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;
             display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid rgba(0, 255, 102, 0.15); padding-bottom: 4px;
+            border-bottom: 1px solid rgba(0, 242, 255, 0.2); padding-bottom: 4px;
         }
 
         .hud-left-tle { top: 12px; left: 12px; width: 280px; }
@@ -151,7 +151,7 @@
         .hud-right-info { bottom: 50px; right: 12px; width: 260px; }
 
         .tle-box {
-            background: rgba(0,0,0,0.6); border: 1px solid rgba(0,255,102,0.15);
+            background: rgba(0,0,0,0.7); border: 1px solid rgba(0,255,102,0.2);
             padding: 6px; font-size: 9px; color: var(--accent-green); word-break: break-all;
             line-height: 1.3; border-radius: 2px; margin-top: 4px;
         }
@@ -160,8 +160,8 @@
         .hud-stat-val { font-weight: 700; color: #fff; }
 
         .sat-marker { display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translate(-50%, -50%); z-index: 30; }
-        .sat-icon-wrapper { font-size: 14px; filter: drop-shadow(0 0 6px var(--accent-green)); }
-        .sat-tag { font-size: 8px; font-family: 'JetBrains Mono', monospace; background: rgba(2, 4, 8, 0.95); padding: 1px 5px; border-radius: 2px; white-space: nowrap; margin-top: 1px; }
+        .sat-icon-wrapper { font-size: 14px; filter: drop-shadow(0 0 8px var(--accent-green)); }
+        .sat-tag { font-size: 8px; font-family: 'JetBrains Mono', monospace; background: rgba(0, 255, 102, 0.15); color: var(--accent-green); border: 1px solid var(--accent-green); padding: 1px 5px; border-radius: 2px; white-space: nowrap; margin-top: 1px; font-weight:700; }
 
         .bottom-dock {
             flex: 1;
@@ -185,7 +185,7 @@
         .panel-title {
             font-size: 11px; font-weight: 700; color: var(--text-main); margin-bottom: 6px;
             display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid rgba(0, 255, 102, 0.12); padding-bottom: 4px; flex-shrink: 0;
+            border-bottom: 1px solid rgba(0, 242, 255, 0.15); padding-bottom: 4px; flex-shrink: 0;
         }
 
         .cyber-table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 2px; }
@@ -199,11 +199,11 @@
         .chart-box canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
 
         .dop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 4px; }
-        .dop-card { background: rgba(0,0,0,0.4); padding: 4px; border-radius: 2px; text-align: center; border: 1px solid rgba(0,255,102,0.1); }
+        .dop-card { background: rgba(0,0,0,0.5); padding: 4px; border-radius: 2px; text-align: center; border: 1px solid rgba(0,242,255,0.15); }
         .dop-val { font-size: 13px; font-weight: 700; color: var(--accent-green); }
 
-        .upload-box { display: flex; gap: 6px; align-items: center; background: rgba(0,0,0,0.4); padding: 5px; border-radius: 2px; border: 1px dashed var(--accent-green); }
-        .upload-btn { background: rgba(0, 255, 102, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green); padding: 3px 8px; border-radius: 2px; font-size: 9.5px; font-weight: 700; cursor: pointer; }
+        .upload-box { display: flex; gap: 6px; align-items: center; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 2px; border: 1px dashed var(--accent-cyan); }
+        .upload-btn { background: rgba(0, 242, 255, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 3px 8px; border-radius: 2px; font-size: 9.5px; font-weight: 700; cursor: pointer; }
 
         #detailModal {
             display: none;
@@ -213,18 +213,18 @@
             transform: translateX(-50%);
             z-index: 200;
             width: 450px;
-            background: rgba(4, 10, 16, 0.98);
-            border: 1px solid var(--accent-green);
+            background: rgba(2, 8, 16, 0.98);
+            border: 1px solid var(--accent-cyan);
             border-radius: 4px;
             padding: 12px 16px;
             backdrop-filter: blur(16px);
-            box-shadow: 0 0 30px rgba(0, 255, 102, 0.2);
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.3);
         }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--panel-border); padding-bottom: 6px; margin-bottom: 8px; font-size: 12px; font-weight: 700; color: var(--accent-green); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--panel-border); padding-bottom: 6px; margin-bottom: 8px; font-size: 12px; font-weight: 700; color: var(--accent-cyan); }
         .modal-close { cursor: pointer; color: var(--text-muted); font-size: 16px; font-weight: 700; }
         .modal-close:hover { color: var(--accent-red); }
         .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 10.5px; margin-top: 6px; }
-        .modal-box { background: rgba(0,0,0,0.5); padding: 6px 8px; border-radius: 2px; border: 1px solid rgba(0,255,102,0.1); }
+        .modal-box { background: rgba(0,0,0,0.6); padding: 6px 8px; border-radius: 2px; border: 1px solid rgba(0,242,255,0.15); }
     </style>
 </head>
 <body>
@@ -244,7 +244,7 @@
         </div>
 
         <div class="mono" style="font-size: 10px; color: var(--text-muted);">
-            <span>မြန်မာစံတော်ချိန်: <b id="mmt-time" style="color:var(--accent-green);">--:--:-- MMT</b> | ပင်မစခန်း: <b style="color:#fff;">ရန်ကုန် (16.86°N, 96.19°E)</b></span>
+            <span>မြန်မာစံတော်ချိန်: <b id="mmt-time" style="color:var(--accent-cyan);">--:--:-- MMT</b> | ပင်မစခန်း: <b style="color:#fff;">ရန်ကုန် (16.86°N, 96.19°E)</b></span>
         </div>
     </header>
 
@@ -271,7 +271,7 @@
             <div class="hud-card hud-left-tle mono">
                 <div class="hud-card-title">
                     <span>► TLE DATA INPUT</span>
-                    <span style="color:var(--accent-green); font-size:8px;">NORAD/CelesTrak</span>
+                    <span style="color:var(--accent-cyan); font-size:8px;">NORAD/CelesTrak</span>
                 </div>
                 <div class="hud-stat-line"><span>SELECTED:</span><b class="hud-stat-val" id="tle-sat-name">GPS SVN-62 (PRN-07)</b></div>
                 <div class="tle-box" id="tle-display">
@@ -300,8 +300,8 @@
                 </div>
                 <div class="hud-stat-line"><span>LATITUDE:</span><b class="hud-stat-val" id="hud-lat">16.8661° N</b></div>
                 <div class="hud-stat-line"><span>LONGITUDE:</span><b class="hud-stat-val" id="hud-lng">96.1951° E</b></div>
-                <div class="hud-stat-line"><span>ALTITUDE:</span><b class="hud-stat-val" style="color:var(--accent-green);" id="hud-alt">20,200 km</b></div>
-                <div class="hud-stat-line"><span>VELOCITY:</span><b class="hud-stat-val" style="color:var(--accent-cyan);">3.87 km/s</b></div>
+                <div class="hud-stat-line"><span>ALTITUDE:</span><b class="hud-stat-val" style="color:var(--accent-cyan);" id="hud-alt">20,200 km</b></div>
+                <div class="hud-stat-line"><span>VELOCITY:</span><b class="hud-stat-val" style="color:var(--accent-green);">3.87 km/s</b></div>
                 <div class="hud-stat-line"><span>INCLINATION:</span><b class="hud-stat-val">55.12°</b></div>
                 <div class="hud-stat-line"><span>PERIOD:</span><b class="hud-stat-val">718 min</b></div>
             </div>
@@ -381,6 +381,52 @@
             all: { name: "All Constellations (Multi-GNSS)", satName: "Multi-GNSS Live Stream", total: 139, active: 122, visible: 39, pdop: "1.15", hdop: "0.52", vdop: "0.98", fleet: [48, 38, 24, 12], color: "#00ff66", kp: "2.2", flux: "144 SFU", tec: "14 TECU", sats: [{ prn: 'G07', elevation: 75, azimuth: 45, snr: 46.8 }, { prn: 'C01', elevation: 82, azimuth: 30, snr: 48.2 }, { prn: 'E01', elevation: 70, azimuth: 60, snr: 44.1 }, { prn: 'R08', elevation: 65, azimuth: 40, snr: 42.5 }] }
         };
 
+        // Procedural Cyan Dot-Matrix Globe Texture Generator
+        function generateCyanMatrixTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024; canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            
+            // Deep space ocean background
+            ctx.fillStyle = '#020a14';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Cyan Grid Lines
+            ctx.strokeStyle = 'rgba(0, 242, 255, 0.15)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 32) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 32) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+            }
+
+            // Draw glowing cyan dot matrix continent contours
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.src = 'https://unpkg.com/three-globe/example/img/earth-dark.jpg';
+            img.onload = () => {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = 1024; tempCanvas.height = 512;
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.drawImage(img, 0, 0, 1024, 512);
+                const imgData = tempCtx.getImageData(0, 0, 1024, 512);
+                
+                for (let y = 0; y < 512; y += 4) {
+                    for (let x = 0; x < 1024; x += 4) {
+                        const idx = (y * 1024 + x) * 4;
+                        const brightness = imgData.data[idx];
+                        if (brightness > 18) {
+                            ctx.fillStyle = `rgba(0, 242, 255, ${Math.min(1, brightness / 110)})`;
+                            ctx.fillRect(x, y, 2.5, 2.5);
+                        }
+                    }
+                }
+                if (myGlobe) myGlobe.globeImageUrl(canvas.toDataURL());
+            };
+            return canvas.toDataURL();
+        }
+
         function propagateSGP4(prn, timeOffsetSec = 0) {
             const tle = TLE_DATABASE[prn];
             if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 20200 };
@@ -399,20 +445,18 @@
             };
         }
 
-        // Full 12-Hour Closed Orbit Generator Engine
+        // Full 12-Hour Continuous Neon Green Orbit Generator
         function generateSatOrbitTrack(prn) {
             const points = [];
-            const colorMap = { G: '#00ff66', C: '#ff3366', E: '#00f2ff', R: '#a855f7' };
-            
-            for (let sec = -21600; sec <= 21600; sec += 300) {
+            for (let sec = -21600; sec <= 21600; sec += 240) {
                 const pos = propagateSGP4(prn, sec);
                 points.push({
                     lat: pos.lat,
                     lng: pos.lng,
-                    alt: 0.18
+                    alt: 0.15
                 });
             }
-            return { coords: points, color: colorMap[prn[0]] || '#00ff66', stroke: 1.5 };
+            return { coords: points, color: '#00ff66', stroke: 2.0 };
         }
 
         function updateMyanmarTime() {
@@ -437,13 +481,14 @@
         try {
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
+                const initialTexture = generateCyanMatrixTexture();
                 myGlobe = Globe()(container)
-                    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg')
+                    .globeImageUrl(initialTexture)
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
                     .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.18 })
                     .showAtmosphere(true)
-                    .atmosphereColor('#00ff66')
-                    .atmosphereAltitude(0.20)
+                    .atmosphereColor('#00f2ff')
+                    .atmosphereAltitude(0.28)
                     // HTML Satellite Elements Accessors
                     .htmlElementsData([])
                     .htmlLat(d => d.lat)
@@ -454,7 +499,7 @@
                         el.className = 'sat-marker';
                         el.innerHTML = `
                             <div class="sat-icon-wrapper">🛰️</div>
-                            <div class="sat-tag" style="color:${d.color}; border:1px solid ${d.color};">${d.name}</div>
+                            <div class="sat-tag">${d.name}</div>
                         `;
                         el.onclick = (e) => { e.stopPropagation(); openSatModal(d); };
                         return el;
@@ -473,7 +518,7 @@
                     .pathPointLng(p => p.lng)
                     .pathPointAlt(p => p.alt)
                     .pathColor(d => d.color || '#00ff66')
-                    .pathStroke(d => d.stroke || 1.5);
+                    .pathStroke(d => d.stroke || 2.0);
 
                 myGlobe.controls().autoRotate = true;
                 myGlobe.controls().autoRotateSpeed = 0.3;
@@ -494,9 +539,7 @@
                 
                 const liveSats = activePrns.map(prn => {
                     const sgp4Pos = propagateSGP4(prn);
-                    const colorMap = { G: '#00ff66', C: '#ff3366', E: '#00f2ff', R: '#a855f7' };
                     
-                    // Live Update HUD Info
                     if (prn === activePrns[0]) {
                         document.getElementById('hud-lat').innerText = `${sgp4Pos.lat.toFixed(4)}° N`;
                         document.getElementById('hud-lng').innerText = `${sgp4Pos.lng.toFixed(4)}° E`;
@@ -505,12 +548,12 @@
 
                     return {
                         prn: prn,
-                        name: `${prn} (SGP4)`,
+                        name: `${prn}`,
                         lat: sgp4Pos.lat,
                         lng: sgp4Pos.lng,
                         alt: 0.22,
                         rawAlt: sgp4Pos.alt,
-                        color: colorMap[prn[0]] || '#00ff66'
+                        color: '#00ff66'
                     };
                 });
 
@@ -519,7 +562,7 @@
                     const arcs = liveSats.map(sat => ({
                         startLat: 16.8661, startLng: 96.1951,
                         endLat: sat.lat, endLng: sat.lng,
-                        color: ['#00ff66', sat.color]
+                        color: ['#00ff66', '#00f2ff']
                     }));
                     myGlobe.arcsData(arcs).arcColor('color').arcDashLength(0.4).arcDashGap(0.2).arcDashAnimateTime(1200).arcStroke(0.8);
                 }
@@ -541,7 +584,6 @@
             document.getElementById('hdop-val').innerText = data.hdop;
             document.getElementById('vdop-val').innerText = data.vdop;
 
-            // Update TLE Block
             const activePrn = data.sats[0] ? data.sats[0].prn : 'G07';
             if (TLE_DATABASE[activePrn]) {
                 document.getElementById('tle-display').innerHTML = `${TLE_DATABASE[activePrn].line1}<br>${TLE_DATABASE[activePrn].line2}`;
@@ -570,7 +612,7 @@
 
             if (fleetChart) {
                 fleetChart.data.datasets[0].data = data.fleet;
-                fleetChart.data.datasets[0].backgroundColor = data.color;
+                fleetChart.data.datasets[0].backgroundColor = '#00ff66';
                 fleetChart.update();
             }
         }
@@ -622,7 +664,7 @@
                 if (modes.heatmap) {
                     myGlobe.atmosphereColor('#ffcc00').atmosphereAltitude(0.28);
                 } else {
-                    myGlobe.atmosphereColor('#00ff66').atmosphereAltitude(0.20);
+                    myGlobe.atmosphereColor('#00f2ff').atmosphereAltitude(0.28);
                 }
             }
         }
@@ -633,7 +675,7 @@
             const ctx = canvas.getContext('2d');
             const cx = canvas.width / 2, cy = canvas.height / 2, radius = 42;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = 'rgba(0, 255, 102, 0.2)'; ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(0, 242, 255, 0.2)'; ctx.lineWidth = 1;
             [0.33, 0.66, 1.0].forEach(rRatio => { ctx.beginPath(); ctx.arc(cx, cy, radius * rRatio, 0, 2 * Math.PI); ctx.stroke(); });
             if (satellites) {
                 satellites.forEach(sat => {
