@@ -177,25 +177,27 @@
         .hud-stat-line { display: flex; justify-content: space-between; align-items: center; font-size: 10px; margin-bottom: 4px; color: var(--text-muted); }
         .hud-stat-val { font-weight: 700; color: var(--text-main); }
 
-        /* Minimalist Dot-Only Satellites to prevent text clutter */
+        /* Expanded Hitbox Surface Area for Easy Clicking */
         .sat-marker { 
-            display: flex; flex-direction: column; align-items: center; cursor: pointer; 
-            transform: translate(-50%, -50%); z-index: 30; pointer-events: auto; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; transform: translate(-50%, -50%); z-index: 30; pointer-events: auto;
+            width: 28px; height: 28px; border-radius: 50%; background: transparent;
         }
         .sat-dot-glow {
             width: 8px; height: 8px; border-radius: 50%;
-            transition: all 0.2s ease-in-out;
+            transition: all 0.2s ease-in-out; pointer-events: none;
         }
         .sat-marker:hover .sat-dot-glow {
-            transform: scale(1.8);
-            box-shadow: 0 0 12px #fff;
+            transform: scale(2.0);
+            box-shadow: 0 0 14px #fff;
         }
         .sat-tag-hover { 
             display: none;
+            position: absolute; top: 28px;
             font-size: 8.5px; font-family: 'JetBrains Mono', monospace; 
             background: rgba(2, 6, 23, 0.95); padding: 2px 6px; border-radius: 3px; 
-            white-space: nowrap; margin-top: 3px; font-weight: 700; pointer-events: none;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            white-space: nowrap; font-weight: 700; pointer-events: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 40;
         }
         .sat-marker:hover .sat-tag-hover, .sat-tag-hover.target-active {
             display: block !important;
@@ -716,7 +718,6 @@
             reader.readAsText(file);
         }
 
-        // Expanded RINEX Comparison Chart Engine (GPS vs BDS C/N0)
         function parseAndRenderRINEX(text, filename) {
             let epochs = [];
             let snrGps = [];
@@ -864,10 +865,14 @@
                                 ${isTarget ? '🎯 ' + d.name : d.name}
                             </div>
                         `;
-                        el.onclick = (e) => {
+                        
+                        // Robust Click Handler attached to enlarged Hitbox
+                        el.addEventListener('click', (e) => {
                             e.stopPropagation();
+                            e.preventDefault();
                             selectSatellite(d.id);
-                        };
+                        });
+
                         return el;
                     })
                     .pointsData([])
