@@ -381,18 +381,18 @@
             all: { name: "All Constellations (Multi-GNSS)", satName: "Multi-GNSS Live Stream", total: 139, active: 122, visible: 39, pdop: "1.15", hdop: "0.52", vdop: "0.98", fleet: [48, 38, 24, 12], color: "#00ff66", kp: "2.2", flux: "144 SFU", tec: "14 TECU", sats: [{ prn: 'G07', elevation: 75, azimuth: 45, snr: 46.8 }, { prn: 'C01', elevation: 82, azimuth: 30, snr: 48.2 }, { prn: 'E01', elevation: 70, azimuth: 60, snr: 44.1 }, { prn: 'R08', elevation: 65, azimuth: 40, snr: 42.5 }] }
         };
 
-        // Procedural Cyan Dot-Matrix Globe Texture Generator
+        // High-Contrast Glowing Cyan/White Dot Matrix Texture Generator
         function generateCyanMatrixTexture() {
             const canvas = document.createElement('canvas');
-            canvas.width = 1024; canvas.height = 512;
+            canvas.width = 2048; canvas.height = 1024;
             const ctx = canvas.getContext('2d');
             
             // Deep space ocean background
-            ctx.fillStyle = '#020a14';
+            ctx.fillStyle = '#020b18';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Cyan Grid Lines
-            ctx.strokeStyle = 'rgba(0, 242, 255, 0.15)';
+            // Glowing Cyan Grid Lines
+            ctx.strokeStyle = 'rgba(0, 242, 255, 0.22)';
             ctx.lineWidth = 1;
             for (let x = 0; x < canvas.width; x += 32) {
                 ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
@@ -401,24 +401,24 @@
                 ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
             }
 
-            // Draw glowing cyan dot matrix continent contours
+            // Draw brilliant cyan & white dot matrix continent landmasses
             const img = new Image();
             img.crossOrigin = 'anonymous';
             img.src = 'https://unpkg.com/three-globe/example/img/earth-dark.jpg';
             img.onload = () => {
                 const tempCanvas = document.createElement('canvas');
-                tempCanvas.width = 1024; tempCanvas.height = 512;
+                tempCanvas.width = 2048; tempCanvas.height = 1024;
                 const tempCtx = tempCanvas.getContext('2d');
-                tempCtx.drawImage(img, 0, 0, 1024, 512);
-                const imgData = tempCtx.getImageData(0, 0, 1024, 512);
+                tempCtx.drawImage(img, 0, 0, 2048, 1024);
+                const imgData = tempCtx.getImageData(0, 0, 2048, 1024);
                 
-                for (let y = 0; y < 512; y += 4) {
-                    for (let x = 0; x < 1024; x += 4) {
-                        const idx = (y * 1024 + x) * 4;
-                        const brightness = imgData.data[idx];
-                        if (brightness > 18) {
-                            ctx.fillStyle = `rgba(0, 242, 255, ${Math.min(1, brightness / 110)})`;
-                            ctx.fillRect(x, y, 2.5, 2.5);
+                for (let y = 0; y < 1024; y += 6) {
+                    for (let x = 0; x < 2048; x += 6) {
+                        const idx = (y * 2048 + x) * 4;
+                        const brightness = (imgData.data[idx] + imgData.data[idx+1] + imgData.data[idx+2]) / 3;
+                        if (brightness > 12) {
+                            ctx.fillStyle = '#00ffff';
+                            ctx.fillRect(x, y, 3.5, 3.5);
                         }
                     }
                 }
@@ -445,7 +445,7 @@
             };
         }
 
-        // Full 12-Hour Continuous Neon Green Orbit Generator
+        // Full 12-Hour Continuous Bright Neon Green Orbit Generator
         function generateSatOrbitTrack(prn) {
             const points = [];
             for (let sec = -21600; sec <= 21600; sec += 240) {
@@ -456,7 +456,7 @@
                     alt: 0.15
                 });
             }
-            return { coords: points, color: '#00ff66', stroke: 2.0 };
+            return { coords: points, color: '#00ff66', stroke: 2.2 };
         }
 
         function updateMyanmarTime() {
@@ -487,8 +487,8 @@
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
                     .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.18 })
                     .showAtmosphere(true)
-                    .atmosphereColor('#00f2ff')
-                    .atmosphereAltitude(0.28)
+                    .atmosphereColor('#00d2ff')
+                    .atmosphereAltitude(0.25)
                     // HTML Satellite Elements Accessors
                     .htmlElementsData([])
                     .htmlLat(d => d.lat)
@@ -518,7 +518,7 @@
                     .pathPointLng(p => p.lng)
                     .pathPointAlt(p => p.alt)
                     .pathColor(d => d.color || '#00ff66')
-                    .pathStroke(d => d.stroke || 2.0);
+                    .pathStroke(d => d.stroke || 2.2);
 
                 myGlobe.controls().autoRotate = true;
                 myGlobe.controls().autoRotateSpeed = 0.3;
@@ -664,7 +664,7 @@
                 if (modes.heatmap) {
                     myGlobe.atmosphereColor('#ffcc00').atmosphereAltitude(0.28);
                 } else {
-                    myGlobe.atmosphereColor('#00f2ff').atmosphereAltitude(0.28);
+                    myGlobe.atmosphereColor('#00d2ff').atmosphereAltitude(0.25);
                 }
             }
         }
