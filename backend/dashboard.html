@@ -72,6 +72,7 @@
         .nav-tab-btn.toggle-on[data-sys="bds"] { background: rgba(239, 68, 68, 0.25); color: #ef4444; border-color: #ef4444; }
         .nav-tab-btn.toggle-on[data-sys="galileo"] { background: rgba(56, 189, 248, 0.25); color: #38bdf8; border-color: #38bdf8; }
         .nav-tab-btn.toggle-on[data-sys="glonass"] { background: rgba(192, 132, 252, 0.25); color: #c084fc; border-color: #c084fc; }
+        .nav-tab-btn.toggle-on[data-sys="other"] { background: rgba(245, 158, 11, 0.25); color: #f59e0b; border-color: #f59e0b; }
 
         .brand-title-box {
             display: flex;
@@ -258,6 +259,7 @@
             <button class="nav-tab-btn toggle-on" data-sys="bds" onclick="toggleSystemFilter('bds', this)">🛰️ BEIDOU</button>
             <button class="nav-tab-btn toggle-on" data-sys="galileo" onclick="toggleSystemFilter('galileo', this)">🛰️ GALILEO</button>
             <button class="nav-tab-btn toggle-on" data-sys="glonass" onclick="toggleSystemFilter('glonass', this)">🛰️ GLONASS</button>
+            <button class="nav-tab-btn toggle-on" data-sys="other" onclick="toggleSystemFilter('other', this)">🌐 OTHER</button>
             <button class="nav-tab-btn active" onclick="selectAllSystems()" style="margin-left: 4px; border: 1px solid var(--accent-cyan);">✨ ALL</button>
         </div>
 
@@ -393,8 +395,8 @@
         let modes = { stations: false, tracks: true, heatmap: false };
 
         let TLE_DATABASE = {};
-        let CONSTELLATION_SATS = { gps: [], bds: [], galileo: [], glonass: [], all: [] };
-        let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass']);
+        let CONSTELLATION_SATS = { gps: [], bds: [], galileo: [], glonass: [], other: [], all: [] };
+        let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass', 'other']);
 
         const CORS_STATIONS_DATA = [
             { lat: 16.8661, lng: 96.1951, name: 'CORS Yangon Base Station', color: '#10b981', size: 0.8 },
@@ -465,15 +467,22 @@
             return parsedSats;
         }
 
+        // Clean Classification Logic: Separate Pure GPS vs OTHER
         function categorizeSatsList(list) {
-            let cat = { gps: [], bds: [], galileo: [], glonass: [], all: list };
+            let cat = { gps: [], bds: [], galileo: [], glonass: [], other: [], all: list };
             list.forEach(s => {
                 let uname = s.name.toUpperCase();
-                if (uname.includes('GPS') || uname.includes('NAVSTAR')) cat.gps.push(s);
-                else if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('C0')) cat.bds.push(s);
-                else if (uname.includes('GALILEO') || uname.includes('GSAT')) cat.galileo.push(s);
-                else if (uname.includes('GLONASS') || uname.includes('COSMOS')) cat.glonass.push(s);
-                else cat.gps.push(s);
+                if (uname.includes('GPS') || uname.includes('NAVSTAR')) {
+                    cat.gps.push(s);
+                } else if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('C0')) {
+                    cat.bds.push(s);
+                } else if (uname.includes('GALILEO') || uname.includes('GSAT')) {
+                    cat.galileo.push(s);
+                } else if (uname.includes('GLONASS') || uname.includes('COSMOS')) {
+                    cat.glonass.push(s);
+                } else {
+                    cat.other.push(s); // Purely isolate SBAS, QZSS, IRNSS, etc.
+                }
 
                 TLE_DATABASE[s.id] = s;
             });
@@ -524,7 +533,6 @@
             document.getElementById('tle-status-badge').innerText = `LOCAL FALLBACK (${fallbackList.length} SATS)`;
         }
 
-        // Custom Multi-Select Filter Logic
         function toggleSystemFilter(sys, btn) {
             if (activeSystems.has(sys)) {
                 if (activeSystems.size > 1) {
@@ -539,7 +547,7 @@
         }
 
         function selectAllSystems() {
-            activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass']);
+            activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass', 'other']);
             document.querySelectorAll('.nav-tab-btn[data-sys]').forEach(b => b.classList.add('toggle-on'));
             renderCustomSelection();
         }
