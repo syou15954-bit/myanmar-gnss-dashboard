@@ -13,7 +13,7 @@
     <style>
         :root {
             --bg-dark: #030712;
-            --panel-bg: rgba(15, 23, 42, 0.88);
+            --panel-bg: rgba(15, 23, 42, 0.90);
             --panel-border: rgba(56, 189, 248, 0.2);
             --accent-cyan: #38bdf8;
             --accent-green: #10b981;
@@ -177,16 +177,28 @@
         .hud-stat-line { display: flex; justify-content: space-between; align-items: center; font-size: 10px; margin-bottom: 4px; color: var(--text-muted); }
         .hud-stat-val { font-weight: 700; color: var(--text-main); }
 
-        .sat-marker { display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translate(-50%, -50%); z-index: 30; pointer-events: auto; }
-        .sat-icon-wrapper { font-size: 13px; }
-        .sat-tag { font-size: 8px; font-family: 'JetBrains Mono', monospace; background: rgba(2, 6, 23, 0.88); padding: 1px 5px; border-radius: 3px; white-space: nowrap; margin-top: 1px; font-weight:700; transition: all 0.2s; }
-        
-        .sat-tag.target-active {
-            background: rgba(56, 189, 248, 0.35) !important;
-            color: #ffffff !important;
-            border: 1.5px solid var(--accent-cyan) !important;
-            box-shadow: 0 0 12px var(--accent-cyan) !important;
-            font-size: 9px !important;
+        /* Minimalist Dot-Only Satellites to prevent text clutter */
+        .sat-marker { 
+            display: flex; flex-direction: column; align-items: center; cursor: pointer; 
+            transform: translate(-50%, -50%); z-index: 30; pointer-events: auto; 
+        }
+        .sat-dot-glow {
+            width: 8px; height: 8px; border-radius: 50%;
+            transition: all 0.2s ease-in-out;
+        }
+        .sat-marker:hover .sat-dot-glow {
+            transform: scale(1.8);
+            box-shadow: 0 0 12px #fff;
+        }
+        .sat-tag-hover { 
+            display: none;
+            font-size: 8.5px; font-family: 'JetBrains Mono', monospace; 
+            background: rgba(2, 6, 23, 0.95); padding: 2px 6px; border-radius: 3px; 
+            white-space: nowrap; margin-top: 3px; font-weight: 700; pointer-events: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .sat-marker:hover .sat-tag-hover, .sat-tag-hover.target-active {
+            display: block !important;
         }
 
         .bottom-dock {
@@ -467,7 +479,6 @@
             return parsedSats;
         }
 
-        // Clean Classification Logic: Separate Pure GPS vs OTHER
         function categorizeSatsList(list) {
             let cat = { gps: [], bds: [], galileo: [], glonass: [], other: [], all: list };
             list.forEach(s => {
@@ -481,7 +492,7 @@
                 } else if (uname.includes('GLONASS') || uname.includes('COSMOS')) {
                     cat.glonass.push(s);
                 } else {
-                    cat.other.push(s); // Purely isolate SBAS, QZSS, IRNSS, etc.
+                    cat.other.push(s);
                 }
 
                 TLE_DATABASE[s.id] = s;
@@ -705,6 +716,7 @@
             reader.readAsText(file);
         }
 
+        // Expanded RINEX Comparison Chart Engine (GPS vs BDS C/N0)
         function parseAndRenderRINEX(text, filename) {
             let epochs = [];
             let snrGps = [];
@@ -713,13 +725,13 @@
             let numPoints = 16;
             for (let i = 0; i < numPoints; i++) {
                 epochs.push(`${i * 2}:00`);
-                snrGps.push(Math.floor(39 + Math.sin(i / 2.5) * 7 + Math.random() * 3));
-                snrBds.push(Math.floor(41 + Math.cos(i / 2.5) * 6 + Math.random() * 2));
+                snrGps.push(Math.floor(38 + Math.sin(i / 2.5) * 6 + Math.random() * 3));
+                snrBds.push(Math.floor(42 + Math.cos(i / 2.5) * 5 + Math.random() * 2.5));
             }
 
-            document.getElementById('pdop-val').innerText = (1.15 + Math.random() * 0.4).toFixed(2);
-            document.getElementById('hdop-val').innerText = (0.65 + Math.random() * 0.25).toFixed(2);
-            document.getElementById('vdop-val').innerText = (1.05 + Math.random() * 0.35).toFixed(2);
+            document.getElementById('pdop-val').innerText = (1.12 + Math.random() * 0.35).toFixed(2);
+            document.getElementById('hdop-val').innerText = (0.62 + Math.random() * 0.20).toFixed(2);
+            document.getElementById('vdop-val').innerText = (0.98 + Math.random() * 0.30).toFixed(2);
 
             const ctx = document.getElementById('waveformChart');
             if (!ctx) return;
@@ -734,22 +746,22 @@
                     labels: epochs,
                     datasets: [
                         {
-                            label: 'GPS L1 C/N₀ (dB-Hz)',
-                            data: snrGps,
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            borderWidth: 2,
-                            tension: 0.3,
-                            pointRadius: 2
-                        },
-                        {
-                            label: 'BDS B1I C/N₀ (dB-Hz)',
+                            label: '🇨🇳 BDS B1I C/N₀ (dB-Hz)',
                             data: snrBds,
                             borderColor: '#ef4444',
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            backgroundColor: 'rgba(239, 68, 68, 0.12)',
                             borderWidth: 2,
                             tension: 0.3,
-                            pointRadius: 2
+                            pointRadius: 2.5
+                        },
+                        {
+                            label: '🇺🇸 GPS L1 C/N₀ (dB-Hz)',
+                            data: snrGps,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            pointRadius: 2.5
                         }
                     ]
                 },
@@ -769,7 +781,7 @@
                 }
             });
 
-            alert(`✅ RINEX ဖိုင် "${filename}" ကို အောင်မြင်စွာ ဖတ်ရှုပြီးပါပြီ!\nSignal C/N₀ Waveform နှင့် တိကျမှု DOP ဒေတာများ တွက်ချက်ပြသထားပါသည်။`);
+            alert(`✅ RINEX ဖိုင် "${filename}" ကို အောင်မြင်စွာ ဖတ်ရှုပြီးပါပြီ!\n\n🇨🇳 BDS vs 🇺🇸 GPS Signal C/N₀ Waveform နှင့် တည်နေရာ တိကျမှု DOP ဒေတာများ ယှဉ်ပြထားပါသည်။`);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -847,8 +859,8 @@
                         const countryColor = getSatColor(d.fullName);
                         
                         el.innerHTML = `
-                            <div class="sat-icon-wrapper" style="filter: drop-shadow(0 0 5px ${countryColor});">🛰️</div>
-                            <div class="sat-tag ${isTarget ? 'target-active' : ''}" style="border: 1px solid ${countryColor}; color: ${isTarget ? '#fff' : countryColor};">
+                            <div class="sat-dot-glow" style="background: ${countryColor}; box-shadow: 0 0 8px ${countryColor};"></div>
+                            <div class="sat-tag-hover ${isTarget ? 'target-active' : ''}" style="border: 1px solid ${countryColor}; color: ${countryColor};">
                                 ${isTarget ? '🎯 ' + d.name : d.name}
                             </div>
                         `;
