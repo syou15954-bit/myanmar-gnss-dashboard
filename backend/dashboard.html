@@ -81,7 +81,6 @@
         }
         .brand-dot { width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%; box-shadow: 0 0 10px var(--accent-green); }
 
-        /* Country Legend Palette */
         .country-legend {
             display: flex;
             gap: 10px;
@@ -283,7 +282,7 @@
 
             <div class="center-feature-bar mono">
                 <button class="feature-btn" id="btn-stations" onclick="toggleFeatureMode('stations', this)">📡 CORS Stations</button>
-                <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 Target Orbit Track</button>
+                <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit Ring</button>
                 <button class="feature-btn" id="btn-heatmap" onclick="toggleFeatureMode('heatmap', this)">🔥 TEC Ionosphere</button>
             </div>
 
@@ -389,21 +388,19 @@
         let TLE_DATABASE = {};
         let CONSTELLATION_SATS = { gps: [], bds: [], galileo: [], glonass: [], all: [] };
 
-        // Country Color Classifier
         function getSatColor(satName) {
             let uname = (satName || '').toUpperCase();
-            if (uname.includes('GPS') || uname.includes('NAVSTAR')) return '#00ff66';      // USA - Neon Green
-            if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('C0')) return '#ff3366'; // China - Neon Red
-            if (uname.includes('GALILEO') || uname.includes('GSAT')) return '#00f2ff';    // EU - Neon Cyan
-            if (uname.includes('GLONASS') || uname.includes('COSMOS')) return '#a855f7';  // Russia - Neon Purple
-            return '#ffcc00';                                                             // Others - Neon Yellow
+            if (uname.includes('GPS') || uname.includes('NAVSTAR')) return '#00ff66';
+            if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('C0')) return '#ff3366';
+            if (uname.includes('GALILEO') || uname.includes('GSAT')) return '#00f2ff';
+            if (uname.includes('GLONASS') || uname.includes('COSMOS')) return '#a855f7';
+            return '#ffcc00';
         }
 
         const DEFAULT_FALLBACK_TLES = {
             '33591': { id: '33591', name: 'GPS SVN-62 (PRN-07)', line1: '1 33591U 09015A   26223.41203412  .00000032  00000-0  00000+0 0  9993', line2: '2 33591  55.1234 120.4321 0012345  45.1234 315.1234  2.00561234 12342' },
-            '36585': { id: '36585', name: 'GPS SVN-65 (PRN-12)', line1: '1 36585U 10022A   26223.51234123  .00000015  00000-0  00000+0 0  9991', line2: '2 36585  55.2341 180.5432 0009876  90.4321 270.5432  2.00564321 11223' },
+            '39617': { id: '39617', name: 'ASTRA 5B (EGNOS/PRN 123)', line1: '1 39617U 14011B 26223.94308998 .00000120 00000+0 0 9999', line2: '2 39617 0.1119 288.0336 0003251 243.8671 151.4984 1.00272547 45225' },
             '43245': { id: '43245', name: 'BDS-3 GEO-03 (C01)', line1: '1 43245U 18018A   26223.11112222  .00000020  00000-0  00000+0 0  9998', line2: '2 43245   1.8543  80.1234 0002134 180.1234 180.4321  1.00271234  5432' },
-            '44204': { id: '44204', name: 'BDS-3 MEO-01 (C03)', line1: '1 44204U 19027A   26223.33334444  .00000018  00000-0  00000+0 0  9994', line2: '2 44204  55.3123 210.1234 0011223 120.4321 240.1234  1.86231234  8765' },
             '37846': { id: '37846', name: 'GALILEO GSAT-0201 (E01)', line1: '1 37846U 11060A   26223.22223333  .00000010  00000-0  00000+0 0  9992', line2: '2 37846  56.0123 300.1234 0002341  30.1234 330.1234  1.70481234  4321' },
             '40351': { id: '40351', name: 'GLONASS-M No.758 (R08)', line1: '1 40351U 14084A   26223.66667777  .00000040  00000-0  00000+0 0  9997', line2: '2 40351  64.8123  45.1234 0015678  60.1234 300.4321  2.13101234  9988' }
         };
@@ -490,7 +487,45 @@
             document.getElementById('tle-status-badge').innerText = `LOCAL FALLBACK (${fallbackList.length} SATS)`;
         }
 
-        // Single Focus Orbit Track Renderer
+        // Full 360-Degree 3D Orbital Ring Generator (Supports GEO, MEO, HEO)
+        function generateSatOrbitTrack(id) {
+            const sat = TLE_DATABASE[id];
+            if (!sat || typeof satellite === 'undefined') return { coords: [], color: '#00ff66', stroke: 3.5 };
+            
+            const satrec = satellite.twoline2satrec(sat.line1, sat.line2);
+            const satColor = getSatColor(sat.name);
+            
+            // Calculate orbital period
+            const meanMotionRadMin = satrec.no_kozai || satrec.no || 0.004;
+            const periodMin = (2 * Math.PI) / meanMotionRadMin;
+            const periodSec = periodMin * 60;
+            
+            const points = [];
+            const now = new Date();
+            const currentGmst = satellite.gstime(now); // Fixed GMST for spatial 3D orbit ring rendering
+            
+            const numSteps = 120;
+            const stepSec = periodSec / numSteps;
+            
+            for (let i = 0; i <= numSteps; i++) {
+                const timeOffset = i * stepSec;
+                const targetTime = new Date(now.getTime() + timeOffset * 1000);
+                const posVel = satellite.propagate(satrec, targetTime);
+                
+                if (posVel.position) {
+                    const posGd = satellite.eciToGeodetic(posVel.position, currentGmst);
+                    const lat = satellite.degreesLat(posGd.latitude);
+                    const lng = satellite.degreesLong(posGd.longitude);
+                    
+                    let normAlt = 0.18 + (posGd.height / 35786) * 0.22;
+                    if (normAlt > 0.45) normAlt = 0.45;
+                    
+                    points.push({ lat, lng, alt: normAlt });
+                }
+            }
+            return { coords: points, color: satColor, stroke: 3.5 };
+        }
+
         function updateTargetOrbitPath(id) {
             if (!myGlobe || !id || !TLE_DATABASE[id]) return;
             if (!modes.tracks) {
@@ -521,7 +556,6 @@
                 }
             });
 
-            // Update Target Orbit Track on 3D Globe
             updateTargetOrbitPath(id);
         }
 
@@ -554,17 +588,6 @@
                 lng: satellite.degreesLong(positionGd.longitude),
                 alt: Math.round(positionGd.height)
             };
-        }
-
-        function generateSatOrbitTrack(id) {
-            const sat = TLE_DATABASE[id];
-            const satColor = sat ? getSatColor(sat.name) : '#00ff66';
-            const points = [];
-            for (let sec = -21600; sec <= 21600; sec += 200) {
-                const pos = propagateSGP4(id, sec);
-                points.push({ lat: pos.lat, lng: pos.lng, alt: 0.18 });
-            }
-            return { coords: points, color: satColor, stroke: 3.2 };
         }
 
         function updateMyanmarTime() {
@@ -634,7 +657,7 @@
                     .pathPointLng(p => p.lng)
                     .pathPointAlt(p => p.alt)
                     .pathColor(d => d.color || '#00ff66')
-                    .pathStroke(d => d.stroke || 3.2);
+                    .pathStroke(d => d.stroke || 3.5);
 
                 fetch('https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson')
                     .then(res => res.json())
@@ -700,11 +723,9 @@
             document.getElementById('total-sats').innerText = satList.length;
             document.getElementById('active-sats').innerText = satList.length;
 
-            // Populate Dropdown Menu
             const dropdown = document.getElementById('sat-dropdown');
             dropdown.innerHTML = satList.map(s => `<option value="${s.id}">${s.name.substring(0, 22)} (${s.id})</option>`).join('');
 
-            // Populate Table
             const tbody = document.getElementById('sat-table-body');
             tbody.innerHTML = satList.map(s => {
                 let cColor = getSatColor(s.name);
