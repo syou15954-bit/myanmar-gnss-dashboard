@@ -352,22 +352,38 @@
             all: { name: "All Constellations (Multi-GNSS)", satName: "Multi-GNSS Live Stream", total: 139, active: 122, visible: 39, pdop: "1.15", hdop: "0.52", vdop: "0.98", fleet: [48, 38, 24, 12], color: "#38bdf8", kp: "2.2", flux: "144 SFU", tec: "14 TECU", sats: [{ prn: 'G07', elevation: 75, azimuth: 45, snr: 46.8 }, { prn: 'C01', elevation: 82, azimuth: 30, snr: 48.2 }, { prn: 'E01', elevation: 70, azimuth: 60, snr: 44.1 }, { prn: 'R08', elevation: 65, azimuth: 40, snr: 42.5 }] }
         };
 
-        function propagateSGP4(prn) {
+        function propagateSGP4(prn, timeOffsetSec = 0) {
             const tle = TLE_DATABASE[prn];
             if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 20200 };
             const satrec = satellite.twoline2satrec(tle.line1, tle.line2);
-            const now = new Date();
-            const positionAndVelocity = satellite.propagate(satrec, now);
+            const targetTime = new Date(Date.now() + timeOffsetSec * 1000);
+            const positionAndVelocity = satellite.propagate(satrec, targetTime);
             const positionEci = positionAndVelocity.position;
             if (!positionEci) return { lat: 16.8, lng: 96.1, alt: 20200 };
 
-            const gmst = satellite.gstime(now);
+            const gmst = satellite.gstime(targetTime);
             const positionGd = satellite.eciToGeodetic(positionEci, gmst);
             return {
                 lat: satellite.degreesLat(positionGd.latitude),
                 lng: satellite.degreesLong(positionGd.longitude),
                 alt: Math.round(positionGd.height)
             };
+        }
+
+        // Generate Accurate SGP4 Orbit Path from TLE propagation
+        function generateSatOrbitTrack(prn) {
+            const points = [];
+            const colorMap = { G: '#38bdf8', C: '#f43f5e', E: '#10b981', R: '#a855f7' };
+            // Propagate 1 full orbit (120 minutes = 7200 seconds) in 2-minute steps
+            for (let sec = 0; step <= 7200; step += 120) {
+                const pos = propagateSGP4(prn, step);
+                points.push({
+                    lat: pos.lat,
+                    lng: pos.lng,
+                    alt: 0.18
+                });
+            }
+            return { coords: points, color: colorMap[prn[0]] || '#38bdf8', stroke: 1.4 };
         }
 
         function updateMyanmarTime() {
@@ -439,26 +455,6 @@
 
         window.addEventListener('resize', resizeGlobe);
 
-        function generateCirclePath(incDeg, raanDeg, colorStr) {
-            const points = [];
-            const inc = (incDeg * Math.PI) / 180;
-            const raan = (raanDeg * Math.PI) / 180;
-            for (let i = 0; i <= 360; i += 6) {
-                const u = (i * Math.PI) / 180;
-                const x = Math.cos(u);
-                const y = Math.sin(u) * Math.cos(inc);
-                const z = Math.sin(u) * Math.sin(inc);
-                const lng = Math.atan2(y, x) + raan;
-                const lat = Math.asin(z);
-                points.push({ 
-                    lat: (lat * 180) / Math.PI, 
-                    lng: (lng * 180) / Math.PI,
-                    alt: 0.18
-                });
-            }
-            return { coords: points, color: colorStr, stroke: 1.4 };
-        }
-
         let lastFrameTime = 0;
         function animateSatellites(timestamp) {
             if (timestamp - lastFrameTime > 80) {
@@ -473,8 +469,8 @@
                     return {
                         prn: prn,
                         name: `${prn} (SGP4)`,
-                        lat: sgp4Pos.lat + Math.sin(animTime) * 3,
-                        lng: (sgp4Pos.lng + animTime * 15) % 360,
+                        lat: sgp4Pos.lat,
+                        lng: sgp4Pos.lng,
                         alt: 0.22,
                         rawAlt: sgp4Pos.alt,
                         color: colorMap[prn[0]] || '#38bdf8'
@@ -529,6 +525,13 @@
             renderSkyPlotCanvas(data.sats);
             resizeGlobe();
 
+            // Refresh orbit tracks when constellation tab changes
+            if (modes.tracks) {
+                const activePrns = currentSystem === 'all' ? ['G07', 'C01', 'E01', 'R08'] : constellationData[currentSystem].sats.map(s => s.prn);
+                const orbitPaths = activePrns.map(prn => generateSatOrbitTrack(prn));
+                myGlobe.pathsData(orbitPaths);
+            }
+
             if (fleetChart) {
                 fleetChart.data.datasets[0].data = data.fleet;
                 fleetChart.update();
@@ -570,13 +573,8 @@
 
             if (feature === 'tracks') {
                 if (modes.tracks) {
-                    const orbitPaths = [
-                        generateCirclePath(55, 0, '#38bdf8'),
-                        generateCirclePath(55, 60, '#10b981'),
-                        generateCirclePath(55, 120, '#f43f5e'),
-                        generateCirclePath(55, 180, '#a855f7'),
-                        generateCirclePath(55, 240, '#f59e0b')
-                    ];
+                    const activePrns = currentSystem === 'all' ? ['G07', 'C01', 'E01', 'R08'] : constellationData[currentSystem].sats.map(s => s.prn);
+                    const orbitPaths = activePrns.map(prn => generateSatOrbitTrack(prn));
                     myGlobe.pathsData(orbitPaths);
                 } else {
                     myGlobe.pathsData([]);
@@ -610,7 +608,6 @@
             }
         }
 
-        // Updated RINEX Parser Engine (Awaits file upload before populating chart data)
         async function uploadAndCompare() {
             const fileInput = document.getElementById('rinexFileInput');
             if (!fileInput.files || fileInput.files.length === 0) {
@@ -623,9 +620,6 @@
 
             reader.onload = function(e) {
                 const text = e.target.result;
-                const lines = text.split('\n');
-
-                // Extract RINEX observations
                 let parsedLabels = ['00s', '05s', '10s', '15s', '20s', '25s'];
                 let parsedSnrValues = [41.5, 45.2, 43.8, 48.1, 44.6, 46.9];
 
