@@ -177,23 +177,23 @@
         .hud-stat-line { display: flex; justify-content: space-between; align-items: center; font-size: 10px; margin-bottom: 4px; color: var(--text-muted); }
         .hud-stat-val { font-weight: 700; color: var(--text-main); }
 
-        /* Expanded Hitbox Surface Area for Easy Clicking */
+        /* Instant Response Sat Marker */
         .sat-marker { 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             cursor: pointer; transform: translate(-50%, -50%); z-index: 30; pointer-events: auto;
-            width: 28px; height: 28px; border-radius: 50%; background: transparent;
+            width: 32px; height: 32px; border-radius: 50%; background: transparent;
         }
         .sat-dot-glow {
             width: 8px; height: 8px; border-radius: 50%;
-            transition: all 0.2s ease-in-out; pointer-events: none;
+            transition: transform 0.15s ease-in-out; pointer-events: none;
         }
         .sat-marker:hover .sat-dot-glow {
-            transform: scale(2.0);
-            box-shadow: 0 0 14px #fff;
+            transform: scale(2.2);
+            box-shadow: 0 0 16px #fff;
         }
         .sat-tag-hover { 
             display: none;
-            position: absolute; top: 28px;
+            position: absolute; top: 30px;
             font-size: 8.5px; font-family: 'JetBrains Mono', monospace; 
             background: rgba(2, 6, 23, 0.95); padding: 2px 6px; border-radius: 3px; 
             white-space: nowrap; font-weight: 700; pointer-events: none;
@@ -411,6 +411,7 @@
         let TLE_DATABASE = {};
         let CONSTELLATION_SATS = { gps: [], bds: [], galileo: [], glonass: [], other: [], all: [] };
         let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass', 'other']);
+        let currentLiveSatObjects = [];
 
         const CORS_STATIONS_DATA = [
             { lat: 16.8661, lng: 96.1951, name: 'CORS Yangon Base Station', color: '#10b981', size: 0.8 },
@@ -596,6 +597,23 @@
                 </tr>
             `;}).join('');
 
+            currentLiveSatObjects = satList.map(s => {
+                const sgp4Pos = propagateSGP4(s.id);
+                return {
+                    id: s.id,
+                    fullName: s.name,
+                    name: s.name.substring(0, 14),
+                    lat: sgp4Pos.lat,
+                    lng: sgp4Pos.lng,
+                    alt: 0.22,
+                    color: getSatColor(s.name)
+                };
+            });
+
+            if (myGlobe) {
+                myGlobe.htmlElementsData(currentLiveSatObjects);
+            }
+
             if (satList.length > 0) {
                 selectSatellite(satList[0].id);
             }
@@ -697,6 +715,7 @@
                 }
             });
 
+            // Instantly draw selected orbit ring on single click
             updateTargetOrbitPath(id);
         }
 
@@ -866,12 +885,15 @@
                             </div>
                         `;
                         
-                        // Robust Click Handler attached to enlarged Hitbox
-                        el.addEventListener('click', (e) => {
+                        // Instant Single Click Execution
+                        const handleSatClick = (e) => {
                             e.stopPropagation();
                             e.preventDefault();
                             selectSatellite(d.id);
-                        });
+                        };
+
+                        el.addEventListener('pointerdown', handleSatClick);
+                        el.addEventListener('click', handleSatClick);
 
                         return el;
                     })
@@ -907,37 +929,21 @@
             if (timestamp - lastFrameTime > 80) {
                 lastFrameTime = timestamp;
 
-                const activeList = getFilteredSatellites();
-                if (activeList.length === 0) {
-                    requestAnimationFrame(animateSatellites);
-                    return;
-                }
+                if (currentLiveSatObjects.length > 0) {
+                    let activeIds = currentLiveSatObjects.map(s => s.id);
+                    let targetId = activeIds.includes(selectedSatId) ? selectedSatId : activeIds[0];
 
-                let activeIds = activeList.map(s => s.id);
-                let targetId = activeIds.includes(selectedSatId) ? selectedSatId : activeIds[0];
+                    currentLiveSatObjects.forEach(s => {
+                        const sgp4Pos = propagateSGP4(s.id);
+                        s.lat = sgp4Pos.lat;
+                        s.lng = sgp4Pos.lng;
 
-                const liveSats = activeList.map(s => {
-                    const sgp4Pos = propagateSGP4(s.id);
-                    
-                    if (s.id === targetId) {
-                        document.getElementById('hud-lat').innerText = `${sgp4Pos.lat.toFixed(4)}° N`;
-                        document.getElementById('hud-lng').innerText = `${sgp4Pos.lng.toFixed(4)}° E`;
-                        document.getElementById('hud-alt').innerText = `${sgp4Pos.alt.toLocaleString()} km`;
-                    }
-
-                    return {
-                        id: s.id,
-                        fullName: s.name,
-                        name: s.name.substring(0, 14),
-                        lat: sgp4Pos.lat,
-                        lng: sgp4Pos.lng,
-                        alt: 0.22,
-                        color: getSatColor(s.name)
-                    };
-                });
-
-                if (myGlobe) {
-                    myGlobe.htmlElementsData(liveSats);
+                        if (s.id === targetId) {
+                            document.getElementById('hud-lat').innerText = `${sgp4Pos.lat.toFixed(4)}° N`;
+                            document.getElementById('hud-lng').innerText = `${sgp4Pos.lng.toFixed(4)}° E`;
+                            document.getElementById('hud-alt').innerText = `${sgp4Pos.alt.toLocaleString()} km`;
+                        }
+                    });
                 }
             }
             requestAnimationFrame(animateSatellites);
