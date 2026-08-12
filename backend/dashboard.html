@@ -370,20 +370,21 @@
             };
         }
 
-        // Generate Accurate SGP4 Orbit Path from TLE propagation
+        // Fixed SGP4 Orbit Track Generator Engine
         function generateSatOrbitTrack(prn) {
             const points = [];
             const colorMap = { G: '#38bdf8', C: '#f43f5e', E: '#10b981', R: '#a855f7' };
-            // Propagate 1 full orbit (120 minutes = 7200 seconds) in 2-minute steps
-            for (let sec = 0; step <= 7200; step += 120) {
-                const pos = propagateSGP4(prn, step);
+            
+            // Corrected Loop Condition
+            for (let sec = 0; sec <= 7200; sec += 120) {
+                const pos = propagateSGP4(prn, sec);
                 points.push({
                     lat: pos.lat,
                     lng: pos.lng,
                     alt: 0.18
                 });
             }
-            return { coords: points, color: colorMap[prn[0]] || '#38bdf8', stroke: 1.4 };
+            return { coords: points, color: colorMap[prn[0]] || '#38bdf8', stroke: 1.5 };
         }
 
         function updateMyanmarTime() {
@@ -442,7 +443,7 @@
                     .pathPoints(d => d.coords)
                     .pathPointLat(p => p.lat)
                     .pathPointLng(p => p.lng)
-                    .pathPointAlt(p => p.alt || 0.15)
+                    .pathPointAlt(p => p.alt)
                     .pathColor(d => d.color || '#38bdf8')
                     .pathStroke(d => d.stroke || 1.2);
 
@@ -525,7 +526,7 @@
             renderSkyPlotCanvas(data.sats);
             resizeGlobe();
 
-            // Refresh orbit tracks when constellation tab changes
+            // Refresh tracks if active
             if (modes.tracks) {
                 const activePrns = currentSystem === 'all' ? ['G07', 'C01', 'E01', 'R08'] : constellationData[currentSystem].sats.map(s => s.prn);
                 const orbitPaths = activePrns.map(prn => generateSatOrbitTrack(prn));
