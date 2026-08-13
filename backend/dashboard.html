@@ -645,9 +645,8 @@
             }
 
             if (myGlobe) {
-                myGlobe.objectsData(currentLiveSatObjects);
-                // HTML Labels ကိုပါ တွဲပြီး အသစ်ပြင်ပေးရန် (Label နဲ့ အလုံးလေး ကပ်နေစေရန်)
-                myGlobe.htmlElementsData(currentLiveSatObjects);
+                myGlobe.objectsData([...currentLiveSatObjects]);
+                myGlobe.htmlElementsData([...currentLiveSatObjects]);
             }
             if (currentLiveSatObjects.length > 0) selectSatellite(currentLiveSatObjects[0].id);
             resizeGlobe();
@@ -675,7 +674,8 @@
                     const posGd = satellite.eciToGeodetic(posVel.position, currentGmst);
                     const lat = satellite.degreesLat(posGd.latitude);
                     const lng = satellite.degreesLong(posGd.longitude);
-                    let normAlt = 0.22; // အလုံးလေးနဲ့ အတိအကျ ထပ်တူကျစေရန်
+                    let normAlt = 0.18 + (posGd.height / 35786) * 0.22;
+                    if (normAlt > 0.45) normAlt = 0.45;
                     points.push({ lat, lng, alt: normAlt });
                 }
             }
@@ -719,7 +719,7 @@
 
             if (myGlobe) {
                 myGlobe.objectsData([...currentLiveSatObjects]);
-                myGlobe.htmlElementsData(currentLiveSatObjects);
+                myGlobe.htmlElementsData([...currentLiveSatObjects]);
             }
 
             updateTargetOrbitPath(id);
@@ -852,8 +852,8 @@
                         s.lng = sgp4Pos.lng;
                     });
                     if (myGlobe) {
-                        myGlobe.objectsData(currentLiveSatObjects);
-                        myGlobe.htmlElementsData(currentLiveSatObjects); // Label ကိုပါ အလုံးနဲ့ အတူတူ ရွေ့ခိုင်းခြင်း
+                        myGlobe.objectsData([...currentLiveSatObjects]);
+                        myGlobe.htmlElementsData([...currentLiveSatObjects]);
                     }
                 }
             }
