@@ -67,7 +67,6 @@
         }
         .nav-tab-btn:hover { color: #fff; background: rgba(56, 189, 248, 0.1); }
         
-        /* Constellation Active Glowing Styles */
         .nav-tab-btn.toggle-on[data-sys="gps"] { background: rgba(16, 185, 129, 0.25); color: #10b981; border-color: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.3); }
         .nav-tab-btn.toggle-on[data-sys="bds"] { background: rgba(239, 68, 68, 0.25); color: #ef4444; border-color: #ef4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.3); }
         .nav-tab-btn.toggle-on[data-sys="galileo"] { background: rgba(56, 189, 248, 0.25); color: #38bdf8; border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
@@ -260,7 +259,6 @@
         <section class="globe-stage">
             <div id="globeViz"></div>
 
-            <!-- Pop-up Dark Modal for TLE Data Inspection -->
             <div id="tleModal" class="mono">
                 <div class="modal-header">
                     <span>📋 NORAD TLE DATA INSPECTION</span>
@@ -283,7 +281,6 @@
                 <button class="feature-btn" id="btn-heatmap" onclick="toggleFeatureMode('heatmap', this)">🔥 TEC Ionosphere</button>
             </div>
 
-            <!-- Left HUD: Dynamic System Comparison Selector Matrix Card -->
             <div class="hud-card hud-left-unified mono">
                 <div class="hud-card-title">
                     <select id="matrix-sys-a" class="matrix-select" onchange="renderCustomSelection()">
@@ -334,7 +331,7 @@
                 </div>
 
                 <div>
-                    <div style="display:flex; justify-style:space-between; font-size:8px; font-weight:700; margin-bottom:2px;">
+                    <div style="display:flex; justify-content:space-between; font-size:8px; font-weight:700; margin-bottom:2px;">
                         <span style="color:#10b981;" id="sys-a-pdop-text">PDOP: 2.1</span>
                         <span style="color:var(--text-muted);">ACCURACY</span>
                         <span style="color:#ef4444;" id="sys-b-pdop-text">PDOP: 1.2</span>
@@ -350,7 +347,6 @@
                 </div>
             </div>
 
-            <!-- Right HUD (Top Pass Info Window Only) -->
             <div class="hud-card hud-right-passes mono">
                 <div class="hud-card-title">
                     <span>► UPCOMING PASSES</span>
@@ -627,7 +623,6 @@
                 ? '🇲🇲 မြန်မာနိုင်ငံမှ မိနိုင်သော ဂြိုဟ်တုများ (Myanmar Visible Fleet)' 
                 : '🛰️ ဂြိုဟ်တုများ တည်ရှိမှု (Fleet Status)';
 
-            // Dynamic Matrix Calculations
             const sysA = document.getElementById('matrix-sys-a').value;
             const sysB = document.getElementById('matrix-sys-b').value;
 
@@ -891,11 +886,6 @@
                     currentLiveSatObjects.forEach(s => {
                         const sgp4Pos = propagateSGP4(s.id);
                         s.lat = sgp4Pos.lat; s.lng = sgp4Pos.lng;
-                        if (s.id === targetId) {
-                            document.getElementById('hud-lat').innerText = `${sgp4Pos.lat.toFixed(4)}° N`;
-                            document.getElementById('hud-lng').innerText = `${sgp4Pos.lng.toFixed(4)}° E`;
-                            document.getElementById('hud-alt').innerText = `${sgp4Pos.alt.toLocaleString()} km`;
-                        }
                     });
                 }
             }
