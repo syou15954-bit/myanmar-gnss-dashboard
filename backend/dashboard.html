@@ -266,7 +266,6 @@
         </section>
 
         <section class="bottom-dock">
-            <!-- LEFT PANEL: Combined Local GNSS DB Table & Fleet Status -->
             <div class="glass-panel" style="padding-bottom: 0;">
                 <div class="panel-title">
                     <span id="fleet-title-text">🗄️ Local GNSS DB & Fleet Status</span>
@@ -279,7 +278,6 @@
                     <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">ရပ်နား</div><div class="dop-val" style="color:var(--accent-red);">1</div></div>
                 </div>
                 
-                <!-- SQL TABLE -->
                 <div style="flex:1; overflow-y:auto; margin-top: 4px; border: 1px solid var(--panel-border); border-radius: 4px; border-bottom: none;">
                     <table class="cyber-table mono">
                         <thead>
@@ -290,7 +288,6 @@
                 </div>
             </div>
 
-            <!-- MIDDLE PANEL: Myanmar Local Metrics -->
             <div class="glass-panel mono">
                 <div class="panel-title" style="justify-content: center; border-bottom: none; padding-bottom: 0;">
                     <select id="matrix-sys-a" class="matrix-select" onchange="renderCustomSelection()">
@@ -357,7 +354,6 @@
                 </div>
             </div>
 
-            <!-- RIGHT PANEL: DOP & RINEX Analysis -->
             <div class="glass-panel">
                 <div class="panel-title">
                     <span id="chart-panel-title">🎯 တည်နေရာ တိကျမှု (DOP) & RINEX Analysis</span>
@@ -388,6 +384,30 @@
         let CONSTELLATION_SATS = { gps: [], bds: [], galileo: [], glonass: [], other: [], all: [] };
         let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass', 'other']);
         let currentLiveSatObjects = [];
+
+        // --- GLOBAL GEOMETRY & MATERIALS TO PREVENT MEMORY LEAK ---
+        const SAT_GEOM = new THREE.SphereGeometry(1.0, 12, 12);
+        const TARGET_GEOM = new THREE.SphereGeometry(1.6, 16, 16);
+
+        const SAT_MATS = {
+            'gps': new THREE.MeshBasicMaterial({ color: '#10b981' }),
+            'bds': new THREE.MeshBasicMaterial({ color: '#ef4444' }),
+            'galileo': new THREE.MeshBasicMaterial({ color: '#38bdf8' }),
+            'glonass': new THREE.MeshBasicMaterial({ color: '#c084fc' }),
+            'other': new THREE.MeshBasicMaterial({ color: '#f59e0b' }),
+            'target': new THREE.MeshBasicMaterial({ color: '#ffffff' })
+        };
+
+        function getSatMaterial(name, isTarget) {
+            if (isTarget) return SAT_MATS['target'];
+            let uname = (name || '').toUpperCase();
+            if (uname.includes('GPS') || uname.includes('NAVSTAR')) return SAT_MATS['gps'];
+            if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('C0')) return SAT_MATS['bds'];
+            if (uname.includes('GALILEO') || uname.includes('GSAT')) return SAT_MATS['galileo'];
+            if (uname.includes('GLONASS') || uname.includes('COSMOS')) return SAT_MATS['glonass'];
+            return SAT_MATS['other'];
+        }
+        // -----------------------------------------------------------
 
         const CORS_STATIONS_DATA = [
             { lat: 16.8661, lng: 96.1951, name: '📡 CORS Yangon Base Station', color: '#ffb700', size: 3.5 },
@@ -630,7 +650,8 @@
             }
 
             if (myGlobe) {
-                myGlobe.objectsData(currentLiveSatObjects);
+                // Ensure new array reference so Globe.gl detects the change and uses the pre-created materials
+                myGlobe.objectsData([...currentLiveSatObjects]);
             }
             if (currentLiveSatObjects.length > 0) selectSatellite(currentLiveSatObjects[0].id);
             resizeGlobe();
@@ -707,7 +728,8 @@
             });
 
             if (myGlobe) {
-                myGlobe.objectsData(currentLiveSatObjects);
+                // Force re-render to apply target material highlight
+                myGlobe.objectsData([...currentLiveSatObjects]);
             }
 
             updateTargetOrbitPath(id);
@@ -771,7 +793,6 @@
                     if (row && row.getAttribute('data-id')) selectSatellite(row.getAttribute('data-id'));
                 });
             }
-            loadCelesTrakTLEs();
         });
 
         function propagateSGP4(id, timeOffsetSec = 0) {
@@ -811,8 +832,8 @@
                     .objectAltitude('alt')
                     .objectThreeObject(d => {
                         const isTarget = d.id === selectedSatId;
-                        const geom = new THREE.SphereGeometry(1.2, 10, 10);
-                        const mat = new THREE.MeshBasicMaterial({ color: isTarget ? '#ffffff' : (d.color || '#38bdf8') });
+                        const geom = isTarget ? TARGET_GEOM : SAT_GEOM;
+                        const mat = getSatMaterial(d.fullName, isTarget);
                         return new THREE.Mesh(geom, mat);
                     })
                     .onObjectClick((d) => { if (d && d.id) selectSatellite(d.id); })
@@ -831,19 +852,26 @@
 
         let lastFrameTime = 0;
         function animateSatellites(timestamp) {
-            if (timestamp - lastFrameTime > 80) {
+            // Updated animation interval to 200ms to reduce CPU load and ensure smooth WebGL rendering
+            if (timestamp - lastFrameTime > 200) {
                 lastFrameTime = timestamp;
                 if (currentLiveSatObjects.length > 0) {
                     currentLiveSatObjects.forEach(s => {
                         const sgp4Pos = propagateSGP4(s.id);
-                        s.lat = sgp4Pos.lat; s.lng = sgp4Pos.lng;
+                        s.lat = sgp4Pos.lat;
+                        s.lng = sgp4Pos.lng;
                     });
+                    // Only update coordinates internally, do not rebuild objects
                     if (myGlobe) myGlobe.objectsData(currentLiveSatObjects);
                 }
             }
             requestAnimationFrame(animateSatellites);
         }
-        requestAnimationFrame(animateSatellites);
+        
+        // Start the process
+        loadCelesTrakTLEs().then(() => {
+            requestAnimationFrame(animateSatellites);
+        });
 
     </script>
 </body>
