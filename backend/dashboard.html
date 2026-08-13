@@ -640,7 +640,7 @@
                 </tr>
             `;}).join('');
 
-            // Native WebGL 3D Object Render Engine for 100% Guaranteed Visibility
+            // Clean 3D Sphere Object Mapping with Uniform Radius
             if (myGlobe) {
                 myGlobe.objectsData(currentLiveSatObjects);
             }
@@ -829,8 +829,9 @@
                     .objectAltitude('alt')
                     .objectThreeObject(d => {
                         const isTarget = d.id === selectedSatId;
-                        const geom = new THREE.SphereGeometry(isTarget ? 3.8 : 2.2, 12, 12);
-                        const mat = new THREE.MeshBasicMaterial({ color: d.color || '#38bdf8' });
+                        // Uniform Fixed-Size Spheres (Radius = 1.2 for all)
+                        const geom = new THREE.SphereGeometry(1.2, 10, 10);
+                        const mat = new THREE.MeshBasicMaterial({ color: isTarget ? '#ffffff' : (d.color || '#38bdf8') });
                         return new THREE.Mesh(geom, mat);
                     })
                     .onObjectClick((d) => { if (d && d.id) selectSatellite(d.id); })
