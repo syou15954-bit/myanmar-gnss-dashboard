@@ -132,7 +132,7 @@
             border-bottom: 1px solid rgba(56, 189, 248, 0.15); padding-bottom: 4px;
         }
 
-        .hud-left-unified { top: 12px; left: 12px; width: 340px; }
+        .hud-left-unified { top: 12px; left: 12px; width: 320px; }
         .hud-right-passes { top: 12px; right: 12px; width: 280px; }
         .hud-right-livecam { bottom: 50px; right: 12px; width: 280px; }
 
@@ -261,34 +261,34 @@
                 <button class="feature-btn" id="btn-heatmap" onclick="toggleFeatureMode('heatmap', this)">🔥 TEC Ionosphere</button>
             </div>
 
-            <!-- Left HUD: Unified Matrix Comparison Card -->
+            <!-- Left HUD: Clean Un-overlapped Comparison Matrix Card -->
             <div class="hud-card hud-left-unified mono">
                 <div class="hud-card-title">
                     <span style="color:#10b981;">🇺🇸 GPS</span>
-                    <span style="color:var(--accent-cyan);" id="matrix-card-title">📊 MYANMAR LOCAL COMPARISON</span>
+                    <span style="color:var(--accent-cyan);" id="matrix-card-title">📊 MYANMAR LOCAL METRICS</span>
                     <span style="color:#ef4444;">🇨🇳 BDS</span>
                 </div>
 
                 <div style="display:grid; grid-template-columns:1fr 80px 1fr; align-items:center; text-align:center; margin-bottom:6px;">
-                    <b style="color:#10b981; font-size:14px;" id="gps-stat-count">31 SATS</b>
-                    <span style="font-size:8px; color:var(--text-muted);" id="fleet-type-label">FLEET</span>
-                    <b style="color:#ef4444; font-size:14px;" id="bds-stat-count">54 SATS</b>
+                    <b style="color:#10b981; font-size:13px;" id="gps-stat-count">11 SATS</b>
+                    <span style="font-size:8px; color:var(--text-muted);" id="fleet-type-label">VISIBLE</span>
+                    <b style="color:#ef4444; font-size:13px;" id="bds-stat-count">19 SATS</b>
                 </div>
 
                 <div style="margin-bottom:6px;">
-                    <div style="display:flex; justify-content:space-between; font-size:8.5px; font-weight:700; margin-bottom:2px;">
-                        <span style="color:#10b981;" id="gps-vis-text">11 SATS (45%)</span>
+                    <div style="display:flex; justify-content:space-between; font-size:8px; font-weight:700; margin-bottom:2px;">
+                        <span style="color:#10b981;" id="gps-vis-text">GPS: 35%</span>
                         <span style="color:var(--text-muted);">VISIBILITY</span>
-                        <span style="color:#ef4444;" id="bds-vis-text">19 SATS (85%)</span>
+                        <span style="color:#ef4444;" id="bds-vis-text">BDS: 65%</span>
                     </div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
-                        <div class="bar-container"><div class="bar-fill fill-gps" id="gps-vis-bar" style="width:45%;"></div></div>
-                        <div class="bar-container"><div class="bar-fill fill-bds" id="bds-vis-bar" style="width:85%; margin-left:auto;"></div></div>
+                        <div class="bar-container"><div class="bar-fill fill-gps" id="gps-vis-bar" style="width:35%;"></div></div>
+                        <div class="bar-container"><div class="bar-fill fill-bds" id="bds-vis-bar" style="width:65%; margin-left:auto;"></div></div>
                     </div>
                 </div>
 
                 <div style="margin-bottom:6px;">
-                    <div style="display:flex; justify-content:space-between; font-size:8.5px; font-weight:700; margin-bottom:2px;">
+                    <div style="display:flex; justify-content:space-between; font-size:8px; font-weight:700; margin-bottom:2px;">
                         <span style="color:#10b981;">42 dB-Hz</span>
                         <span style="color:var(--text-muted);">SIGNAL C/N0</span>
                         <span style="color:#ef4444;">46 dB-Hz</span>
@@ -300,7 +300,7 @@
                 </div>
 
                 <div>
-                    <div style="display:flex; justify-content:space-between; font-size:8.5px; font-weight:700; margin-bottom:2px;">
+                    <div style="display:flex; justify-content:space-between; font-size:8px; font-weight:700; margin-bottom:2px;">
                         <span style="color:#10b981;">PDOP: 2.1</span>
                         <span style="color:var(--text-muted);">ACCURACY</span>
                         <span style="color:#ef4444;">PDOP: 1.2</span>
@@ -328,7 +328,7 @@
                 <div class="hud-stat-line"><span>MAX ELEVATION:</span><b class="hud-stat-val" style="color:var(--accent-green);">75.2°</b></div>
             </div>
 
-            <!-- Right HUD (Bottom): FREE Real-Time ISS Live Space Camera Video Stream Window -->
+            <!-- Right HUD (Bottom): NASA Official Public Earth Stream (Reliable Embed Player) -->
             <div class="hud-card hud-right-livecam mono">
                 <div class="hud-card-title">
                     <span>📹 LIVE SPACE CAMERA</span>
@@ -338,8 +338,8 @@
                     <iframe 
                         width="100%" 
                         height="100%" 
-                        src="https://www.youtube-nocookie.com/embed/P9C25Un7x3E?autoplay=1&mute=1&controls=0" 
-                        title="NASA ISS Live Earth Camera Stream" 
+                        src="https://www.youtube.com/embed/live_stream?channel=UC2pn3Pbl26S9NThsJ_m6tWw&autoplay=1&mute=1" 
+                        title="NASA Live Space Feed" 
                         frameborder="0" 
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                         allowfullscreen>
@@ -434,15 +434,16 @@
             
             if (isMyanmarOnlyMode) {
                 btn.innerText = '🇲🇲 MYANMAR VISIBLE (ACTIVE)';
-                if (myGlobe) myGlobe.pointOfView({ lat: 19.7633, lng: 96.0785, altitude: 0.95 }, 1200);
+                if (myGlobe) myGlobe.pointOfView({ lat: 19.7633, lng: 96.0785, altitude: 1.0 }, 1200);
             } else {
                 btn.innerText = '🇲🇲 MYANMAR VISIBLE ONLY';
             }
             renderCustomSelection();
         }
 
+        // Precise Horizon Bounding Box for Myanmar Region Field of View (Lat: -15° to 48°N, Lng: 50° to 140°E)
         function isSatVisibleInMyanmar(lat, lng) {
-            return (lat >= -10.0 && lat <= 45.0 && lng >= 60.0 && lng <= 130.0);
+            return (lat >= -15.0 && lat <= 48.0 && lng >= 50.0 && lng <= 140.0);
         }
 
         function getSatColor(satName) {
@@ -606,11 +607,20 @@
             const totalGps = CONSTELLATION_SATS.gps.length || 31;
             const totalBds = CONSTELLATION_SATS.bds.length || 54;
 
-            document.getElementById('gps-stat-count').innerText = isMyanmarOnlyMode ? `${gpsVisCount || 12} SATS` : `${totalGps} SATS`;
-            document.getElementById('bds-stat-count').innerText = isMyanmarOnlyMode ? `${bdsVisCount || 21} SATS` : `${totalBds} SATS`;
+            const curGps = gpsVisCount || 11;
+            const curBds = bdsVisCount || 19;
 
-            document.getElementById('gps-vis-text').innerText = `${gpsVisCount || 12} SATS (${Math.round(((gpsVisCount || 12)/totalGps)*100)}%)`;
-            document.getElementById('bds-vis-text').innerText = `${bdsVisCount || 21} SATS (${Math.round(((bdsVisCount || 21)/totalBds)*100)}%)`;
+            document.getElementById('gps-stat-count').innerText = `${curGps} SATS`;
+            document.getElementById('bds-stat-count').innerText = `${curBds} SATS`;
+
+            const gpsVisPct = Math.min(100, Math.round((curGps / totalGps) * 100));
+            const bdsVisPct = Math.min(100, Math.round((curBds / totalBds) * 100));
+
+            document.getElementById('gps-vis-text').innerText = `GPS: ${gpsVisPct}%`;
+            document.getElementById('bds-vis-text').innerText = `BDS: ${bdsVisPct}%`;
+
+            document.getElementById('gps-vis-bar').style.width = `${gpsVisPct}%`;
+            document.getElementById('bds-vis-bar').style.width = `${bdsVisPct}%`;
 
             const dropdownModal = document.getElementById('sat-dropdown-modal');
             if (dropdownModal) {
