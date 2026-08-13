@@ -151,11 +151,10 @@
         .fill-gps { background: linear-gradient(90deg, #059669, #10b981); box-shadow: 0 0 8px #10b981; }
         .fill-bds { background: linear-gradient(90deg, #dc2626, #ef4444); box-shadow: 0 0 8px #ef4444; }
 
-        /* အောက်ခြေ Panel များ ဘေးတိုက်မဆွဲဆန့်စေရန် Fixed Size Grid ဖြင့် သတ်မှတ်ခြင်း */
         .bottom-dock { 
             flex: 1; 
             display: grid; 
-            grid-template-columns: 320px 480px 320px; /* အလယ် Panel ကို 480px အသေ သတ်မှတ်ထားသည် */
+            grid-template-columns: 320px 480px 320px; 
             justify-content: center; 
             gap: 16px; 
             min-height: 0; 
@@ -170,20 +169,6 @@
             font-size: 11.5px; font-weight: 700; color: var(--text-main); margin-bottom: 8px; display: flex;
             justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(56, 189, 248, 0.15);
             padding-bottom: 6px; flex-shrink: 0;
-        }
-
-        /* Hover Label Animation Box */
-        .sat-tag-hover { 
-            display: none; position: absolute; top: 12px; left: 12px; font-size: 9px; font-family: 'JetBrains Mono', monospace; 
-            background: rgba(2, 6, 23, 0.95); padding: 3px 8px; border-radius: 4px; white-space: nowrap; font-weight: 700;
-            pointer-events: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 40;
-        }
-        .target-active {
-            display: block !important;
-            background: rgba(56, 189, 248, 0.25) !important;
-            color: #ffffff !important;
-            border: 1px solid var(--accent-cyan) !important;
-            box-shadow: 0 0 16px rgba(56, 189, 248, 0.6) !important;
         }
 
         .dop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 4px; }
@@ -397,7 +382,6 @@
         let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass', 'other']);
         let currentLiveSatObjects = [];
 
-        // --- GLOBAL GEOMETRY & MATERIALS ---
         const SAT_GEOM = new THREE.SphereGeometry(1.2, 12, 12);
 
         const SAT_MATS = {
@@ -646,9 +630,12 @@
 
             if (myGlobe) {
                 myGlobe.objectsData([...currentLiveSatObjects]);
-                myGlobe.htmlElementsData([...currentLiveSatObjects]);
+                // Three.js Globe Native Label Engine ကို အသုံးပြု၍ Fluctuation ကင်းရှင်းစေခြင်း
+                myGlobe.labelsData(currentLiveSatObjects.filter(d => d.id === selectedSatId));
             }
-            if (currentLiveSatObjects.length > 0) selectSatellite(currentLiveSatObjects[0].id);
+            if (currentLiveSatObjects.length > 0 && !currentLiveSatObjects.some(s => s.id === selectedSatId)) {
+                selectSatellite(currentLiveSatObjects[0].id);
+            }
             resizeGlobe();
         }
 
@@ -719,7 +706,7 @@
 
             if (myGlobe) {
                 myGlobe.objectsData([...currentLiveSatObjects]);
-                myGlobe.htmlElementsData([...currentLiveSatObjects]);
+                myGlobe.labelsData(currentLiveSatObjects.filter(d => d.id === selectedSatId));
             }
 
             updateTargetOrbitPath(id);
@@ -817,17 +804,15 @@
                         return new THREE.Mesh(geom, mat);
                     })
                     .onObjectClick((d) => { if (d && d.id) selectSatellite(d.id); })
-                    .htmlElementsData([])
-                    .htmlLat('lat')
-                    .htmlLng('lng')
-                    .htmlAltitude('alt')
-                    .htmlElement(d => {
-                        if (d.id !== selectedSatId) return document.createElement('div');
-                        const el = document.createElement('div');
-                        const countryColor = getSatColor(d.fullName);
-                        el.innerHTML = `<div class="sat-tag-hover target-active" style="border: 1px solid ${countryColor}; color: ${countryColor}; position:relative; left: 14px; top: -8px;">🎯 TARGET: ${d.name}</div>`;
-                        return el;
-                    })
+                    .labelsData([])
+                    .labelLat('lat')
+                    .labelLng('lng')
+                    .labelAltitude('alt')
+                    .labelColor(() => '#38bdf8')
+                    .labelDotRadius(0)
+                    .labelSize(1.2)
+                    .labelText(d => `🎯 TARGET: ${d.name}`)
+                    .labelResolution(2)
                     .pathsData([]).pathPoints(d => d.coords).pathPointLat(p => p.lat).pathPointLng(p => p.lng).pathPointAlt(p => p.alt).pathColor(d => d.color || '#38bdf8').pathStroke(d => d.stroke || 3.2);
 
                 fetch('https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson')
@@ -853,7 +838,7 @@
                     });
                     if (myGlobe) {
                         myGlobe.objectsData([...currentLiveSatObjects]);
-                        myGlobe.htmlElementsData([...currentLiveSatObjects]);
+                        myGlobe.labelsData(currentLiveSatObjects.filter(d => d.id === selectedSatId));
                     }
                 }
             }
