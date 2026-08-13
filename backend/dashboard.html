@@ -13,7 +13,7 @@
     <style>
         :root {
             --bg-dark: #030712;
-            --panel-bg: rgba(15, 23, 42, 0.90);
+            --panel-bg: rgba(15, 23, 42, 0.92);
             --panel-border: rgba(56, 189, 248, 0.2);
             --accent-cyan: #38bdf8;
             --accent-green: #10b981;
@@ -98,22 +98,35 @@
 
         #globeViz { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
 
-        /* Analytics Mode Grid Overlay */
+        /* Highly Visual Graphic Analytics Overlay */
         #analyticsStage {
             display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 50;
-            background: var(--bg-dark); padding: 12px; gap: 10px; flex-direction: column; overflow-y: auto;
+            background: var(--bg-dark); padding: 12px; gap: 12px; flex-direction: column; overflow-y: auto;
         }
 
-        .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .analytics-card {
+        .visual-comparison-grid { display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 12px; height: 100%; }
+        
+        .visual-card {
             background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 6px; padding: 12px;
-            display: flex; flex-direction: column; gap: 8px;
+            display: flex; flex-direction: column; gap: 12px; position: relative; overflow: hidden;
         }
 
-        .analytics-card-title {
-            font-size: 12px; font-weight: 700; border-bottom: 1px solid var(--panel-border); padding-bottom: 6px;
-            display: flex; justify-content: space-between; align-items: center;
+        .card-header-badge {
+            display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 13px;
+            border-bottom: 1px solid var(--panel-border); padding-bottom: 8px;
         }
+
+        /* Graphic Metric Bars */
+        .graphic-metric { display: flex; flex-direction: column; gap: 4px; }
+        .graphic-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); font-weight: 700; }
+        .bar-container { width: 100%; height: 10px; background: rgba(2, 6, 23, 0.8); border-radius: 5px; overflow: hidden; border: 1px solid var(--panel-border); }
+        .bar-fill { height: 100%; border-radius: 5px; transition: width 0.8s ease-in-out; }
+
+        .fill-gps { background: linear-gradient(90deg, #059669, #10b981); box-shadow: 0 0 8px #10b981; }
+        .fill-bds { background: linear-gradient(90deg, #dc2626, #ef4444); box-shadow: 0 0 8px #ef4444; }
+        .fill-cyan { background: linear-gradient(90deg, #0284c7, #38bdf8); box-shadow: 0 0 8px #38bdf8; }
+
+        .big-stat-number { font-size: 32px; font-weight: 700; text-align: center; margin: 4px 0; }
 
         .center-feature-bar {
             position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 15;
@@ -237,88 +250,92 @@
         <section class="globe-stage">
             <div id="globeViz"></div>
 
-            <!-- Pure Analytics Overlay Panel -->
+            <!-- Highly Visual Pure Analytics Graphic Overlay -->
             <div id="analyticsStage" class="mono">
-                <div class="analytics-grid">
-                    <!-- GPS Card -->
-                    <div class="analytics-card" style="border-color: rgba(16, 185, 129, 0.4);">
-                        <div class="analytics-card-title" style="color: #10b981;">
-                            <span>🇺🇸 GPS (NAVSTAR) ARCHITECTURE</span>
-                            <span>GLOBAL MEO CONSTELLATION</span>
+                <div class="visual-comparison-grid">
+                    
+                    <!-- GPS Graphic Panel -->
+                    <div class="visual-card" style="border-color: rgba(16, 185, 129, 0.4);">
+                        <div class="card-header-badge" style="color: #10b981;">
+                            <span>🇺🇸 GPS (NAVSTAR)</span>
+                            <span class="status-pill pill-green">GLOBAL MEO</span>
                         </div>
-                        <div class="dop-grid">
-                            <div class="dop-card"><div style="font-size:7.5px; color:var(--text-muted);">ACTIVE SATS</div><div class="dop-val" style="color:#10b981;" id="gps-stat-count">31</div></div>
-                            <div class="dop-card"><div style="font-size:7.5px; color:var(--text-muted);">ORBIT ALTITUDE</div><div class="dop-val">20,200 km</div></div>
-                            <div class="dop-card"><div style="font-size:7.5px; color:var(--text-muted);">INCLINATION</div><div class="dop-val">55.0°</div></div>
+                        
+                        <div class="big-stat-number" style="color: #10b981;" id="gps-stat-count">31</div>
+                        <div style="text-align: center; font-size: 9px; color: var(--text-muted);">ACTIVE SATELLITES</div>
+
+                        <div class="graphic-metric">
+                            <div class="graphic-label"><span>MYANMAR VISIBILITY</span><span>45% (11 SATS)</span></div>
+                            <div class="bar-container"><div class="bar-fill fill-gps" style="width: 45%;"></div></div>
                         </div>
-                        <table class="cyber-table">
-                            <tr><td>Frequencies</td><td><b>L1 (1575.42 MHz), L2 (1227.60 MHz), L5 (1176.45 MHz)</b></td></tr>
-                            <tr><td>Orbit Type</td><td><b>100% MEO (Medium Earth Orbit)</b></td></tr>
-                            <tr><td>Avg Visible in Myanmar</td><td><b>9 - 12 Satellites</b></td></tr>
-                            <tr><td>Standalone PDOP</td><td><b>1.8 - 2.4 (Good)</b></td></tr>
-                        </table>
+
+                        <div class="graphic-metric">
+                            <div class="graphic-label"><span>SIGNAL CN0 STRENGTH</span><span>42 dB-Hz</span></div>
+                            <div class="bar-container"><div class="bar-fill fill-gps" style="width: 75%;"></div></div>
+                        </div>
+
+                        <div class="graphic-metric">
+                            <div class="graphic-label"><span>ORBIT TYPE</span><span>100% MEO</span></div>
+                            <div class="bar-container"><div class="bar-fill fill-gps" style="width: 100%;"></div></div>
+                        </div>
                     </div>
 
-                    <!-- BeiDou Card -->
-                    <div class="analytics-card" style="border-color: rgba(239, 68, 68, 0.4);">
-                        <div class="analytics-card-title" style="color: #ef4444;">
-                            <span>🇨🇳 BEIDOU (BDS-3) ARCHITECTURE</span>
-                            <span>HYBRID GEO / IGSO / MEO</span>
+                    <!-- Center Direct Visual Comparison Gauge Panel -->
+                    <div class="visual-card" style="border-color: var(--accent-cyan);">
+                        <div class="card-header-badge" style="color: var(--accent-cyan);">
+                            <span>📊 MYANMAR LOCAL COVERAGE COMPARISON</span>
+                            <span>LIVE METRICS</span>
                         </div>
-                        <div class="dop-grid">
-                            <div class="dop-card"><div style="font-size:7.5px; color:var(--text-muted);">ACTIVE SATS</div><div class="dop-val" style="color:#ef4444;" id="bds-stat-count">54</div></div>
-                            <div class="dop-card"><div style="font-size:7.5px; color:var(--text-muted);">ORBIT ALTITUDE</div><div class="dop-val">21,500 - 35,786 km</div></div>
-                            <div class="dop-card"><div style="font-size:7.5px; color:var(--text-muted);">INCLINATION</div><div class="dop-val">55° / 1.8° (GEO)</div></div>
-                        </div>
-                        <table class="cyber-table">
-                            <tr><td>Frequencies</td><td><b>B1I (1561.098 MHz), B2a (1176.45 MHz), B3I (1268.52 MHz)</b></td></tr>
-                            <tr><td>Orbit Type</td><td><b>3 Orbit Types (MEO + GEO + IGSO Hybrid)</b></td></tr>
-                            <tr><td>Avg Visible in Myanmar</td><td><b>16 - 22 Satellites (High Density)</b></td></tr>
-                            <tr><td>Standalone PDOP</td><td><b>1.1 - 1.5 (Excellent in Asia)</b></td></tr>
-                        </table>
-                    </div>
-                </div>
 
-                <div class="analytics-card" style="flex:1;">
-                    <div class="analytics-card-title">
-                        <span>📊 TECHNICAL PARAMETER COMPARISON MATRIX</span>
-                        <span style="color:var(--accent-cyan);">GPS vs BEIDOU DETAILED COMPARISON</span>
+                        <div class="graphic-metric" style="margin-top: 10px;">
+                            <div class="graphic-label"><span style="color:#ef4444;">🇨🇳 BEIDOU VISIBLE</span><span style="color:#ef4444;">19 SATS (85%)</span></div>
+                            <div class="bar-container"><div class="bar-fill fill-bds" style="width: 85%;"></div></div>
+                        </div>
+
+                        <div class="graphic-metric">
+                            <div class="graphic-label"><span style="color:#10b981;">🇺🇸 GPS VISIBLE</span><span style="color:#10b981;">11 SATS (45%)</span></div>
+                            <div class="bar-container"><div class="bar-fill fill-gps" style="width: 45%;"></div></div>
+                        </div>
+
+                        <hr style="border-color: var(--panel-border); margin: 6px 0;">
+
+                        <div class="graphic-metric">
+                            <div class="graphic-label"><span>POSITION ACCURACY (PDOP)</span><span>LOWER IS BETTER</span></div>
+                            <div class="graphic-label"><span style="color:#ef4444;">BDS PDOP: 1.2</span><span style="color:#10b981;">GPS PDOP: 2.1</span></div>
+                            <div class="bar-container"><div class="bar-fill fill-cyan" style="width: 90%;"></div></div>
+                        </div>
+
+                        <div style="background: rgba(2, 6, 23, 0.6); padding: 8px; border-radius: 4px; border: 1px solid var(--panel-border); text-align: center; margin-top: auto;">
+                            <span style="font-size: 10px; color: var(--accent-green); font-weight: 700;">✨ COMBINED GPS + BDS PDOP: 0.85 (SUB-CENTIMETER RTK)</span>
+                        </div>
                     </div>
-                    <table class="cyber-table" style="font-size: 11px;">
-                        <thead>
-                            <tr style="background: rgba(2, 6, 23, 0.6);">
-                                <th>PARAMETER</th>
-                                <th>🇺🇸 GPS (UNITED STATES)</th>
-                                <th>🇨🇳 BEIDOU (CHINA)</th>
-                                <th>TAKEAWAY / ADVANTAGE</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><b>Regional Density</b></td>
-                                <td>Standard Global Coverage</td>
-                                <td style="color:#ef4444;"><b>Enhanced Asia-Pacific Density</b></td>
-                                <td>BDS has 2x more visible sats in Myanmar due to GEO/IGSO.</td>
-                            </tr>
-                            <tr>
-                                <td><b>Constellation Geometry</b></td>
-                                <td>MEO Only (Global distribution)</td>
-                                <td style="color:#ef4444;"><b>Hybrid (3 GEO + 3 IGSO + 24 MEO)</b></td>
-                                <td>BDS GEO sats stay fixed over Asia for zero-loss lock.</td>
-                            </tr>
-                            <tr>
-                                <td><b>Multi-Frequency</b></td>
-                                <td>L1, L2C, L5</td>
-                                <td style="color:#ef4444;"><b>B1I, B1C, B2a, B2b, B3I</b></td>
-                                <td>BDS offers wider frequency diversity for RTK precision.</td>
-                            </tr>
-                            <tr>
-                                <td><b>Combined GPS + BDS PDOP</b></td>
-                                <td colspan="2" style="text-align: center; color: var(--accent-green);"><b>PDOP: 0.85 (Optimal Precision when combined)</b></td>
-                                <td>Multi-constellation receivers achieve sub-centimeter RTK.</td>
-                            </tr>
-                        </tbody>
-                    </table>
+
+                    <!-- BeiDou Graphic Panel -->
+                    <div class="visual-card" style="border-color: rgba(239, 68, 68, 0.4);">
+                        <div class="card-header-badge" style="color: #ef4444;">
+                            <span>🇨🇳 BEIDOU (BDS-3)</span>
+                            <span class="status-pill" style="background: rgba(239,68,68,0.2); color:#ef4444; border:1px solid #ef4444;">HYBRID ORBIT</span>
+                        </div>
+
+                        <div class="big-stat-number" style="color: #ef4444;" id="bds-stat-count">54</div>
+                        <div style="text-align: center; font-size: 9px; color: var(--text-muted);">ACTIVE SATELLITES</div>
+
+                        <div class="graphic-metric">
+                            <div class="graphic-label"><span>MYANMAR VISIBILITY</span><span>85% (19 SATS)</span></div>
+                            <div class="bar-container"><div class="bar-fill fill-bds" style="width: 85%;"></div></div>
+                        </div>
+
+                        <div class="graphic-metric">
+                            <div class="graphic-label"><span>SIGNAL CN0 STRENGTH</span><span>46 dB-Hz</span></div>
+                            <div class="bar-container"><div class="bar-fill fill-bds" style="width: 88%;"></div></div>
+                        </div>
+
+                        <div class="graphic-metric">
+                            <div class="graphic-label"><span>GEO / IGSO DENSITY</span><span>HIGH ASIA LOCK</span></div>
+                            <div class="bar-container"><div class="bar-fill fill-bds" style="width: 95%;"></div></div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
