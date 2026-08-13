@@ -68,6 +68,16 @@
         .nav-tab-btn:hover { color: #fff; background: rgba(56, 189, 248, 0.1); }
         .nav-tab-btn.active { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border-color: var(--accent-cyan); box-shadow: 0 0 10px rgba(56, 189, 248, 0.25); }
 
+        .myanmar-filter-btn {
+            background: rgba(255, 183, 0, 0.15); color: var(--accent-yellow); border: 1px solid var(--accent-yellow);
+            padding: 4px 12px; border-radius: 4px; font-size: 10.5px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+        }
+        .myanmar-filter-btn:hover { background: rgba(255, 183, 0, 0.35); }
+        .myanmar-filter-btn.active-mm {
+            background: var(--accent-yellow) !important; color: #000 !important; font-weight: 700 !important;
+            box-shadow: 0 0 12px rgba(255, 183, 0, 0.6) !important;
+        }
+
         .view-switch-btn {
             background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan); border: 1px solid var(--accent-cyan);
             padding: 4px 12px; border-radius: 4px; font-size: 10.5px; font-weight: 700; cursor: pointer; transition: all 0.2s;
@@ -122,7 +132,6 @@
             border-bottom: 1px solid rgba(56, 189, 248, 0.15); padding-bottom: 4px;
         }
 
-        /* Replaced TLE space with Unified Comparison Card */
         .hud-left-unified { top: 12px; left: 12px; width: 340px; }
         .hud-right-passes { top: 12px; right: 12px; width: 260px; }
         .hud-right-info { bottom: 50px; right: 12px; width: 260px; }
@@ -182,7 +191,6 @@
         .upload-btn { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 4px 10px; border-radius: 3px; font-size: 9.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
         .upload-btn:hover { background: rgba(56, 189, 248, 0.35); }
 
-        /* Pop-up Dark Modal Window for TLE Inspection */
         #tleModal {
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 200;
             width: 480px; background: rgba(15, 23, 42, 0.98); border: 1px solid var(--accent-cyan); border-radius: 6px;
@@ -196,8 +204,10 @@
 <body>
 
     <header class="top-nav">
-        <div style="display: flex; gap: 10px; align-items: center;">
+        <div style="display: flex; gap: 8px; align-items: center;">
             <button class="view-switch-btn mono" onclick="openTLEModal()">📋 VIEW TLE DATA</button>
+            <button class="myanmar-filter-btn mono" id="mm-only-btn" onclick="toggleMyanmarVisibleOnly(this)">🇲🇲 MYANMAR VISIBLE ONLY</button>
+            
             <div class="nav-tabs mono" id="constellation-tabs">
                 <span style="font-size: 9px; color: var(--text-muted); margin-right: 2px;">COMPARE:</span>
                 <button class="nav-tab-btn toggle-on" data-sys="gps" onclick="toggleSystemFilter('gps', this)">🛰️ GPS</button>
@@ -251,34 +261,34 @@
                 <button class="feature-btn" id="btn-heatmap" onclick="toggleFeatureMode('heatmap', this)">🔥 TEC Ionosphere</button>
             </div>
 
-            <!-- Left HUD: Replaced with Unified Matrix Comparison Card -->
+            <!-- Left HUD: Unified Matrix Comparison Card -->
             <div class="hud-card hud-left-unified mono">
                 <div class="hud-card-title">
                     <span style="color:#10b981;">🇺🇸 GPS</span>
-                    <span style="color:var(--accent-cyan);">📊 MYANMAR LOCAL COMPARISON</span>
+                    <span style="color:var(--accent-cyan);" id="matrix-card-title">📊 MYANMAR LOCAL COMPARISON</span>
                     <span style="color:#ef4444;">🇨🇳 BDS</span>
                 </div>
 
                 <div style="display:grid; grid-template-columns:1fr 80px 1fr; align-items:center; text-align:center; margin-bottom:6px;">
                     <b style="color:#10b981; font-size:14px;" id="gps-stat-count">31 SATS</b>
-                    <span style="font-size:8px; color:var(--text-muted);">FLEET</span>
+                    <span style="font-size:8px; color:var(--text-muted);" id="fleet-type-label">FLEET</span>
                     <b style="color:#ef4444; font-size:14px;" id="bds-stat-count">54 SATS</b>
                 </div>
 
                 <div style="margin-bottom:6px;">
-                    <div style="display:flex; justify-style:space-between; font-size:8.5px; font-weight:700; margin-bottom:2px;">
-                        <span style="color:#10b981;">11 SATS (45%)</span>
+                    <div style="display:flex; justify-content:space-between; font-size:8.5px; font-weight:700; margin-bottom:2px;">
+                        <span style="color:#10b981;" id="gps-vis-text">11 SATS (45%)</span>
                         <span style="color:var(--text-muted);">VISIBILITY</span>
-                        <span style="color:#ef4444;">19 SATS (85%)</span>
+                        <span style="color:#ef4444;" id="bds-vis-text">19 SATS (85%)</span>
                     </div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
-                        <div class="bar-container"><div class="bar-fill fill-gps" style="width:45%;"></div></div>
-                        <div class="bar-container"><div class="bar-fill fill-bds" style="width:85%; margin-left:auto;"></div></div>
+                        <div class="bar-container"><div class="bar-fill fill-gps" id="gps-vis-bar" style="width:45%;"></div></div>
+                        <div class="bar-container"><div class="bar-fill fill-bds" id="bds-vis-bar" style="width:85%; margin-left:auto;"></div></div>
                     </div>
                 </div>
 
                 <div style="margin-bottom:6px;">
-                    <div style="display:flex; justify-style:space-between; font-size:8.5px; font-weight:700; margin-bottom:2px;">
+                    <div style="display:flex; justify-content:space-between; font-size:8.5px; font-weight:700; margin-bottom:2px;">
                         <span style="color:#10b981;">42 dB-Hz</span>
                         <span style="color:var(--text-muted);">SIGNAL C/N0</span>
                         <span style="color:#ef4444;">46 dB-Hz</span>
@@ -336,7 +346,7 @@
         <section class="bottom-dock">
             <div class="glass-panel">
                 <div class="panel-title">
-                    <span>🛰️ ဂြိုဟ်တုများ တည်ရှိမှု (Fleet Status)</span>
+                    <span id="fleet-title-text">🛰️ ဂြိုဟ်တုများ တည်ရှိမှု (Fleet Status)</span>
                     <span class="mono" style="color:var(--accent-cyan); font-size:8.5px;">SGP4 LIVE</span>
                 </div>
                 <div class="dop-grid mono" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 8px;">
@@ -383,6 +393,7 @@
     </main>
 
     <script>
+        let isMyanmarOnlyMode = false;
         let selectedSatId = '';
         let fleetChart = null, waveformChart = null;
         let myGlobe = null;
@@ -411,6 +422,24 @@
 
         function openTLEModal() { document.getElementById('tleModal').style.display = 'block'; }
         function closeTLEModal() { document.getElementById('tleModal').style.display = 'none'; }
+
+        function toggleMyanmarVisibleOnly(btn) {
+            isMyanmarOnlyMode = !isMyanmarOnlyMode;
+            btn.classList.toggle('active-mm', isMyanmarOnlyMode);
+            
+            if (isMyanmarOnlyMode) {
+                btn.innerText = '🇲🇲 MYANMAR VISIBLE (ACTIVE)';
+                if (myGlobe) myGlobe.pointOfView({ lat: 19.7633, lng: 96.0785, altitude: 0.85 }, 1200);
+            } else {
+                btn.innerText = '🇲🇲 MYANMAR VISIBLE ONLY';
+            }
+            renderCustomSelection();
+        }
+
+        // Calculate if satellite is within Myanmar Visible Field of View (Lat: 9.5N - 28.5N, Lng: 92.0E - 101.5E + Altitude Coverage)
+        function isSatVisibleInMyanmar(lat, lng) {
+            return (lat >= -5.0 && lat <= 42.0 && lng >= 65.0 && lng <= 125.0);
+        }
 
         function getSatColor(satName) {
             let uname = (satName || '').toUpperCase();
@@ -466,9 +495,6 @@
                 TLE_DATABASE[s.id] = s;
             });
             CONSTELLATION_SATS = cat;
-
-            document.getElementById('gps-stat-count').innerText = `${cat.gps.length || 31} SATS`;
-            document.getElementById('bds-stat-count').innerText = `${cat.bds.length || 54} SATS`;
         }
 
         async function loadCelesTrakTLEs() {
@@ -543,37 +569,63 @@
         }
 
         function renderCustomSelection() {
-            const satList = getFilteredSatellites();
-            document.getElementById('total-sats').innerText = satList.length;
-            document.getElementById('active-sats').innerText = satList.length;
+            let satList = getFilteredSatellites();
+            
+            // Calculate Live SGP4 Positions & Apply Myanmar Filtering if active
+            currentLiveSatObjects = [];
+            let gpsVisCount = 0, bdsVisCount = 0;
+
+            satList.forEach(s => {
+                const sgp4Pos = propagateSGP4(s.id);
+                const visibleInMM = isSatVisibleInMyanmar(sgp4Pos.lat, sgp4Pos.lng);
+                
+                let uname = s.name.toUpperCase();
+                if (visibleInMM) {
+                    if (uname.includes('GPS') || uname.includes('NAVSTAR')) gpsVisCount++;
+                    if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('C0')) bdsVisCount++;
+                }
+
+                if (!isMyanmarOnlyMode || visibleInMM) {
+                    currentLiveSatObjects.push({
+                        id: s.id, fullName: s.name, name: s.name.substring(0, 14),
+                        lat: sgp4Pos.lat, lng: sgp4Pos.lng, alt: 0.22, color: getSatColor(s.name)
+                    });
+                }
+            });
+
+            // Update UI Counters dynamically
+            document.getElementById('total-sats').innerText = currentLiveSatObjects.length;
+            document.getElementById('active-sats').innerText = currentLiveSatObjects.length;
+            
+            document.getElementById('fleet-title-text').innerText = isMyanmarOnlyMode 
+                ? '🇲🇲 မြန်မာနိုင်ငံမှ မိနိုင်သော ဂြိုဟ်တုများ (Myanmar Visible Fleet)' 
+                : '🛰️ ဂြိုဟ်တုများ တည်ရှိမှု (Fleet Status)';
+
+            document.getElementById('gps-stat-count').innerText = isMyanmarOnlyMode ? `${gpsVisCount} SATS` : `${CONSTELLATION_SATS.gps.length || 31} SATS`;
+            document.getElementById('bds-stat-count').innerText = isMyanmarOnlyMode ? `${bdsVisCount} SATS` : `${CONSTELLATION_SATS.bds.length || 54} SATS`;
+
+            document.getElementById('gps-vis-text').innerText = `${gpsVisCount || 11} SATS (${Math.round(((gpsVisCount || 11)/31)*100)}%)`;
+            document.getElementById('bds-vis-text').innerText = `${bdsVisCount || 19} SATS (${Math.round(((bdsVisCount || 19)/54)*100)}%)`;
 
             const dropdownModal = document.getElementById('sat-dropdown-modal');
             if (dropdownModal) {
-                dropdownModal.innerHTML = satList.map(s => `<option value="${s.id}">${s.name.substring(0, 22)} (${s.id})</option>`).join('');
+                dropdownModal.innerHTML = currentLiveSatObjects.map(s => `<option value="${s.id}">${s.fullName.substring(0, 22)} (${s.id})</option>`).join('');
             }
 
             const tbody = document.getElementById('sat-table-body');
-            tbody.innerHTML = satList.map(s => {
-                let cColor = getSatColor(s.name);
+            tbody.innerHTML = currentLiveSatObjects.map(s => {
+                let cColor = getSatColor(s.fullName);
                 return `
                 <tr data-id="${s.id}">
-                    <td><b style="color:${cColor};">${s.name.substring(0, 18)}</b></td>
-                    <td>${s.name.split(' ')[0]}</td>
+                    <td><b style="color:${cColor};">${s.fullName.substring(0, 18)}</b></td>
+                    <td>${s.fullName.split(' ')[0]}</td>
                     <td>75°</td><td>45°</td>
                     <td><span class="status-pill pill-green">SGP4 TRACKING</span></td>
                 </tr>
             `;}).join('');
 
-            currentLiveSatObjects = satList.map(s => {
-                const sgp4Pos = propagateSGP4(s.id);
-                return {
-                    id: s.id, fullName: s.name, name: s.name.substring(0, 14),
-                    lat: sgp4Pos.lat, lng: sgp4Pos.lng, alt: 0.22, color: getSatColor(s.name)
-                };
-            });
-
             if (myGlobe) myGlobe.htmlElementsData(currentLiveSatObjects);
-            if (satList.length > 0) selectSatellite(satList[0].id);
+            if (currentLiveSatObjects.length > 0) selectSatellite(currentLiveSatObjects[0].id);
             resizeGlobe();
         }
 
