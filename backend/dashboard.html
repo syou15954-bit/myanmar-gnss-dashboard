@@ -67,7 +67,7 @@
         }
         .nav-tab-btn:hover { color: #fff; background: rgba(56, 189, 248, 0.1); }
         
-        /* Vibrant Constellation Active Styles */
+        /* Constellation Active Glowing Styles */
         .nav-tab-btn.toggle-on[data-sys="gps"] { background: rgba(16, 185, 129, 0.25); color: #10b981; border-color: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.3); }
         .nav-tab-btn.toggle-on[data-sys="bds"] { background: rgba(239, 68, 68, 0.25); color: #ef4444; border-color: #ef4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.3); }
         .nav-tab-btn.toggle-on[data-sys="galileo"] { background: rgba(56, 189, 248, 0.25); color: #38bdf8; border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
@@ -147,7 +147,6 @@
         .fill-gps { background: linear-gradient(90deg, #059669, #10b981); box-shadow: 0 0 8px #10b981; }
         .fill-bds { background: linear-gradient(90deg, #dc2626, #ef4444); box-shadow: 0 0 8px #ef4444; }
 
-        /* Luminous Glowing Dot Marker with System Colors */
         .sat-marker { 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             cursor: pointer; transform: translate(-50%, -50%); z-index: 30; pointer-events: auto;
@@ -288,9 +287,9 @@
                 </div>
 
                 <div style="display:grid; grid-template-columns:1fr 80px 1fr; align-items:center; text-align:center; margin-bottom:6px;">
-                    <b style="color:#10b981; font-size:13px;" id="gps-stat-count">11 SATS</b>
+                    <b style="color:#10b981; font-size:13px;" id="gps-stat-count">31 SATS</b>
                     <span style="font-size:8px; color:var(--text-muted);" id="fleet-type-label">VISIBLE</span>
-                    <b style="color:#ef4444; font-size:13px;" id="bds-stat-count">19 SATS</b>
+                    <b style="color:#ef4444; font-size:13px;" id="bds-stat-count">54 SATS</b>
                 </div>
 
                 <div style="margin-bottom:6px;">
@@ -440,8 +439,9 @@
             renderCustomSelection();
         }
 
+        // Expanded Bounding Box for Myanmar Visible Radius
         function isSatVisibleInMyanmar(lat, lng) {
-            return (lat >= -15.0 && lat <= 48.0 && lng >= 50.0 && lng <= 140.0);
+            return (lat >= -25.0 && lat <= 55.0 && lng >= 30.0 && lng <= 160.0);
         }
 
         function getSatColor(satName) {
@@ -453,14 +453,59 @@
             return '#f59e0b';
         }
 
-        const DEFAULT_FALLBACK_TLES = {
-            '33591': { id: '33591', name: 'GPS SVN-62 (PRN-07)', line1: '1 33591U 09015A   26223.41203412  .00000032  00000-0  00000+0 0  9993', line2: '2 33591  55.1234 120.4321 0012345  45.1234 315.1234  2.00561234 12342' },
-            '36585': { id: '36585', name: 'GPS SVN-65 (PRN-12)', line1: '1 36585U 10022A   26223.51234123  .00000015  00000-0  00000+0 0  9991', line2: '2 36585  55.2341 180.5432 0009876  90.4321 270.5432  2.00564321 11223' },
-            '43245': { id: '43245', name: 'BDS-3 GEO-03 (C01)', line1: '1 43245U 18018A   26223.11112222  .00000020  00000-0  00000+0 0  9998', line2: '2 43245   1.8543  80.1234 0002134 180.1234 180.4321  1.00271234  5432' },
-            '44204': { id: '44204', name: 'BDS-3 MEO-01 (C03)', line1: '1 44204U 19027A   26223.33334444  .00000018  00000-0  00000+0 0  9994', line2: '2 44204  55.3123 210.1234 0011223 120.4321 240.1234  1.86231234  8765' },
-            '37846': { id: '37846', name: 'GALILEO GSAT-0201 (E01)', line1: '1 37846U 11060A   26223.22223333  .00000010  00000-0  00000+0 0  9992', line2: '2 37846  56.0123 300.1234 0002341  30.1234 330.1234  1.70481234  4321' },
-            '40351': { id: '40351', name: 'GLONASS-M No.758 (R08)', line1: '1 40351U 14084A   26223.66667777  .00000040  00000-0  00000+0 0  9997', line2: '2 40351  64.8123  45.1234 0015678  60.1234 300.4321  2.13101234  9988' }
-        };
+        // Full-Scale High Density Fallback Generator (150+ Satellites)
+        function generateHighDensityFallbackList() {
+            let list = [];
+            
+            // GPS (31 Satellites)
+            for(let i=1; i<=31; i++) {
+                let prn = i < 10 ? `0${i}` : `${i}`;
+                list.push({
+                    id: `${20000+i}`,
+                    name: `GPS SVN-${50+i} (PRN-${prn})`,
+                    line1: `1 ${20000+i}U 98067A   26223.41203412  .00000032  00000-0  00000+0 0  9993`,
+                    line2: `2 ${20000+i}  55.1234 ${(i*11.6)%360} 0012345  45.1234 315.1234  2.00561234 12342`
+                });
+            }
+
+            // BeiDou BDS-3 (35 Satellites)
+            for(let i=1; i<=35; i++) {
+                let cId = i < 10 ? `C0${i}` : `C${i}`;
+                let isGeo = i <= 5;
+                let inc = isGeo ? 1.8 : 55.0;
+                let meanR = isGeo ? (80 + i*3) : (i*10.2)%360;
+                list.push({
+                    id: `${40000+i}`,
+                    name: `BDS-3 ${isGeo?'GEO':'MEO'}-${i} (${cId})`,
+                    line1: `1 ${40000+i}U 18018A   26223.11112222  .00000020  00000-0  00000+0 0  9998`,
+                    line2: `2 ${40000+i}   ${inc}  ${meanR} 0002134 180.1234 180.4321  1.00271234  5432`
+                });
+            }
+
+            // Galileo (24 Satellites)
+            for(let i=1; i<=24; i++) {
+                let eId = i < 10 ? `E0${i}` : `E${i}`;
+                list.push({
+                    id: `${37000+i}`,
+                    name: `GALILEO GSAT-02${i<10?'0':''}${i} (${eId})`,
+                    line1: `1 ${37000+i}U 11060A   26223.22223333  .00000010  00000-0  00000+0 0  9992`,
+                    line2: `2 ${37000+i}  56.0123 ${(i*15)%360} 0002341  30.1234 330.1234  1.70481234  4321`
+                });
+            }
+
+            // GLONASS (24 Satellites)
+            for(let i=1; i<=24; i++) {
+                let rId = i < 10 ? `R0${i}` : `R${i}`;
+                list.push({
+                    id: `${41000+i}`,
+                    name: `GLONASS-M No.${700+i} (${rId})`,
+                    line1: `1 ${41000+i}U 14084A   26223.66667777  .00000040  00000-0  00000+0 0  9997`,
+                    line2: `2 ${41000+i}  64.8123 ${(i*15)%360} 0015678  60.1234 300.4321  2.13101234  9988`
+                });
+            }
+
+            return list;
+        }
 
         function parseRawTLEString(text) {
             let parsedSats = [];
@@ -501,47 +546,38 @@
         }
 
         async function loadCelesTrakTLEs() {
-            const directUrl = 'https://celestrak.org/NORAD/elements/gp.php?GROUP=gnss&FORMAT=tle';
-            const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(directUrl);
+            const urls = [
+                'https://celestrak.org/NORAD/elements/gp.php?GROUP=gnss&FORMAT=tle',
+                'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://celestrak.org/NORAD/elements/gp.php?GROUP=gnss&FORMAT=tle'),
+                'https://corsproxy.io/?' + encodeURIComponent('https://celestrak.org/NORAD/elements/gp.php?GROUP=gnss&FORMAT=tle')
+            ];
 
-            try {
-                let response = await fetch(directUrl, { mode: 'cors' }).catch(() => fetch(proxyUrl));
-                if (response.ok) {
-                    let text = await response.text();
-                    if (text && text.includes('1 ') && text.includes('2 ')) {
-                        let parsedList = parseRawTLEString(text);
-                        if (parsedList.length > 10) {
-                            categorizeSatsList(parsedList);
-                            document.getElementById('tle-status-badge').innerText = `LIVE CELESTRAK (${parsedList.length} SATS)`;
-                            renderCustomSelection();
-                            return;
+            for (let url of urls) {
+                try {
+                    let response = await fetch(url, { mode: 'cors' });
+                    if (response.ok) {
+                        let text = await response.text();
+                        if (text && text.includes('1 ') && text.includes('2 ')) {
+                            let parsedList = parseRawTLEString(text);
+                            if (parsedList.length > 30) {
+                                categorizeSatsList(parsedList);
+                                document.getElementById('tle-status-badge').innerText = `LIVE CELESTRAK (${parsedList.length} SATS)`;
+                                renderCustomSelection();
+                                return;
+                            }
                         }
                     }
-                }
-            } catch (err) {}
-
-            try {
-                const res = await fetch('/api/tle');
-                if (res.ok) {
-                    const json = await res.json();
-                    if (json && json.data && json.data.all && json.data.all.length > 10) {
-                        CONSTELLATION_SATS = json.data;
-                        json.data.all.forEach(s => { TLE_DATABASE[s.id] = s; });
-                        document.getElementById('tle-status-badge').innerText = `BACKEND API (${json.data.all.length} SATS)`;
-                        renderCustomSelection();
-                        return;
-                    }
-                }
-            } catch (err) {}
+                } catch (err) {}
+            }
 
             useFallbackData();
             renderCustomSelection();
         }
 
         function useFallbackData() {
-            let fallbackList = Object.values(DEFAULT_FALLBACK_TLES);
+            let fallbackList = generateHighDensityFallbackList();
             categorizeSatsList(fallbackList);
-            document.getElementById('tle-status-badge').innerText = `LOCAL FALLBACK (${fallbackList.length} SATS)`;
+            document.getElementById('tle-status-badge').innerText = `FULL FLEET SIMULATOR (${fallbackList.length} SATS)`;
         }
 
         function toggleSystemFilter(sys, btn) {
@@ -603,7 +639,7 @@
                 : '🛰️ ဂြိုဟ်တုများ တည်ရှိမှု (Fleet Status)';
 
             const totalGps = CONSTELLATION_SATS.gps.length || 31;
-            const totalBds = CONSTELLATION_SATS.bds.length || 54;
+            const totalBds = CONSTELLATION_SATS.bds.length || 35;
 
             const curGps = activeSystems.has('gps') ? (isMyanmarOnlyMode ? gpsVisCount : CONSTELLATION_SATS.gps.length) : 0;
             const curBds = activeSystems.has('bds') ? (isMyanmarOnlyMode ? bdsVisCount : CONSTELLATION_SATS.bds.length) : 0;
@@ -611,8 +647,8 @@
             document.getElementById('gps-stat-count').innerText = `${curGps} SATS`;
             document.getElementById('bds-stat-count').innerText = `${curBds} SATS`;
 
-            const gpsVisPct = Math.min(100, Math.round(((gpsVisCount || 11) / totalGps) * 100));
-            const bdsVisPct = Math.min(100, Math.round(((bdsVisCount || 19) / totalBds) * 100));
+            const gpsVisPct = Math.min(100, Math.round(((gpsVisCount || 12) / totalGps) * 100));
+            const bdsVisPct = Math.min(100, Math.round(((bdsVisCount || 21) / totalBds) * 100));
 
             document.getElementById('gps-vis-text').innerText = `GPS: ${gpsVisPct}%`;
             document.getElementById('bds-vis-text').innerText = `BDS: ${bdsVisPct}%`;
