@@ -66,7 +66,13 @@
             font-size: 10.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; user-select: none;
         }
         .nav-tab-btn:hover { color: #fff; background: rgba(56, 189, 248, 0.1); }
-        .nav-tab-btn.active { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border-color: var(--accent-cyan); box-shadow: 0 0 10px rgba(56, 189, 248, 0.25); }
+        
+        /* Vibrant Constellation Active Styles */
+        .nav-tab-btn.toggle-on[data-sys="gps"] { background: rgba(16, 185, 129, 0.25); color: #10b981; border-color: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.3); }
+        .nav-tab-btn.toggle-on[data-sys="bds"] { background: rgba(239, 68, 68, 0.25); color: #ef4444; border-color: #ef4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.3); }
+        .nav-tab-btn.toggle-on[data-sys="galileo"] { background: rgba(56, 189, 248, 0.25); color: #38bdf8; border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
+        .nav-tab-btn.toggle-on[data-sys="glonass"] { background: rgba(192, 132, 252, 0.25); color: #c084fc; border-color: #c084fc; box-shadow: 0 0 10px rgba(192, 132, 252, 0.3); }
+        .nav-tab-btn.toggle-on[data-sys="other"] { background: rgba(245, 158, 11, 0.25); color: #f59e0b; border-color: #f59e0b; box-shadow: 0 0 10px rgba(245, 158, 11, 0.3); }
 
         .myanmar-filter-btn {
             background: rgba(255, 183, 0, 0.15); color: var(--accent-yellow); border: 1px solid var(--accent-yellow);
@@ -134,7 +140,6 @@
 
         .hud-left-unified { top: 12px; left: 12px; width: 320px; }
         .hud-right-passes { top: 12px; right: 12px; width: 280px; }
-        .hud-right-livecam { bottom: 50px; right: 12px; width: 280px; }
 
         .bar-container { width: 100%; height: 8px; background: rgba(2, 6, 23, 0.8); border-radius: 4px; overflow: hidden; border: 1px solid var(--panel-border); }
         .bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease-in-out; }
@@ -142,20 +147,33 @@
         .fill-gps { background: linear-gradient(90deg, #059669, #10b981); box-shadow: 0 0 8px #10b981; }
         .fill-bds { background: linear-gradient(90deg, #dc2626, #ef4444); box-shadow: 0 0 8px #ef4444; }
 
+        /* Luminous Glowing Dot Marker with System Colors */
         .sat-marker { 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             cursor: pointer; transform: translate(-50%, -50%); z-index: 30; pointer-events: auto;
-            width: 32px; height: 32px; border-radius: 50%; background: transparent;
+            width: 28px; height: 28px; border-radius: 50%; background: transparent;
         }
-        .sat-icon-emoji { font-size: 11px; filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.8)); transition: transform 0.15s ease-in-out; }
-        .sat-marker:hover .sat-icon-emoji { transform: scale(1.6); }
-
+        .sat-dot-glow {
+            width: 8px; height: 8px; border-radius: 50%;
+            transition: all 0.2s ease-in-out; pointer-events: none;
+        }
+        .sat-marker:hover .sat-dot-glow {
+            transform: scale(2.0);
+            box-shadow: 0 0 16px #fff !important;
+        }
         .sat-tag-hover { 
-            display: none; position: absolute; top: 32px; font-size: 8.5px; font-family: 'JetBrains Mono', monospace; 
+            display: none; position: absolute; top: 28px; font-size: 8.5px; font-family: 'JetBrains Mono', monospace; 
             background: rgba(2, 6, 23, 0.95); padding: 2px 6px; border-radius: 3px; white-space: nowrap; font-weight: 700;
             pointer-events: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 40;
         }
         .sat-marker:hover .sat-tag-hover, .sat-tag-hover.target-active { display: block !important; }
+
+        .target-active {
+            background: rgba(56, 189, 248, 0.35) !important;
+            color: #ffffff !important;
+            border: 1.5px solid var(--accent-cyan) !important;
+            box-shadow: 0 0 12px var(--accent-cyan) !important;
+        }
 
         .bottom-dock { flex: 1; display: grid; grid-template-columns: 320px 1fr 360px; gap: 8px; min-height: 0; }
 
@@ -215,7 +233,7 @@
                 <button class="nav-tab-btn toggle-on" data-sys="galileo" onclick="toggleSystemFilter('galileo', this)">🛰️ GALILEO</button>
                 <button class="nav-tab-btn toggle-on" data-sys="glonass" onclick="toggleSystemFilter('glonass', this)">🛰️ GLONASS</button>
                 <button class="nav-tab-btn toggle-on" data-sys="other" onclick="toggleSystemFilter('other', this)">🌐 OTHER</button>
-                <button class="nav-tab-btn active" onclick="selectAllSystems()" style="margin-left: 4px; border: 1px solid var(--accent-cyan);">✨ ALL</button>
+                <button class="nav-tab-btn" onclick="selectAllSystems()" style="margin-left: 4px; border: 1px solid var(--accent-cyan);">✨ ALL</button>
             </div>
         </div>
 
@@ -316,7 +334,7 @@
                 </div>
             </div>
 
-            <!-- Right HUD (Top) -->
+            <!-- Right HUD (Top Pass Info Window Only) -->
             <div class="hud-card hud-right-passes mono">
                 <div class="hud-card-title">
                     <span>► UPCOMING PASSES</span>
@@ -326,25 +344,6 @@
                 <div class="hud-stat-line"><span>LOS TIME:</span><b class="hud-stat-val" style="color:var(--accent-yellow);">16:28:12 MMT</b></div>
                 <div class="hud-stat-line"><span>DURATION:</span><b class="hud-stat-val">17m 27s</b></div>
                 <div class="hud-stat-line"><span>MAX ELEVATION:</span><b class="hud-stat-val" style="color:var(--accent-green);">75.2°</b></div>
-            </div>
-
-            <!-- Right HUD (Bottom): NASA Official Public Earth Stream (Reliable Embed Player) -->
-            <div class="hud-card hud-right-livecam mono">
-                <div class="hud-card-title">
-                    <span>📹 LIVE SPACE CAMERA</span>
-                    <span style="color:var(--accent-green); font-size:8px;">NASA ISS STREAM</span>
-                </div>
-                <div style="width:100%; height:135px; border-radius:4px; overflow:hidden; border:1px solid var(--panel-border); background:#000;">
-                    <iframe 
-                        width="100%" 
-                        height="100%" 
-                        src="https://www.youtube.com/embed/live_stream?channel=UC2pn3Pbl26S9NThsJ_m6tWw&autoplay=1&mute=1" 
-                        title="NASA Live Space Feed" 
-                        frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowfullscreen>
-                    </iframe>
-                </div>
             </div>
         </section>
 
@@ -441,7 +440,6 @@
             renderCustomSelection();
         }
 
-        // Precise Horizon Bounding Box for Myanmar Region Field of View (Lat: -15° to 48°N, Lng: 50° to 140°E)
         function isSatVisibleInMyanmar(lat, lng) {
             return (lat >= -15.0 && lat <= 48.0 && lng >= 50.0 && lng <= 140.0);
         }
@@ -607,14 +605,14 @@
             const totalGps = CONSTELLATION_SATS.gps.length || 31;
             const totalBds = CONSTELLATION_SATS.bds.length || 54;
 
-            const curGps = gpsVisCount || 11;
-            const curBds = bdsVisCount || 19;
+            const curGps = activeSystems.has('gps') ? (isMyanmarOnlyMode ? gpsVisCount : CONSTELLATION_SATS.gps.length) : 0;
+            const curBds = activeSystems.has('bds') ? (isMyanmarOnlyMode ? bdsVisCount : CONSTELLATION_SATS.bds.length) : 0;
 
             document.getElementById('gps-stat-count').innerText = `${curGps} SATS`;
             document.getElementById('bds-stat-count').innerText = `${curBds} SATS`;
 
-            const gpsVisPct = Math.min(100, Math.round((curGps / totalGps) * 100));
-            const bdsVisPct = Math.min(100, Math.round((curBds / totalBds) * 100));
+            const gpsVisPct = Math.min(100, Math.round(((gpsVisCount || 11) / totalGps) * 100));
+            const bdsVisPct = Math.min(100, Math.round(((bdsVisCount || 19) / totalBds) * 100));
 
             document.getElementById('gps-vis-text').innerText = `GPS: ${gpsVisPct}%`;
             document.getElementById('bds-vis-text').innerText = `BDS: ${bdsVisPct}%`;
@@ -828,7 +826,7 @@
                         const countryColor = getSatColor(d.fullName);
                         
                         el.innerHTML = `
-                            <div class="sat-icon-emoji">${isTarget ? '🎯' : '🛰️'}</div>
+                            <div class="sat-dot-glow" style="background: ${countryColor}; box-shadow: 0 0 10px ${countryColor};"></div>
                             <div class="sat-tag-hover ${isTarget ? 'target-active' : ''}" style="border: 1px solid ${countryColor}; color: ${countryColor};">
                                 ${isTarget ? '🎯 TARGET: ' + d.name : '🛰️ ' + d.name}
                             </div>
