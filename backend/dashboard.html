@@ -18,7 +18,7 @@
             --accent-cyan: #38bdf8;
             --accent-green: #10b981;
             --accent-red: #ef4444;
-            --accent-yellow: #f59e0b;
+            --accent-yellow: #ffb700;
             --accent-purple: #c084fc;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
@@ -177,7 +177,7 @@
         .hud-stat-line { display: flex; justify-content: space-between; align-items: center; font-size: 10px; margin-bottom: 4px; color: var(--text-muted); }
         .hud-stat-val { font-weight: 700; color: var(--text-main); }
 
-        /* Distinct Space Satellite Marker */
+        /* Space Satellites Marker */
         .sat-marker { 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             cursor: pointer; transform: translate(-50%, -50%); z-index: 30; pointer-events: auto;
@@ -207,6 +207,19 @@
             color: #ffffff !important;
             border: 1.5px solid var(--accent-cyan) !important;
             box-shadow: 0 0 12px var(--accent-cyan) !important;
+        }
+
+        /* Distinct Ground CORS Station Marker in Neon Amber Gold */
+        .cors-ground-tag {
+            display: flex; align-items: center; gap: 4px;
+            background: rgba(255, 183, 0, 0.2);
+            border: 1.5px solid var(--accent-yellow);
+            color: var(--accent-yellow);
+            padding: 2px 6px; border-radius: 3px;
+            font-size: 8.5px; font-family: 'JetBrains Mono', monospace; font-weight: 700;
+            box-shadow: 0 0 12px rgba(255, 183, 0, 0.4);
+            transform: translate(-50%, -100%);
+            white-space: nowrap; pointer-events: none;
         }
 
         .bottom-dock {
@@ -419,13 +432,13 @@
         let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass', 'other']);
         let currentLiveSatObjects = [];
 
-        // Ground-based CORS Stations with Distinct Radar Ring Representation
+        // Ground-based CORS Stations with Neon Gold Rings
         const CORS_STATIONS_DATA = [
-            { lat: 16.8661, lng: 96.1951, name: '📡 CORS Yangon Base Station', color: '#00f2ff', size: 3.5 },
-            { lat: 19.7633, lng: 96.0785, name: '📡 CORS Naypyidaw Central Station', color: '#00f2ff', size: 3.0 },
-            { lat: 21.9588, lng: 96.0891, name: '📡 CORS Mandalay North Station', color: '#00f2ff', size: 3.0 },
-            { lat: 20.7831, lng: 97.0381, name: '📡 CORS Taunggyi East Station', color: '#00f2ff', size: 3.0 },
-            { lat: 12.4707, lng: 98.6003, name: '📡 CORS Myeik South Station', color: '#00f2ff', size: 3.0 }
+            { lat: 16.8661, lng: 96.1951, name: '📡 CORS Yangon Base Station', color: '#ffb700', size: 3.5 },
+            { lat: 19.7633, lng: 96.0785, name: '📡 CORS Naypyidaw Central Station', color: '#ffb700', size: 3.0 },
+            { lat: 21.9588, lng: 96.0891, name: '📡 CORS Mandalay North Station', color: '#ffb700', size: 3.0 },
+            { lat: 20.7831, lng: 97.0381, name: '📡 CORS Taunggyi East Station', color: '#ffb700', size: 3.0 },
+            { lat: 12.4707, lng: 98.6003, name: '📡 CORS Myeik South Station', color: '#ffb700', size: 3.0 }
         ];
 
         const TEC_IONOSPHERE_DATA = [
