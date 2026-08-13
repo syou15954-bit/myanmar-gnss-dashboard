@@ -98,36 +98,6 @@
 
         #globeViz { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
 
-        /* Highly Visual Graphic Analytics Overlay */
-        #analyticsStage {
-            display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 50;
-            background: var(--bg-dark); padding: 12px; gap: 12px; flex-direction: column; overflow-y: auto;
-        }
-
-        .visual-comparison-grid { display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 12px; height: 100%; }
-        
-        .visual-card {
-            background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 6px; padding: 12px;
-            display: flex; flex-direction: column; gap: 12px; position: relative; overflow: hidden;
-        }
-
-        .card-header-badge {
-            display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 13px;
-            border-bottom: 1px solid var(--panel-border); padding-bottom: 8px;
-        }
-
-        /* Graphic Metric Bars */
-        .graphic-metric { display: flex; flex-direction: column; gap: 4px; }
-        .graphic-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); font-weight: 700; }
-        .bar-container { width: 100%; height: 10px; background: rgba(2, 6, 23, 0.8); border-radius: 5px; overflow: hidden; border: 1px solid var(--panel-border); }
-        .bar-fill { height: 100%; border-radius: 5px; transition: width 0.8s ease-in-out; }
-
-        .fill-gps { background: linear-gradient(90deg, #059669, #10b981); box-shadow: 0 0 8px #10b981; }
-        .fill-bds { background: linear-gradient(90deg, #dc2626, #ef4444); box-shadow: 0 0 8px #ef4444; }
-        .fill-cyan { background: linear-gradient(90deg, #0284c7, #38bdf8); box-shadow: 0 0 8px #38bdf8; }
-
-        .big-stat-number { font-size: 32px; font-weight: 700; text-align: center; margin: 4px 0; }
-
         .center-feature-bar {
             position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 15;
             display: flex; gap: 10px; background: rgba(15, 23, 42, 0.92); padding: 5px 14px;
@@ -152,18 +122,16 @@
             border-bottom: 1px solid rgba(56, 189, 248, 0.15); padding-bottom: 4px;
         }
 
-        .hud-left-tle { top: 12px; left: 12px; width: 280px; }
+        /* Replaced TLE space with Unified Comparison Card */
+        .hud-left-unified { top: 12px; left: 12px; width: 340px; }
         .hud-right-passes { top: 12px; right: 12px; width: 260px; }
         .hud-right-info { bottom: 50px; right: 12px; width: 260px; }
 
-        .tle-box {
-            background: rgba(2, 6, 23, 0.8); border: 1px solid rgba(56, 189, 248, 0.2); padding: 6px; font-size: 9px;
-            color: var(--accent-cyan); word-break: break-all; line-height: 1.35; border-radius: 4px; margin-top: 4px;
-            max-height: 70px; overflow-y: auto;
-        }
+        .bar-container { width: 100%; height: 8px; background: rgba(2, 6, 23, 0.8); border-radius: 4px; overflow: hidden; border: 1px solid var(--panel-border); }
+        .bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease-in-out; }
 
-        .hud-stat-line { display: flex; justify-content: space-between; align-items: center; font-size: 10px; margin-bottom: 4px; color: var(--text-muted); }
-        .hud-stat-val { font-weight: 700; color: var(--text-main); }
+        .fill-gps { background: linear-gradient(90deg, #059669, #10b981); box-shadow: 0 0 8px #10b981; }
+        .fill-bds { background: linear-gradient(90deg, #dc2626, #ef4444); box-shadow: 0 0 8px #ef4444; }
 
         .sat-marker { 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -213,13 +181,23 @@
         .upload-box { display: flex; gap: 6px; align-items: center; background: rgba(2, 6, 23, 0.6); padding: 6px; border-radius: 4px; border: 1px dashed var(--panel-border); }
         .upload-btn { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 4px 10px; border-radius: 3px; font-size: 9.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
         .upload-btn:hover { background: rgba(56, 189, 248, 0.35); }
+
+        /* Pop-up Dark Modal Window for TLE Inspection */
+        #tleModal {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 200;
+            width: 480px; background: rgba(15, 23, 42, 0.98); border: 1px solid var(--accent-cyan); border-radius: 6px;
+            padding: 16px; backdrop-filter: blur(16px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--panel-border); padding-bottom: 8px; margin-bottom: 10px; font-size: 12px; font-weight: 700; color: var(--accent-cyan); }
+        .modal-close { cursor: pointer; color: var(--text-muted); font-size: 18px; font-weight: 700; transition: color 0.2s; }
+        .modal-close:hover { color: var(--accent-red); }
     </style>
 </head>
 <body>
 
     <header class="top-nav">
         <div style="display: flex; gap: 10px; align-items: center;">
-            <button class="view-switch-btn mono" id="view-mode-btn" onclick="toggleMainDisplayMode()">📊 PURE ANALYTICS MODE</button>
+            <button class="view-switch-btn mono" onclick="openTLEModal()">📋 VIEW TLE DATA</button>
             <div class="nav-tabs mono" id="constellation-tabs">
                 <span style="font-size: 9px; color: var(--text-muted); margin-right: 2px;">COMPARE:</span>
                 <button class="nav-tab-btn toggle-on" data-sys="gps" onclick="toggleSystemFilter('gps', this)">🛰️ GPS</button>
@@ -250,93 +228,21 @@
         <section class="globe-stage">
             <div id="globeViz"></div>
 
-            <!-- Highly Visual Pure Analytics Graphic Overlay -->
-            <div id="analyticsStage" class="mono">
-                <div class="visual-comparison-grid">
-                    
-                    <!-- GPS Graphic Panel -->
-                    <div class="visual-card" style="border-color: rgba(16, 185, 129, 0.4);">
-                        <div class="card-header-badge" style="color: #10b981;">
-                            <span>🇺🇸 GPS (NAVSTAR)</span>
-                            <span class="status-pill pill-green">GLOBAL MEO</span>
-                        </div>
-                        
-                        <div class="big-stat-number" style="color: #10b981;" id="gps-stat-count">31</div>
-                        <div style="text-align: center; font-size: 9px; color: var(--text-muted);">ACTIVE SATELLITES</div>
-
-                        <div class="graphic-metric">
-                            <div class="graphic-label"><span>MYANMAR VISIBILITY</span><span>45% (11 SATS)</span></div>
-                            <div class="bar-container"><div class="bar-fill fill-gps" style="width: 45%;"></div></div>
-                        </div>
-
-                        <div class="graphic-metric">
-                            <div class="graphic-label"><span>SIGNAL CN0 STRENGTH</span><span>42 dB-Hz</span></div>
-                            <div class="bar-container"><div class="bar-fill fill-gps" style="width: 75%;"></div></div>
-                        </div>
-
-                        <div class="graphic-metric">
-                            <div class="graphic-label"><span>ORBIT TYPE</span><span>100% MEO</span></div>
-                            <div class="bar-container"><div class="bar-fill fill-gps" style="width: 100%;"></div></div>
-                        </div>
-                    </div>
-
-                    <!-- Center Direct Visual Comparison Gauge Panel -->
-                    <div class="visual-card" style="border-color: var(--accent-cyan);">
-                        <div class="card-header-badge" style="color: var(--accent-cyan);">
-                            <span>📊 MYANMAR LOCAL COVERAGE COMPARISON</span>
-                            <span>LIVE METRICS</span>
-                        </div>
-
-                        <div class="graphic-metric" style="margin-top: 10px;">
-                            <div class="graphic-label"><span style="color:#ef4444;">🇨🇳 BEIDOU VISIBLE</span><span style="color:#ef4444;">19 SATS (85%)</span></div>
-                            <div class="bar-container"><div class="bar-fill fill-bds" style="width: 85%;"></div></div>
-                        </div>
-
-                        <div class="graphic-metric">
-                            <div class="graphic-label"><span style="color:#10b981;">🇺🇸 GPS VISIBLE</span><span style="color:#10b981;">11 SATS (45%)</span></div>
-                            <div class="bar-container"><div class="bar-fill fill-gps" style="width: 45%;"></div></div>
-                        </div>
-
-                        <hr style="border-color: var(--panel-border); margin: 6px 0;">
-
-                        <div class="graphic-metric">
-                            <div class="graphic-label"><span>POSITION ACCURACY (PDOP)</span><span>LOWER IS BETTER</span></div>
-                            <div class="graphic-label"><span style="color:#ef4444;">BDS PDOP: 1.2</span><span style="color:#10b981;">GPS PDOP: 2.1</span></div>
-                            <div class="bar-container"><div class="bar-fill fill-cyan" style="width: 90%;"></div></div>
-                        </div>
-
-                        <div style="background: rgba(2, 6, 23, 0.6); padding: 8px; border-radius: 4px; border: 1px solid var(--panel-border); text-align: center; margin-top: auto;">
-                            <span style="font-size: 10px; color: var(--accent-green); font-weight: 700;">✨ COMBINED GPS + BDS PDOP: 0.85 (SUB-CENTIMETER RTK)</span>
-                        </div>
-                    </div>
-
-                    <!-- BeiDou Graphic Panel -->
-                    <div class="visual-card" style="border-color: rgba(239, 68, 68, 0.4);">
-                        <div class="card-header-badge" style="color: #ef4444;">
-                            <span>🇨🇳 BEIDOU (BDS-3)</span>
-                            <span class="status-pill" style="background: rgba(239,68,68,0.2); color:#ef4444; border:1px solid #ef4444;">HYBRID ORBIT</span>
-                        </div>
-
-                        <div class="big-stat-number" style="color: #ef4444;" id="bds-stat-count">54</div>
-                        <div style="text-align: center; font-size: 9px; color: var(--text-muted);">ACTIVE SATELLITES</div>
-
-                        <div class="graphic-metric">
-                            <div class="graphic-label"><span>MYANMAR VISIBILITY</span><span>85% (19 SATS)</span></div>
-                            <div class="bar-container"><div class="bar-fill fill-bds" style="width: 85%;"></div></div>
-                        </div>
-
-                        <div class="graphic-metric">
-                            <div class="graphic-label"><span>SIGNAL CN0 STRENGTH</span><span>46 dB-Hz</span></div>
-                            <div class="bar-container"><div class="bar-fill fill-bds" style="width: 88%;"></div></div>
-                        </div>
-
-                        <div class="graphic-metric">
-                            <div class="graphic-label"><span>GEO / IGSO DENSITY</span><span>HIGH ASIA LOCK</span></div>
-                            <div class="bar-container"><div class="bar-fill fill-bds" style="width: 95%;"></div></div>
-                        </div>
-                    </div>
-
+            <!-- Pop-up Dark Modal for TLE Data Inspection -->
+            <div id="tleModal" class="mono">
+                <div class="modal-header">
+                    <span>📋 NORAD TLE DATA INSPECTION</span>
+                    <span class="modal-close" onclick="closeTLEModal()">✕</span>
                 </div>
+                <div class="hud-stat-line" style="margin-bottom: 8px;">
+                    <span>TARGET SAT:</span>
+                    <select id="sat-dropdown-modal" class="mono" style="background:#020617; color:var(--accent-cyan); border:1px solid var(--panel-border); font-size:10px; padding:4px 8px; border-radius:3px; cursor:pointer; width:220px;" onchange="selectSatellite(this.value)">
+                        <option value="">Loading...</option>
+                    </select>
+                </div>
+                <div class="hud-stat-line"><span>SELECTED:</span><b class="hud-stat-val" id="tle-sat-name-modal">--</b></div>
+                <div style="font-size: 8.5px; color: var(--text-muted); margin-top: 6px; margin-bottom: 4px;">TWO-LINE ELEMENT SET (SGP4 PROPAGATOR):</div>
+                <div class="tle-box" id="tle-display-modal" style="max-height: 120px;">Fetching NORAD TLE Data...</div>
             </div>
 
             <div class="center-feature-bar mono" id="globe-controls-bar">
@@ -345,20 +251,59 @@
                 <button class="feature-btn" id="btn-heatmap" onclick="toggleFeatureMode('heatmap', this)">🔥 TEC Ionosphere</button>
             </div>
 
-            <!-- Left HUD -->
-            <div class="hud-card hud-left-tle mono">
+            <!-- Left HUD: Replaced with Unified Matrix Comparison Card -->
+            <div class="hud-card hud-left-unified mono">
                 <div class="hud-card-title">
-                    <span>► TLE DATA INPUT</span>
-                    <span style="color:var(--accent-cyan); font-size:8px;" id="tle-status-badge">FETCHING...</span>
+                    <span style="color:#10b981;">🇺🇸 GPS</span>
+                    <span style="color:var(--accent-cyan);">📊 MYANMAR LOCAL COMPARISON</span>
+                    <span style="color:#ef4444;">🇨🇳 BDS</span>
                 </div>
-                <div class="hud-stat-line" style="margin-bottom: 5px;">
-                    <span>TARGET SAT:</span>
-                    <select id="sat-dropdown" class="mono" style="background:#020617; color:var(--accent-cyan); border:1px solid var(--panel-border); font-size:9.5px; padding:3px 6px; border-radius:3px; cursor:pointer; max-width:160px;" onchange="selectSatellite(this.value)">
-                        <option value="">Loading...</option>
-                    </select>
+
+                <div style="display:grid; grid-template-columns:1fr 80px 1fr; align-items:center; text-align:center; margin-bottom:6px;">
+                    <b style="color:#10b981; font-size:14px;" id="gps-stat-count">31 SATS</b>
+                    <span style="font-size:8px; color:var(--text-muted);">FLEET</span>
+                    <b style="color:#ef4444; font-size:14px;" id="bds-stat-count">54 SATS</b>
                 </div>
-                <div class="hud-stat-line"><span>SELECTED:</span><b class="hud-stat-val" id="tle-sat-name">--</b></div>
-                <div class="tle-box" id="tle-display">Fetching NORAD TLE Data...</div>
+
+                <div style="margin-bottom:6px;">
+                    <div style="display:flex; justify-style:space-between; font-size:8.5px; font-weight:700; margin-bottom:2px;">
+                        <span style="color:#10b981;">11 SATS (45%)</span>
+                        <span style="color:var(--text-muted);">VISIBILITY</span>
+                        <span style="color:#ef4444;">19 SATS (85%)</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
+                        <div class="bar-container"><div class="bar-fill fill-gps" style="width:45%;"></div></div>
+                        <div class="bar-container"><div class="bar-fill fill-bds" style="width:85%; margin-left:auto;"></div></div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:6px;">
+                    <div style="display:flex; justify-style:space-between; font-size:8.5px; font-weight:700; margin-bottom:2px;">
+                        <span style="color:#10b981;">42 dB-Hz</span>
+                        <span style="color:var(--text-muted);">SIGNAL C/N0</span>
+                        <span style="color:#ef4444;">46 dB-Hz</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
+                        <div class="bar-container"><div class="bar-fill fill-gps" style="width:75%;"></div></div>
+                        <div class="bar-container"><div class="bar-fill fill-bds" style="width:88%; margin-left:auto;"></div></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div style="display:flex; justify-style:space-between; font-size:8.5px; font-weight:700; margin-bottom:2px;">
+                        <span style="color:#10b981;">PDOP: 2.1</span>
+                        <span style="color:var(--text-muted);">ACCURACY</span>
+                        <span style="color:#ef4444;">PDOP: 1.2</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
+                        <div class="bar-container"><div class="bar-fill fill-gps" style="width:60%;"></div></div>
+                        <div class="bar-container"><div class="bar-fill fill-bds" style="width:90%; margin-left:auto;"></div></div>
+                    </div>
+                </div>
+
+                <div style="background:rgba(2, 6, 23, 0.8); padding:4px 6px; border-radius:3px; border:1px solid var(--panel-border); text-align:center; margin-top:6px;">
+                    <span style="font-size:8px; color:var(--accent-green); font-weight:700;">✨ COMBINED GPS+BDS PDOP: 0.85 (SUB-CENTIMETER RTK)</span>
+                </div>
             </div>
 
             <!-- Right HUD (Top) -->
@@ -438,7 +383,6 @@
     </main>
 
     <script>
-        let isAnalyticsMode = false;
         let selectedSatId = '';
         let fleetChart = null, waveformChart = null;
         let myGlobe = null;
@@ -465,23 +409,8 @@
             { lat: 25.3, lng: 97.3, size: 3.8, color: 'rgba(245, 158, 11, 0.35)' }
         ];
 
-        function toggleMainDisplayMode() {
-            isAnalyticsMode = !isAnalyticsMode;
-            const btn = document.getElementById('view-mode-btn');
-            const analyticsOverlay = document.getElementById('analyticsStage');
-            const globeControls = document.getElementById('globe-controls-bar');
-
-            if (isAnalyticsMode) {
-                btn.innerText = '🌐 3D GLOBE VIEW';
-                analyticsOverlay.style.display = 'flex';
-                globeControls.style.display = 'none';
-            } else {
-                btn.innerText = '📊 PURE ANALYTICS MODE';
-                analyticsOverlay.style.display = 'none';
-                globeControls.style.display = 'flex';
-                resizeGlobe();
-            }
-        }
+        function openTLEModal() { document.getElementById('tleModal').style.display = 'block'; }
+        function closeTLEModal() { document.getElementById('tleModal').style.display = 'none'; }
 
         function getSatColor(satName) {
             let uname = (satName || '').toUpperCase();
@@ -538,8 +467,8 @@
             });
             CONSTELLATION_SATS = cat;
 
-            document.getElementById('gps-stat-count').innerText = cat.gps.length || 31;
-            document.getElementById('bds-stat-count').innerText = cat.bds.length || 54;
+            document.getElementById('gps-stat-count').innerText = `${cat.gps.length || 31} SATS`;
+            document.getElementById('bds-stat-count').innerText = `${cat.bds.length || 54} SATS`;
         }
 
         async function loadCelesTrakTLEs() {
@@ -618,8 +547,10 @@
             document.getElementById('total-sats').innerText = satList.length;
             document.getElementById('active-sats').innerText = satList.length;
 
-            const dropdown = document.getElementById('sat-dropdown');
-            dropdown.innerHTML = satList.map(s => `<option value="${s.id}">${s.name.substring(0, 22)} (${s.id})</option>`).join('');
+            const dropdownModal = document.getElementById('sat-dropdown-modal');
+            if (dropdownModal) {
+                dropdownModal.innerHTML = satList.map(s => `<option value="${s.id}">${s.name.substring(0, 22)} (${s.id})</option>`).join('');
+            }
 
             const tbody = document.getElementById('sat-table-body');
             tbody.innerHTML = satList.map(s => {
@@ -712,12 +643,14 @@
             selectedSatId = id;
             const sat = TLE_DATABASE[id];
             
-            const dropdown = document.getElementById('sat-dropdown');
-            if (dropdown && dropdown.value !== id) dropdown.value = id;
+            const dropdownModal = document.getElementById('sat-dropdown-modal');
+            if (dropdownModal && dropdownModal.value !== id) dropdownModal.value = id;
 
-            document.getElementById('tle-sat-name').innerText = sat.name;
-            document.getElementById('hud-sat-title').innerText = `► SATELLITE INFO (${id})`;
-            document.getElementById('tle-display').innerHTML = `${sat.line1}<br>${sat.line2}`;
+            const modalSatName = document.getElementById('tle-sat-name-modal');
+            if (modalSatName) modalSatName.innerText = sat.name;
+
+            const modalTleDisplay = document.getElementById('tle-display-modal');
+            if (modalTleDisplay) modalTleDisplay.innerHTML = `${sat.line1}<br>${sat.line2}`;
 
             document.querySelectorAll('#sat-table-body tr').forEach(row => {
                 if (row.getAttribute('data-id') === id) row.classList.add('table-row-selected');
@@ -875,8 +808,6 @@
             requestAnimationFrame(animateSatellites);
         }
         requestAnimationFrame(animateSatellites);
-
-        function closeModal() { document.getElementById('detailModal').style.display = 'none'; }
 
         function initCharts() {
             if (typeof Chart === 'undefined') return;
