@@ -138,8 +138,13 @@
             border-bottom: 1px solid rgba(56, 189, 248, 0.15); padding-bottom: 4px;
         }
 
-        .hud-left-unified { top: 12px; left: 12px; width: 320px; }
+        .hud-left-unified { top: 12px; left: 12px; width: 340px; }
         .hud-right-passes { top: 12px; right: 12px; width: 280px; }
+
+        .matrix-select {
+            background: #020617; color: var(--accent-cyan); border: 1px solid var(--panel-border);
+            font-size: 9px; font-weight: 700; padding: 2px 4px; border-radius: 3px; cursor: pointer;
+        }
 
         .bar-container { width: 100%; height: 8px; background: rgba(2, 6, 23, 0.8); border-radius: 4px; overflow: hidden; border: 1px solid var(--panel-border); }
         .bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease-in-out; }
@@ -278,37 +283,49 @@
                 <button class="feature-btn" id="btn-heatmap" onclick="toggleFeatureMode('heatmap', this)">🔥 TEC Ionosphere</button>
             </div>
 
-            <!-- Left HUD: Clean Un-overlapped Comparison Matrix Card -->
+            <!-- Left HUD: Dynamic System Comparison Selector Matrix Card -->
             <div class="hud-card hud-left-unified mono">
                 <div class="hud-card-title">
-                    <span style="color:#10b981;">🇺🇸 GPS</span>
-                    <span style="color:var(--accent-cyan);" id="matrix-card-title">📊 MYANMAR LOCAL METRICS</span>
-                    <span style="color:#ef4444;">🇨🇳 BDS</span>
+                    <select id="matrix-sys-a" class="matrix-select" onchange="renderCustomSelection()">
+                        <option value="gps" selected>🇺🇸 GPS</option>
+                        <option value="bds">🇨🇳 BEIDOU</option>
+                        <option value="galileo">🇪🇺 GALILEO</option>
+                        <option value="glonass">🇷🇺 GLONASS</option>
+                    </select>
+                    
+                    <span style="color:var(--accent-cyan); font-size:9px;" id="matrix-card-title">📊 MYANMAR LOCAL METRICS</span>
+                    
+                    <select id="matrix-sys-b" class="matrix-select" onchange="renderCustomSelection()">
+                        <option value="gps">🇺🇸 GPS</option>
+                        <option value="bds" selected>🇨🇳 BEIDOU</option>
+                        <option value="galileo">🇪🇺 GALILEO</option>
+                        <option value="glonass">🇷🇺 GLONASS</option>
+                    </select>
                 </div>
 
                 <div style="display:grid; grid-template-columns:1fr 80px 1fr; align-items:center; text-align:center; margin-bottom:6px;">
-                    <b style="color:#10b981; font-size:13px;" id="gps-stat-count">31 SATS</b>
+                    <b style="color:#10b981; font-size:13px;" id="sys-a-count">11 SATS</b>
                     <span style="font-size:8px; color:var(--text-muted);" id="fleet-type-label">VISIBLE</span>
-                    <b style="color:#ef4444; font-size:13px;" id="bds-stat-count">54 SATS</b>
+                    <b style="color:#ef4444; font-size:13px;" id="sys-b-count">19 SATS</b>
                 </div>
 
                 <div style="margin-bottom:6px;">
                     <div style="display:flex; justify-content:space-between; font-size:8px; font-weight:700; margin-bottom:2px;">
-                        <span style="color:#10b981;" id="gps-vis-text">GPS: 35%</span>
+                        <span style="color:#10b981;" id="sys-a-vis-text">SYS-A: 35%</span>
                         <span style="color:var(--text-muted);">VISIBILITY</span>
-                        <span style="color:#ef4444;" id="bds-vis-text">BDS: 65%</span>
+                        <span style="color:#ef4444;" id="sys-b-vis-text">SYS-B: 65%</span>
                     </div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
-                        <div class="bar-container"><div class="bar-fill fill-gps" id="gps-vis-bar" style="width:35%;"></div></div>
-                        <div class="bar-container"><div class="bar-fill fill-bds" id="bds-vis-bar" style="width:65%; margin-left:auto;"></div></div>
+                        <div class="bar-container"><div class="bar-fill fill-gps" id="sys-a-vis-bar" style="width:35%;"></div></div>
+                        <div class="bar-container"><div class="bar-fill fill-bds" id="sys-b-vis-bar" style="width:65%; margin-left:auto;"></div></div>
                     </div>
                 </div>
 
                 <div style="margin-bottom:6px;">
                     <div style="display:flex; justify-content:space-between; font-size:8px; font-weight:700; margin-bottom:2px;">
-                        <span style="color:#10b981;">42 dB-Hz</span>
+                        <span style="color:#10b981;" id="sys-a-cn0-text">42 dB-Hz</span>
                         <span style="color:var(--text-muted);">SIGNAL C/N0</span>
-                        <span style="color:#ef4444;">46 dB-Hz</span>
+                        <span style="color:#ef4444;" id="sys-b-cn0-text">46 dB-Hz</span>
                     </div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
                         <div class="bar-container"><div class="bar-fill fill-gps" style="width:75%;"></div></div>
@@ -317,10 +334,10 @@
                 </div>
 
                 <div>
-                    <div style="display:flex; justify-content:space-between; font-size:8px; font-weight:700; margin-bottom:2px;">
-                        <span style="color:#10b981;">PDOP: 2.1</span>
+                    <div style="display:flex; justify-style:space-between; font-size:8px; font-weight:700; margin-bottom:2px;">
+                        <span style="color:#10b981;" id="sys-a-pdop-text">PDOP: 2.1</span>
                         <span style="color:var(--text-muted);">ACCURACY</span>
-                        <span style="color:#ef4444;">PDOP: 1.2</span>
+                        <span style="color:#ef4444;" id="sys-b-pdop-text">PDOP: 1.2</span>
                     </div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
                         <div class="bar-container"><div class="bar-fill fill-gps" style="width:60%;"></div></div>
@@ -329,7 +346,7 @@
                 </div>
 
                 <div style="background:rgba(2, 6, 23, 0.8); padding:4px 6px; border-radius:3px; border:1px solid var(--panel-border); text-align:center; margin-top:6px;">
-                    <span style="font-size:8px; color:var(--accent-green); font-weight:700;">✨ COMBINED GPS+BDS PDOP: 0.85 (SUB-CENTIMETER RTK)</span>
+                    <span style="font-size:8px; color:var(--accent-green); font-weight:700;" id="combined-pdop-label">✨ COMBINED MULTI-GNSS PDOP: 0.85 (SUB-CENTIMETER RTK)</span>
                 </div>
             </div>
 
@@ -439,7 +456,6 @@
             renderCustomSelection();
         }
 
-        // Expanded Bounding Box for Myanmar Visible Radius
         function isSatVisibleInMyanmar(lat, lng) {
             return (lat >= -25.0 && lat <= 55.0 && lng >= 30.0 && lng <= 160.0);
         }
@@ -453,57 +469,27 @@
             return '#f59e0b';
         }
 
-        // Full-Scale High Density Fallback Generator (150+ Satellites)
         function generateHighDensityFallbackList() {
             let list = [];
-            
-            // GPS (31 Satellites)
             for(let i=1; i<=31; i++) {
                 let prn = i < 10 ? `0${i}` : `${i}`;
-                list.push({
-                    id: `${20000+i}`,
-                    name: `GPS SVN-${50+i} (PRN-${prn})`,
-                    line1: `1 ${20000+i}U 98067A   26223.41203412  .00000032  00000-0  00000+0 0  9993`,
-                    line2: `2 ${20000+i}  55.1234 ${(i*11.6)%360} 0012345  45.1234 315.1234  2.00561234 12342`
-                });
+                list.push({ id: `${20000+i}`, name: `GPS SVN-${50+i} (PRN-${prn})`, line1: `1 ${20000+i}U 98067A   26223.41203412  .00000032  00000-0  00000+0 0  9993`, line2: `2 ${20000+i}  55.1234 ${(i*11.6)%360} 0012345  45.1234 315.1234  2.00561234 12342` });
             }
-
-            // BeiDou BDS-3 (35 Satellites)
             for(let i=1; i<=35; i++) {
                 let cId = i < 10 ? `C0${i}` : `C${i}`;
                 let isGeo = i <= 5;
                 let inc = isGeo ? 1.8 : 55.0;
                 let meanR = isGeo ? (80 + i*3) : (i*10.2)%360;
-                list.push({
-                    id: `${40000+i}`,
-                    name: `BDS-3 ${isGeo?'GEO':'MEO'}-${i} (${cId})`,
-                    line1: `1 ${40000+i}U 18018A   26223.11112222  .00000020  00000-0  00000+0 0  9998`,
-                    line2: `2 ${40000+i}   ${inc}  ${meanR} 0002134 180.1234 180.4321  1.00271234  5432`
-                });
+                list.push({ id: `${40000+i}`, name: `BDS-3 ${isGeo?'GEO':'MEO'}-${i} (${cId})`, line1: `1 ${40000+i}U 18018A   26223.11112222  .00000020  00000-0  00000+0 0  9998`, line2: `2 ${40000+i}   ${inc}  ${meanR} 0002134 180.1234 180.4321  1.00271234  5432` });
             }
-
-            // Galileo (24 Satellites)
             for(let i=1; i<=24; i++) {
                 let eId = i < 10 ? `E0${i}` : `E${i}`;
-                list.push({
-                    id: `${37000+i}`,
-                    name: `GALILEO GSAT-02${i<10?'0':''}${i} (${eId})`,
-                    line1: `1 ${37000+i}U 11060A   26223.22223333  .00000010  00000-0  00000+0 0  9992`,
-                    line2: `2 ${37000+i}  56.0123 ${(i*15)%360} 0002341  30.1234 330.1234  1.70481234  4321`
-                });
+                list.push({ id: `${37000+i}`, name: `GALILEO GSAT-02${i<10?'0':''}${i} (${eId})`, line1: `1 ${37000+i}U 11060A   26223.22223333  .00000010  00000-0  00000+0 0  9992`, line2: `2 ${37000+i}  56.0123 ${(i*15)%360} 0002341  30.1234 330.1234  1.70481234  4321` });
             }
-
-            // GLONASS (24 Satellites)
             for(let i=1; i<=24; i++) {
                 let rId = i < 10 ? `R0${i}` : `R${i}`;
-                list.push({
-                    id: `${41000+i}`,
-                    name: `GLONASS-M No.${700+i} (${rId})`,
-                    line1: `1 ${41000+i}U 14084A   26223.66667777  .00000040  00000-0  00000+0 0  9997`,
-                    line2: `2 ${41000+i}  64.8123 ${(i*15)%360} 0015678  60.1234 300.4321  2.13101234  9988`
-                });
+                list.push({ id: `${41000+i}`, name: `GLONASS-M No.${700+i} (${rId})`, line1: `1 ${41000+i}U 14084A   26223.66667777  .00000040  00000-0  00000+0 0  9997`, line2: `2 ${41000+i}  64.8123 ${(i*15)%360} 0015678  60.1234 300.4321  2.13101234  9988` });
             }
-
             return list;
         }
 
@@ -607,21 +593,24 @@
             return combined;
         }
 
+        function countSystemVisibles(sysKey) {
+            let list = CONSTELLATION_SATS[sysKey] || [];
+            let count = 0;
+            list.forEach(s => {
+                const pos = propagateSGP4(s.id);
+                if (isSatVisibleInMyanmar(pos.lat, pos.lng)) count++;
+            });
+            return count;
+        }
+
         function renderCustomSelection() {
             let satList = getFilteredSatellites();
             
             currentLiveSatObjects = [];
-            let gpsVisCount = 0, bdsVisCount = 0;
 
             satList.forEach(s => {
                 const sgp4Pos = propagateSGP4(s.id);
                 const visibleInMM = isSatVisibleInMyanmar(sgp4Pos.lat, sgp4Pos.lng);
-                
-                let uname = s.name.toUpperCase();
-                if (visibleInMM) {
-                    if (uname.includes('GPS') || uname.includes('NAVSTAR')) gpsVisCount++;
-                    if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('C0')) bdsVisCount++;
-                }
 
                 if (!isMyanmarOnlyMode || visibleInMM) {
                     currentLiveSatObjects.push({
@@ -638,23 +627,27 @@
                 ? '🇲🇲 မြန်မာနိုင်ငံမှ မိနိုင်သော ဂြိုဟ်တုများ (Myanmar Visible Fleet)' 
                 : '🛰️ ဂြိုဟ်တုများ တည်ရှိမှု (Fleet Status)';
 
-            const totalGps = CONSTELLATION_SATS.gps.length || 31;
-            const totalBds = CONSTELLATION_SATS.bds.length || 35;
+            // Dynamic Matrix Calculations
+            const sysA = document.getElementById('matrix-sys-a').value;
+            const sysB = document.getElementById('matrix-sys-b').value;
 
-            const curGps = activeSystems.has('gps') ? (isMyanmarOnlyMode ? gpsVisCount : CONSTELLATION_SATS.gps.length) : 0;
-            const curBds = activeSystems.has('bds') ? (isMyanmarOnlyMode ? bdsVisCount : CONSTELLATION_SATS.bds.length) : 0;
+            const totalSysA = (CONSTELLATION_SATS[sysA] || []).length || 30;
+            const totalSysB = (CONSTELLATION_SATS[sysB] || []).length || 30;
 
-            document.getElementById('gps-stat-count').innerText = `${curGps} SATS`;
-            document.getElementById('bds-stat-count').innerText = `${curBds} SATS`;
+            const visSysA = countSystemVisibles(sysA);
+            const visSysB = countSystemVisibles(sysB);
 
-            const gpsVisPct = Math.min(100, Math.round(((gpsVisCount || 12) / totalGps) * 100));
-            const bdsVisPct = Math.min(100, Math.round(((bdsVisCount || 21) / totalBds) * 100));
+            document.getElementById('sys-a-count').innerText = `${visSysA} SATS`;
+            document.getElementById('sys-b-count').innerText = `${visSysB} SATS`;
 
-            document.getElementById('gps-vis-text').innerText = `GPS: ${gpsVisPct}%`;
-            document.getElementById('bds-vis-text').innerText = `BDS: ${bdsVisPct}%`;
+            const pctA = Math.min(100, Math.round((visSysA / totalSysA) * 100));
+            const pctB = Math.min(100, Math.round((visSysB / totalSysB) * 100));
 
-            document.getElementById('gps-vis-bar').style.width = `${gpsVisPct}%`;
-            document.getElementById('bds-vis-bar').style.width = `${bdsVisPct}%`;
+            document.getElementById('sys-a-vis-text').innerText = `${sysA.toUpperCase()}: ${pctA}%`;
+            document.getElementById('sys-b-vis-text').innerText = `${sysB.toUpperCase()}: ${pctB}%`;
+
+            document.getElementById('sys-a-vis-bar').style.width = `${pctA}%`;
+            document.getElementById('sys-b-vis-bar').style.width = `${pctB}%`;
 
             const dropdownModal = document.getElementById('sat-dropdown-modal');
             if (dropdownModal) {
