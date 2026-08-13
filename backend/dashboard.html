@@ -138,12 +138,11 @@
             border-bottom: 1px solid rgba(56, 189, 248, 0.15); padding-bottom: 4px;
         }
 
-        .hud-left-unified { top: 12px; left: 12px; width: 340px; }
         .hud-right-passes { top: 12px; right: 12px; width: 280px; }
 
         .matrix-select {
             background: #020617; color: var(--accent-cyan); border: 1px solid var(--panel-border);
-            font-size: 9px; font-weight: 700; padding: 2px 4px; border-radius: 3px; cursor: pointer;
+            font-size: 10px; font-weight: 700; padding: 3px 6px; border-radius: 3px; cursor: pointer;
         }
 
         .bar-container { width: 100%; height: 8px; background: rgba(2, 6, 23, 0.8); border-radius: 4px; overflow: hidden; border: 1px solid var(--panel-border); }
@@ -156,33 +155,23 @@
 
         .glass-panel {
             background: var(--panel-bg); border: 1px solid var(--panel-border); backdrop-filter: blur(12px);
-            border-radius: 6px; padding: 10px; display: flex; flex-direction: column; min-height: 0; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            border-radius: 6px; padding: 12px; display: flex; flex-direction: column; min-height: 0; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
         .panel-title {
-            font-size: 11px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; display: flex;
+            font-size: 11.5px; font-weight: 700; color: var(--text-main); margin-bottom: 8px; display: flex;
             justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(56, 189, 248, 0.15);
-            padding-bottom: 4px; flex-shrink: 0;
+            padding-bottom: 6px; flex-shrink: 0;
         }
 
-        .cyber-table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 2px; }
-        .cyber-table th { text-align: left; color: var(--text-muted); padding: 5px 4px; border-bottom: 1px solid var(--panel-border); font-size: 9px; }
-        .cyber-table td { padding: 5px 4px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #cbd5e1; }
-        .cyber-table tr { cursor: pointer; transition: background 0.15s; }
-        .cyber-table tr:hover { background: rgba(56, 189, 248, 0.08); }
-        .table-row-selected { background: rgba(56, 189, 248, 0.18) !important; border-left: 3px solid var(--accent-cyan) !important; }
-
-        .status-pill { padding: 2px 6px; border-radius: 3px; font-size: 8px; font-weight: 700; }
-        .pill-green { background: rgba(16, 185, 129, 0.12); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.4); }
-
-        .chart-box { position: relative; flex: 1; width: 100%; min-height: 0; }
+        .chart-box { position: relative; flex: 1; width: 100%; min-height: 0; margin-top: 8px; }
         .chart-box canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
 
-        .dop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 4px; }
-        .dop-card { background: rgba(2, 6, 23, 0.6); padding: 5px; border-radius: 4px; text-align: center; border: 1px solid var(--panel-border); }
-        .dop-val { font-size: 13px; font-weight: 700; color: var(--accent-cyan); }
+        .dop-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 4px; }
+        .dop-card { background: rgba(2, 6, 23, 0.6); padding: 8px; border-radius: 4px; text-align: center; border: 1px solid var(--panel-border); }
+        .dop-val { font-size: 16px; font-weight: 700; color: var(--accent-cyan); margin-top: 4px; }
 
-        .upload-box { display: flex; gap: 6px; align-items: center; background: rgba(2, 6, 23, 0.6); padding: 6px; border-radius: 4px; border: 1px dashed var(--panel-border); }
+        .upload-box { display: flex; gap: 6px; align-items: center; background: rgba(2, 6, 23, 0.6); padding: 6px; border-radius: 4px; border: 1px dashed var(--panel-border); margin-bottom: 8px; }
         .upload-btn { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 4px 10px; border-radius: 3px; font-size: 9.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
         .upload-btn:hover { background: rgba(56, 189, 248, 0.35); }
 
@@ -252,73 +241,6 @@
             <div class="center-feature-bar mono" id="globe-controls-bar">
                 <button class="feature-btn" id="btn-stations" onclick="toggleFeatureMode('stations', this)">📡 CORS Stations</button>
                 <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit Ring</button>
-                <button class="feature-btn" id="btn-heatmap" onclick="toggleFeatureMode('heatmap', this)">🔥 TEC Ionosphere</button>
-            </div>
-
-            <div class="hud-card hud-left-unified mono">
-                <div class="hud-card-title">
-                    <select id="matrix-sys-a" class="matrix-select" onchange="renderCustomSelection()">
-                        <option value="gps" selected>🇺🇸 GPS</option>
-                        <option value="bds">🇨🇳 BEIDOU</option>
-                        <option value="galileo">🇪🇺 GALILEO</option>
-                        <option value="glonass">🇷🇺 GLONASS</option>
-                    </select>
-                    
-                    <span style="color:var(--accent-cyan); font-size:9px;" id="matrix-card-title">📊 MYANMAR LOCAL METRICS</span>
-                    
-                    <select id="matrix-sys-b" class="matrix-select" onchange="renderCustomSelection()">
-                        <option value="gps">🇺🇸 GPS</option>
-                        <option value="bds" selected>🇨🇳 BEIDOU</option>
-                        <option value="galileo">🇪🇺 GALILEO</option>
-                        <option value="glonass">🇷🇺 GLONASS</option>
-                    </select>
-                </div>
-
-                <div style="display:grid; grid-template-columns:1fr 80px 1fr; align-items:center; text-align:center; margin-bottom:6px;">
-                    <b style="color:#10b981; font-size:13px;" id="sys-a-count">11 SATS</b>
-                    <span style="font-size:8px; color:var(--text-muted);" id="fleet-type-label">VISIBLE</span>
-                    <b style="color:#ef4444; font-size:13px;" id="sys-b-count">19 SATS</b>
-                </div>
-
-                <div style="margin-bottom:6px;">
-                    <div style="display:flex; justify-content:space-between; font-size:8px; font-weight:700; margin-bottom:2px;">
-                        <span style="color:#10b981;" id="sys-a-vis-text">SYS-A: 35%</span>
-                        <span style="color:var(--text-muted);">VISIBILITY</span>
-                        <span style="color:#ef4444;" id="sys-b-vis-text">SYS-B: 65%</span>
-                    </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
-                        <div class="bar-container"><div class="bar-fill fill-gps" id="sys-a-vis-bar" style="width:35%;"></div></div>
-                        <div class="bar-container"><div class="bar-fill fill-bds" id="sys-b-vis-bar" style="width:65%; margin-left:auto;"></div></div>
-                    </div>
-                </div>
-
-                <div style="margin-bottom:6px;">
-                    <div style="display:flex; justify-content:space-between; font-size:8px; font-weight:700; margin-bottom:2px;">
-                        <span style="color:#10b981;" id="sys-a-cn0-text">42 dB-Hz</span>
-                        <span style="color:var(--text-muted);">SIGNAL C/N0</span>
-                        <span style="color:#ef4444;" id="sys-b-cn0-text">46 dB-Hz</span>
-                    </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
-                        <div class="bar-container"><div class="bar-fill fill-gps" style="width:75%;"></div></div>
-                        <div class="bar-container"><div class="bar-fill fill-bds" style="width:88%; margin-left:auto;"></div></div>
-                    </div>
-                </div>
-
-                <div>
-                    <div style="display:flex; justify-content:space-between; font-size:8px; font-weight:700; margin-bottom:2px;">
-                        <span style="color:#10b981;" id="sys-a-pdop-text">PDOP: 2.1</span>
-                        <span style="color:var(--text-muted);">ACCURACY</span>
-                        <span style="color:#ef4444;" id="sys-b-pdop-text">PDOP: 1.2</span>
-                    </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
-                        <div class="bar-container"><div class="bar-fill fill-gps" style="width:60%;"></div></div>
-                        <div class="bar-container"><div class="bar-fill fill-bds" style="width:90%; margin-left:auto;"></div></div>
-                    </div>
-                </div>
-
-                <div style="background:rgba(2, 6, 23, 0.8); padding:4px 6px; border-radius:3px; border:1px solid var(--panel-border); text-align:center; margin-top:6px;">
-                    <span style="font-size:8px; color:var(--accent-green); font-weight:700;" id="combined-pdop-label">✨ COMBINED MULTI-GNSS PDOP: 0.85 (SUB-CENTIMETER RTK)</span>
-                </div>
             </div>
 
             <div class="hud-card hud-right-passes mono">
@@ -334,49 +256,103 @@
         </section>
 
         <section class="bottom-dock">
+            <!-- LEFT PANEL: Combined Local GNSS DB & Fleet Status -->
             <div class="glass-panel">
                 <div class="panel-title">
-                    <span id="fleet-title-text">🛰️ ဂြိုဟ်တုများ တည်ရှိမှု (Fleet Status)</span>
-                    <span class="mono" style="color:var(--accent-cyan); font-size:8.5px;">SGP4 LIVE</span>
+                    <span id="fleet-title-text">🗄️ Local GNSS DB & Fleet Status</span>
+                    <span class="mono" style="color:var(--accent-green); font-size:9.5px;">● 1,420 LOGS SYNCED</span>
                 </div>
                 <div class="dop-grid mono" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 8px;">
-                    <div class="dop-card"><div style="font-size:7.5px; color:var(--text-muted);">စုစုပေါင်း</div><div class="dop-val" style="color:#f8fafc;" id="total-sats">0</div></div>
-                    <div class="dop-card"><div style="font-size:7.5px; color:var(--text-muted);">ပုံမှန်</div><div class="dop-val" style="color:var(--accent-green);" id="active-sats">0</div></div>
-                    <div class="dop-card"><div style="font-size:7.5px; color:var(--text-muted);">သတိပေး</div><div class="dop-val" style="color:var(--accent-yellow);">2</div></div>
-                    <div class="dop-card"><div style="font-size:7.5px; color:var(--text-muted);">ရပ်နား</div><div class="dop-val" style="color:var(--accent-red);">1</div></div>
+                    <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">စုစုပေါင်း</div><div class="dop-val" style="color:#f8fafc;" id="total-sats">0</div></div>
+                    <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">ပုံမှန်</div><div class="dop-val" style="color:var(--accent-green);" id="active-sats">0</div></div>
+                    <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">သတိပေး</div><div class="dop-val" style="color:var(--accent-yellow);">2</div></div>
+                    <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">ရပ်နား</div><div class="dop-val" style="color:var(--accent-red);">1</div></div>
                 </div>
                 <div class="chart-box"><canvas id="fleetBlockChart"></canvas></div>
             </div>
 
-            <div class="glass-panel">
-                <div class="panel-title">
-                    <span>🗄️ Local GNSS Database (SQLite 3 Stream)</span>
-                    <span class="mono" style="color:var(--accent-green); font-size:8.5px;">● 1,420 LOGS SYNCED</span>
+            <!-- MIDDLE PANEL: Myanmar Local Metrics (Moved from Top-Left) -->
+            <div class="glass-panel mono">
+                <div class="panel-title" style="justify-content: center; border-bottom: none; padding-bottom: 0;">
+                    <select id="matrix-sys-a" class="matrix-select" onchange="renderCustomSelection()">
+                        <option value="gps" selected>🇺🇸 GPS</option>
+                        <option value="bds">🇨🇳 BEIDOU</option>
+                        <option value="galileo">🇪🇺 GALILEO</option>
+                        <option value="glonass">🇷🇺 GLONASS</option>
+                    </select>
+                    
+                    <span style="color:var(--accent-cyan); font-size:11px; margin: 0 15px;" id="matrix-card-title">📊 MYANMAR LOCAL METRICS</span>
+                    
+                    <select id="matrix-sys-b" class="matrix-select" onchange="renderCustomSelection()">
+                        <option value="gps">🇺🇸 GPS</option>
+                        <option value="bds" selected>🇨🇳 BEIDOU</option>
+                        <option value="galileo">🇪🇺 GALILEO</option>
+                        <option value="glonass">🇷🇺 GLONASS</option>
+                    </select>
                 </div>
-                <div style="flex:1; overflow-y:auto;">
-                    <table class="cyber-table mono">
-                        <thead>
-                            <tr><th>NAME / ID</th><th>CONSTELLATION</th><th>ELEVATION</th><th>AZIMUTH</th><th>STATUS</th></tr>
-                        </thead>
-                        <tbody id="sat-table-body"></tbody>
-                    </table>
+
+                <div style="display:grid; grid-template-columns:1fr 80px 1fr; align-items:center; text-align:center; margin-bottom:12px; margin-top:8px;">
+                    <b style="color:#10b981; font-size:16px;" id="sys-a-count">11 SATS</b>
+                    <span style="font-size:9px; color:var(--text-muted);" id="fleet-type-label">VISIBLE</span>
+                    <b style="color:#ef4444; font-size:16px;" id="sys-b-count">19 SATS</b>
+                </div>
+
+                <div style="margin-bottom:10px;">
+                    <div style="display:flex; justify-content:space-between; font-size:9.5px; font-weight:700; margin-bottom:4px;">
+                        <span style="color:#10b981;" id="sys-a-vis-text">SYS-A: 35%</span>
+                        <span style="color:var(--text-muted);">VISIBILITY</span>
+                        <span style="color:#ef4444;" id="sys-b-vis-text">SYS-B: 65%</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                        <div class="bar-container"><div class="bar-fill fill-gps" id="sys-a-vis-bar" style="width:35%;"></div></div>
+                        <div class="bar-container"><div class="bar-fill fill-bds" id="sys-b-vis-bar" style="width:65%; margin-left:auto;"></div></div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:10px;">
+                    <div style="display:flex; justify-content:space-between; font-size:9.5px; font-weight:700; margin-bottom:4px;">
+                        <span style="color:#10b981;" id="sys-a-cn0-text">42 dB-Hz</span>
+                        <span style="color:var(--text-muted);">SIGNAL C/N0</span>
+                        <span style="color:#ef4444;" id="sys-b-cn0-text">46 dB-Hz</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                        <div class="bar-container"><div class="bar-fill fill-gps" style="width:75%;"></div></div>
+                        <div class="bar-container"><div class="bar-fill fill-bds" style="width:88%; margin-left:auto;"></div></div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:8px;">
+                    <div style="display:flex; justify-content:space-between; font-size:9.5px; font-weight:700; margin-bottom:4px;">
+                        <span style="color:#10b981;" id="sys-a-pdop-text">PDOP: 2.1</span>
+                        <span style="color:var(--text-muted);">ACCURACY</span>
+                        <span style="color:#ef4444;" id="sys-b-pdop-text">PDOP: 1.2</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                        <div class="bar-container"><div class="bar-fill fill-gps" style="width:60%;"></div></div>
+                        <div class="bar-container"><div class="bar-fill fill-bds" style="width:90%; margin-left:auto;"></div></div>
+                    </div>
+                </div>
+
+                <div style="background:rgba(2, 6, 23, 0.8); padding:6px 8px; border-radius:3px; border:1px solid var(--panel-border); text-align:center; margin-top:auto;">
+                    <span style="font-size:9.5px; color:var(--accent-green); font-weight:700;" id="combined-pdop-label">✨ COMBINED MULTI-GNSS PDOP: 0.85 (SUB-CENTIMETER RTK)</span>
                 </div>
             </div>
 
+            <!-- RIGHT PANEL: DOP & RINEX Analysis -->
             <div class="glass-panel">
                 <div class="panel-title">
                     <span id="chart-panel-title">🎯 တည်နေရာ တိကျမှု (DOP) & RINEX Analysis</span>
                 </div>
-                <div class="dop-grid mono" style="margin-bottom:8px;">
+                <div class="dop-grid mono" style="grid-template-columns: repeat(3, 1fr); margin-bottom:8px;">
                     <div class="dop-card"><div style="font-size:7.5px; color:var(--text-muted);">PDOP</div><div class="dop-val" style="color:var(--accent-cyan);" id="pdop-val">1.67</div></div>
                     <div class="dop-card"><div style="font-size:7.5px; color:var(--text-muted);">HDOP</div><div class="dop-val" style="color:var(--accent-green);" id="hdop-val">0.81</div></div>
                     <div class="dop-card"><div style="font-size:6.5px; color:var(--text-muted);">VDOP</div><div class="dop-val" style="color:var(--accent-yellow);" id="vdop-val">1.46</div></div>
                 </div>
-                <div class="upload-box mono" style="margin-bottom:8px;">
+                <div class="upload-box mono">
                     <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" style="font-size:8.5px; color:var(--text-muted); width:140px;">
                     <button onclick="uploadAndCompare()" class="upload-btn">🚀 ANALYZE RINEX</button>
                 </div>
-                <div class="chart-box"><canvas id="waveformChart"></canvas></div>
+                <div class="chart-box" style="margin-top:12px;"><canvas id="waveformChart"></canvas></div>
             </div>
         </section>
 
@@ -387,7 +363,7 @@
         let selectedSatId = '';
         let fleetChart = null, waveformChart = null;
         let myGlobe = null;
-        let modes = { stations: false, tracks: true, heatmap: false };
+        let modes = { stations: false, tracks: true };
 
         let TLE_DATABASE = {};
         let CONSTELLATION_SATS = { gps: [], bds: [], galileo: [], glonass: [], other: [], all: [] };
@@ -400,14 +376,6 @@
             { lat: 21.9588, lng: 96.0891, name: '📡 CORS Mandalay North Station', color: '#ffb700', size: 3.0 },
             { lat: 20.7831, lng: 97.0381, name: '📡 CORS Taunggyi East Station', color: '#ffb700', size: 3.0 },
             { lat: 12.4707, lng: 98.6003, name: '📡 CORS Myeik South Station', color: '#ffb700', size: 3.0 }
-        ];
-
-        const TEC_IONOSPHERE_DATA = [
-            { lat: 16.8, lng: 96.1, size: 4.5, color: 'rgba(245, 158, 11, 0.45)' },
-            { lat: 19.7, lng: 96.0, size: 5.0, color: 'rgba(239, 68, 68, 0.4)' },
-            { lat: 21.9, lng: 96.1, size: 4.2, color: 'rgba(56, 189, 248, 0.35)' },
-            { lat: 12.4, lng: 98.6, size: 5.5, color: 'rgba(239, 68, 68, 0.5)' },
-            { lat: 25.3, lng: 97.3, size: 3.8, color: 'rgba(245, 158, 11, 0.35)' }
         ];
 
         function openTLEModal() { document.getElementById('tleModal').style.display = 'block'; }
@@ -533,7 +501,6 @@
         function useFallbackData() {
             let fallbackList = generateHighDensityFallbackList();
             categorizeSatsList(fallbackList);
-            document.getElementById('tle-status-badge').innerText = `FULL FLEET SIMULATOR (${fallbackList.length} SATS)`;
         }
 
         function toggleSystemFilter(sys, btn) {
@@ -600,7 +567,7 @@
             
             document.getElementById('fleet-title-text').innerText = isMyanmarOnlyMode 
                 ? '🇲🇲 မြန်မာနိုင်ငံမှ မိနိုင်သော ဂြိုဟ်တုများ (Myanmar Visible Fleet)' 
-                : '🛰️ ဂြိုဟ်တုများ တည်ရှိမှု (Fleet Status)';
+                : '🗄️ Local GNSS DB & Fleet Status';
 
             const sysA = document.getElementById('matrix-sys-a').value;
             const sysB = document.getElementById('matrix-sys-b').value;
@@ -628,19 +595,6 @@
                 dropdownModal.innerHTML = currentLiveSatObjects.map(s => `<option value="${s.id}">${s.fullName.substring(0, 22)} (${s.id})</option>`).join('');
             }
 
-            const tbody = document.getElementById('sat-table-body');
-            tbody.innerHTML = currentLiveSatObjects.map(s => {
-                let cColor = getSatColor(s.fullName);
-                return `
-                <tr data-id="${s.id}">
-                    <td><b style="color:${cColor};">${s.fullName.substring(0, 18)}</b></td>
-                    <td>${s.fullName.split(' ')[0]}</td>
-                    <td>75°</td><td>45°</td>
-                    <td><span class="status-pill pill-green">SGP4 TRACKING</span></td>
-                </tr>
-            `;}).join('');
-
-            // Clean 3D Sphere Object Mapping with Uniform Radius
             if (myGlobe) {
                 myGlobe.objectsData(currentLiveSatObjects);
             }
@@ -693,17 +647,7 @@
             if (feature === 'stations') {
                 if (modes.stations) {
                     myGlobe.ringsData(CORS_STATIONS_DATA).ringColor(d => d.color).ringMaxRadius(d => d.size).ringPropagationSpeed(2.5).ringRepeatPeriod(800);
-                } else if (!modes.heatmap) { myGlobe.ringsData([]); }
-            }
-
-            if (feature === 'heatmap') {
-                if (modes.heatmap) {
-                    myGlobe.atmosphereColor('#f59e0b').atmosphereAltitude(0.35);
-                    myGlobe.ringsData(TEC_IONOSPHERE_DATA).ringColor(d => d.color).ringMaxRadius(d => d.size).ringPropagationSpeed(1.8).ringRepeatPeriod(1000);
-                } else {
-                    myGlobe.atmosphereColor('#38bdf8').atmosphereAltitude(0.22);
-                    myGlobe.ringsData(modes.stations ? CORS_STATIONS_DATA : []);
-                }
+                } else { myGlobe.ringsData([]); }
             }
 
             if (feature === 'tracks') updateTargetOrbitPath(selectedSatId);
@@ -723,10 +667,10 @@
             const modalTleDisplay = document.getElementById('tle-display-modal');
             if (modalTleDisplay) modalTleDisplay.innerHTML = `${sat.line1}<br>${sat.line2}`;
 
-            document.querySelectorAll('#sat-table-body tr').forEach(row => {
-                if (row.getAttribute('data-id') === id) row.classList.add('table-row-selected');
-                else row.classList.remove('table-row-selected');
-            });
+            if (myGlobe) {
+                // Re-render objects to update the target highlight
+                myGlobe.objectsData(currentLiveSatObjects);
+            }
 
             updateTargetOrbitPath(id);
         }
@@ -782,13 +726,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const tbody = document.getElementById('sat-table-body');
-            if (tbody) {
-                tbody.addEventListener('click', (e) => {
-                    const row = e.target.closest('tr');
-                    if (row && row.getAttribute('data-id')) selectSatellite(row.getAttribute('data-id'));
-                });
-            }
             loadCelesTrakTLEs();
         });
 
@@ -829,7 +766,7 @@
                     .objectAltitude('alt')
                     .objectThreeObject(d => {
                         const isTarget = d.id === selectedSatId;
-                        // Uniform Fixed-Size Spheres (Radius = 1.2 for all)
+                        // Uniform Fixed-Size Spheres for all satellites
                         const geom = new THREE.SphereGeometry(1.2, 10, 10);
                         const mat = new THREE.MeshBasicMaterial({ color: isTarget ? '#ffffff' : (d.color || '#38bdf8') });
                         return new THREE.Mesh(geom, mat);
