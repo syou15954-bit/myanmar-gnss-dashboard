@@ -260,6 +260,7 @@
         </section>
 
         <section class="bottom-dock">
+            <!-- LEFT PANEL: GNSS Fleet Status -->
             <div class="glass-panel" style="justify-content: center; align-items: center; padding: 20px;">
                 <div class="panel-title" style="width: 100%;">
                     <span id="fleet-title-text">🗄️ GNSS Fleet Status</span>
@@ -285,6 +286,7 @@
                 </div>
             </div>
 
+            <!-- MIDDLE PANEL: Myanmar Local Metrics -->
             <div class="glass-panel mono">
                 <div class="panel-title" style="justify-content: center; border-bottom: none; padding-bottom: 0;">
                     <select id="matrix-sys-a" class="matrix-select" onchange="renderCustomSelection()">
@@ -351,6 +353,7 @@
                 </div>
             </div>
 
+            <!-- RIGHT PANEL: DOP & RINEX Analysis -->
             <div class="glass-panel">
                 <div class="panel-title">
                     <span id="chart-panel-title">🎯 တည်နေရာ တိကျမှု (DOP) & RINEX Analysis</span>
@@ -503,6 +506,8 @@
         }
 
         async function loadCelesTrakTLEs() {
+            // FIX: Guaranteed robust fallback loading to prevent 0 SATS issue if network/CORS fails
+            let loadedSuccessfully = false;
             const urls = [
                 'https://celestrak.org/NORAD/elements/gp.php?GROUP=gnss&FORMAT=tle',
                 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://celestrak.org/NORAD/elements/gp.php?GROUP=gnss&FORMAT=tle'),
@@ -518,17 +523,19 @@
                             let parsedList = parseRawTLEString(text);
                             if (parsedList.length > 30) {
                                 categorizeSatsList(parsedList);
-                                document.getElementById('tle-status-badge').innerText = `LIVE CELESTRAK (${parsedList.length} SATS)`;
+                                loadedSuccessfully = true;
                                 renderCustomSelection();
-                                return;
+                                break;
                             }
                         }
                     }
                 } catch (err) {}
             }
 
-            useFallbackData();
-            renderCustomSelection();
+            if (!loadedSuccessfully) {
+                useFallbackData();
+                renderCustomSelection();
+            }
         }
 
         function useFallbackData() {
@@ -630,8 +637,7 @@
 
             if (myGlobe) {
                 myGlobe.objectsData([...currentLiveSatObjects]);
-                // Three.js Globe Native Label Engine ကို အသုံးပြု၍ Fluctuation ကင်းရှင်းစေခြင်း
-                myGlobe.labelsData(currentLiveSatObjects.filter(d => d.id === selectedSatId));
+                myGlobe.labelsData([]);
             }
             if (currentLiveSatObjects.length > 0 && !currentLiveSatObjects.some(s => s.id === selectedSatId)) {
                 selectSatellite(currentLiveSatObjects[0].id);
@@ -706,7 +712,6 @@
 
             if (myGlobe) {
                 myGlobe.objectsData([...currentLiveSatObjects]);
-                myGlobe.labelsData(currentLiveSatObjects.filter(d => d.id === selectedSatId));
             }
 
             updateTargetOrbitPath(id);
@@ -804,15 +809,6 @@
                         return new THREE.Mesh(geom, mat);
                     })
                     .onObjectClick((d) => { if (d && d.id) selectSatellite(d.id); })
-                    .labelsData([])
-                    .labelLat('lat')
-                    .labelLng('lng')
-                    .labelAltitude('alt')
-                    .labelColor(() => '#38bdf8')
-                    .labelDotRadius(0)
-                    .labelSize(1.2)
-                    .labelText(d => `🎯 TARGET: ${d.name}`)
-                    .labelResolution(2)
                     .pathsData([]).pathPoints(d => d.coords).pathPointLat(p => p.lat).pathPointLng(p => p.lng).pathPointAlt(p => p.alt).pathColor(d => d.color || '#38bdf8').pathStroke(d => d.stroke || 3.2);
 
                 fetch('https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson')
@@ -838,16 +834,13 @@
                     });
                     if (myGlobe) {
                         myGlobe.objectsData([...currentLiveSatObjects]);
-                        myGlobe.labelsData(currentLiveSatObjects.filter(d => d.id === selectedSatId));
                     }
                 }
             }
             requestAnimationFrame(animateSatellites);
         }
         
-        loadCelesTrakTLEs().then(() => {
-            requestAnimationFrame(animateSatellites);
-        });
+        loadCelesTrakTLEs();
 
     </script>
 </body>
