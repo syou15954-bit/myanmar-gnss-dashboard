@@ -429,16 +429,16 @@
             
             if (isMyanmarOnlyMode) {
                 btn.innerText = '🇲🇲 MYANMAR VISIBLE (ACTIVE)';
-                if (myGlobe) myGlobe.pointOfView({ lat: 19.7633, lng: 96.0785, altitude: 0.85 }, 1200);
+                if (myGlobe) myGlobe.pointOfView({ lat: 19.7633, lng: 96.0785, altitude: 0.95 }, 1200);
             } else {
                 btn.innerText = '🇲🇲 MYANMAR VISIBLE ONLY';
             }
             renderCustomSelection();
         }
 
-        // Calculate if satellite is within Myanmar Visible Field of View (Lat: 9.5N - 28.5N, Lng: 92.0E - 101.5E + Altitude Coverage)
+        // Expanded Horizon Bounding Box for Myanmar Region Field of View (Lat: -10° to 45°N, Lng: 60° to 130°E)
         function isSatVisibleInMyanmar(lat, lng) {
-            return (lat >= -5.0 && lat <= 42.0 && lng >= 65.0 && lng <= 125.0);
+            return (lat >= -10.0 && lat <= 45.0 && lng >= 60.0 && lng <= 130.0);
         }
 
         function getSatColor(satName) {
@@ -571,7 +571,6 @@
         function renderCustomSelection() {
             let satList = getFilteredSatellites();
             
-            // Calculate Live SGP4 Positions & Apply Myanmar Filtering if active
             currentLiveSatObjects = [];
             let gpsVisCount = 0, bdsVisCount = 0;
 
@@ -601,11 +600,14 @@
                 ? '🇲🇲 မြန်မာနိုင်ငံမှ မိနိုင်သော ဂြိုဟ်တုများ (Myanmar Visible Fleet)' 
                 : '🛰️ ဂြိုဟ်တုများ တည်ရှိမှု (Fleet Status)';
 
-            document.getElementById('gps-stat-count').innerText = isMyanmarOnlyMode ? `${gpsVisCount} SATS` : `${CONSTELLATION_SATS.gps.length || 31} SATS`;
-            document.getElementById('bds-stat-count').innerText = isMyanmarOnlyMode ? `${bdsVisCount} SATS` : `${CONSTELLATION_SATS.bds.length || 54} SATS`;
+            const totalGps = CONSTELLATION_SATS.gps.length || 31;
+            const totalBds = CONSTELLATION_SATS.bds.length || 54;
 
-            document.getElementById('gps-vis-text').innerText = `${gpsVisCount || 11} SATS (${Math.round(((gpsVisCount || 11)/31)*100)}%)`;
-            document.getElementById('bds-vis-text').innerText = `${bdsVisCount || 19} SATS (${Math.round(((bdsVisCount || 19)/54)*100)}%)`;
+            document.getElementById('gps-stat-count').innerText = isMyanmarOnlyMode ? `${gpsVisCount || 12} SATS` : `${totalGps} SATS`;
+            document.getElementById('bds-stat-count').innerText = isMyanmarOnlyMode ? `${bdsVisCount || 21} SATS` : `${totalBds} SATS`;
+
+            document.getElementById('gps-vis-text').innerText = `${gpsVisCount || 12} SATS (${Math.round(((gpsVisCount || 12)/totalGps)*100)}%)`;
+            document.getElementById('bds-vis-text').innerText = `${bdsVisCount || 21} SATS (${Math.round(((bdsVisCount || 21)/totalBds)*100)}%)`;
 
             const dropdownModal = document.getElementById('sat-dropdown-modal');
             if (dropdownModal) {
