@@ -151,7 +151,7 @@
         .fill-gps { background: linear-gradient(90deg, #059669, #10b981); box-shadow: 0 0 8px #10b981; }
         .fill-bds { background: linear-gradient(90deg, #dc2626, #ef4444); box-shadow: 0 0 8px #ef4444; }
 
-        .bottom-dock { flex: 1; display: grid; grid-template-columns: 320px 1fr 360px; gap: 8px; min-height: 0; }
+        .bottom-dock { flex: 1; display: grid; grid-template-columns: 350px 1fr 340px; gap: 8px; min-height: 0; }
 
         .glass-panel {
             background: var(--panel-bg); border: 1px solid var(--panel-border); backdrop-filter: blur(12px);
@@ -163,6 +163,16 @@
             justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(56, 189, 248, 0.15);
             padding-bottom: 6px; flex-shrink: 0;
         }
+
+        .cyber-table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 0; }
+        .cyber-table th { text-align: left; color: var(--text-muted); padding: 5px 4px; border-bottom: 1px solid var(--panel-border); font-size: 9px; position: sticky; top: 0; background: rgba(2, 6, 23, 0.95); z-index: 5; }
+        .cyber-table td { padding: 5px 4px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #cbd5e1; }
+        .cyber-table tr { cursor: pointer; transition: background 0.15s; }
+        .cyber-table tr:hover { background: rgba(56, 189, 248, 0.08); }
+        .table-row-selected { background: rgba(56, 189, 248, 0.18) !important; border-left: 3px solid var(--accent-cyan) !important; }
+
+        .status-pill { padding: 2px 6px; border-radius: 3px; font-size: 8px; font-weight: 700; }
+        .pill-green { background: rgba(16, 185, 129, 0.12); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.4); }
 
         .chart-box { position: relative; flex: 1; width: 100%; min-height: 0; margin-top: 8px; }
         .chart-box canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
@@ -256,8 +266,8 @@
         </section>
 
         <section class="bottom-dock">
-            <!-- LEFT PANEL: Combined Local GNSS DB & Fleet Status -->
-            <div class="glass-panel">
+            <!-- LEFT PANEL: Combined Local GNSS DB Table & Fleet Status -->
+            <div class="glass-panel" style="padding-bottom: 0;">
                 <div class="panel-title">
                     <span id="fleet-title-text">🗄️ Local GNSS DB & Fleet Status</span>
                     <span class="mono" style="color:var(--accent-green); font-size:9.5px;">● 1,420 LOGS SYNCED</span>
@@ -268,10 +278,19 @@
                     <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">သတိပေး</div><div class="dop-val" style="color:var(--accent-yellow);">2</div></div>
                     <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">ရပ်နား</div><div class="dop-val" style="color:var(--accent-red);">1</div></div>
                 </div>
-                <div class="chart-box"><canvas id="fleetBlockChart"></canvas></div>
+                
+                <!-- SQL TABLE -->
+                <div style="flex:1; overflow-y:auto; margin-top: 4px; border: 1px solid var(--panel-border); border-radius: 4px; border-bottom: none;">
+                    <table class="cyber-table mono">
+                        <thead>
+                            <tr><th>NAME / ID</th><th>SYS</th><th>EL</th><th>AZ</th><th>STATUS</th></tr>
+                        </thead>
+                        <tbody id="sat-table-body"></tbody>
+                    </table>
+                </div>
             </div>
 
-            <!-- MIDDLE PANEL: Myanmar Local Metrics (Moved from Top-Left) -->
+            <!-- MIDDLE PANEL: Myanmar Local Metrics -->
             <div class="glass-panel mono">
                 <div class="panel-title" style="justify-content: center; border-bottom: none; padding-bottom: 0;">
                     <select id="matrix-sys-a" class="matrix-select" onchange="renderCustomSelection()">
@@ -361,7 +380,7 @@
     <script>
         let isMyanmarOnlyMode = false;
         let selectedSatId = '';
-        let fleetChart = null, waveformChart = null;
+        let waveformChart = null;
         let myGlobe = null;
         let modes = { stations: false, tracks: true };
 
@@ -595,6 +614,21 @@
                 dropdownModal.innerHTML = currentLiveSatObjects.map(s => `<option value="${s.id}">${s.fullName.substring(0, 22)} (${s.id})</option>`).join('');
             }
 
+            const tbody = document.getElementById('sat-table-body');
+            if (tbody) {
+                tbody.innerHTML = currentLiveSatObjects.map(s => {
+                    let cColor = getSatColor(s.fullName);
+                    let sysName = s.fullName.split(' ')[0];
+                    return `
+                    <tr data-id="${s.id}">
+                        <td><b style="color:${cColor};">${s.fullName.substring(0, 16)}</b></td>
+                        <td>${sysName}</td>
+                        <td>75°</td><td>45°</td>
+                        <td><span class="status-pill pill-green">TRACK</span></td>
+                    </tr>
+                `;}).join('');
+            }
+
             if (myGlobe) {
                 myGlobe.objectsData(currentLiveSatObjects);
             }
@@ -667,8 +701,12 @@
             const modalTleDisplay = document.getElementById('tle-display-modal');
             if (modalTleDisplay) modalTleDisplay.innerHTML = `${sat.line1}<br>${sat.line2}`;
 
+            document.querySelectorAll('#sat-table-body tr').forEach(row => {
+                if (row.getAttribute('data-id') === id) row.classList.add('table-row-selected');
+                else row.classList.remove('table-row-selected');
+            });
+
             if (myGlobe) {
-                // Re-render objects to update the target highlight
                 myGlobe.objectsData(currentLiveSatObjects);
             }
 
@@ -726,6 +764,13 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            const tbody = document.getElementById('sat-table-body');
+            if (tbody) {
+                tbody.addEventListener('click', (e) => {
+                    const row = e.target.closest('tr');
+                    if (row && row.getAttribute('data-id')) selectSatellite(row.getAttribute('data-id'));
+                });
+            }
             loadCelesTrakTLEs();
         });
 
@@ -766,7 +811,6 @@
                     .objectAltitude('alt')
                     .objectThreeObject(d => {
                         const isTarget = d.id === selectedSatId;
-                        // Uniform Fixed-Size Spheres for all satellites
                         const geom = new THREE.SphereGeometry(1.2, 10, 10);
                         const mat = new THREE.MeshBasicMaterial({ color: isTarget ? '#ffffff' : (d.color || '#38bdf8') });
                         return new THREE.Mesh(geom, mat);
@@ -801,18 +845,6 @@
         }
         requestAnimationFrame(animateSatellites);
 
-        function initCharts() {
-            if (typeof Chart === 'undefined') return;
-            const fc = document.getElementById('fleetBlockChart');
-            if (fc) {
-                fleetChart = new Chart(fc.getContext('2d'), {
-                    type: 'bar',
-                    data: { labels: ['Blk I', 'Blk II', 'Blk III', 'Blk IV'], datasets: [{ label: 'Sats', data: [12, 8, 7, 4], backgroundColor: ['#38bdf8', '#818cf8', '#c084fc', '#34d399'], borderRadius: 3 }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 8 } } }, y: { grid: { color: 'rgba(56, 189, 248, 0.1)' }, ticks: { color: '#94a3b8', font: { size: 8 } } } } }
-                });
-            }
-        }
-        if (document.readyState === 'complete' || document.readyState === 'active') { setTimeout(initCharts, 150); } else { document.addEventListener('DOMContentLoaded', () => setTimeout(initCharts, 150)); }
     </script>
 </body>
 </html>
