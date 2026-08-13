@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GNSS Tactical Mission Control Center</title>
-    <!-- Aerospace Libraries -->
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/globe.gl"></script>
     <script src="https://cdn.jsdelivr.net/npm/satellite.js@4.1.3/dist/satellite.min.js"></script>
@@ -68,99 +68,74 @@
         .nav-tab-btn:hover { color: #fff; background: rgba(56, 189, 248, 0.1); }
         .nav-tab-btn.active { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border-color: var(--accent-cyan); box-shadow: 0 0 10px rgba(56, 189, 248, 0.25); }
 
-        .nav-tab-btn.toggle-on[data-sys="gps"] { background: rgba(16, 185, 129, 0.25); color: #10b981; border-color: #10b981; }
-        .nav-tab-btn.toggle-on[data-sys="bds"] { background: rgba(239, 68, 68, 0.25); color: #ef4444; border-color: #ef4444; }
-        .nav-tab-btn.toggle-on[data-sys="galileo"] { background: rgba(56, 189, 248, 0.25); color: #38bdf8; border-color: #38bdf8; }
-        .nav-tab-btn.toggle-on[data-sys="glonass"] { background: rgba(192, 132, 252, 0.25); color: #c084fc; border-color: #c084fc; }
-        .nav-tab-btn.toggle-on[data-sys="other"] { background: rgba(245, 158, 11, 0.25); color: #f59e0b; border-color: #f59e0b; }
+        .view-switch-btn {
+            background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan); border: 1px solid var(--accent-cyan);
+            padding: 4px 12px; border-radius: 4px; font-size: 10.5px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+        }
+        .view-switch-btn:hover { background: rgba(56, 189, 248, 0.35); }
 
         .brand-title-box {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            font-weight: 700;
-            font-size: 14px;
-            color: var(--text-main);
-            letter-spacing: 1px;
-            text-transform: uppercase;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            font-weight: 700; font-size: 14px; color: var(--text-main); letter-spacing: 1px; text-transform: uppercase;
         }
         .brand-dot { width: 8px; height: 8px; background: var(--accent-cyan); border-radius: 50%; box-shadow: 0 0 10px var(--accent-cyan); }
 
         .country-legend {
-            display: flex;
-            gap: 12px;
-            font-size: 9.5px;
-            background: rgba(2, 6, 23, 0.6);
-            padding: 4px 10px;
-            border-radius: 4px;
-            border: 1px solid var(--panel-border);
+            display: flex; gap: 12px; font-size: 9.5px; background: rgba(2, 6, 23, 0.6);
+            padding: 4px 10px; border-radius: 4px; border: 1px solid var(--panel-border);
         }
         .legend-item { display: flex; align-items: center; gap: 5px; color: var(--text-muted); }
         .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
 
         .viewport-main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            min-height: 0;
-            position: relative;
+            flex: 1; display: flex; flex-direction: column; gap: 8px; min-height: 0; position: relative;
         }
 
         .globe-stage {
-            flex: 1.8;
-            position: relative;
-            background: var(--panel-bg);
-            border: 1px solid var(--panel-border);
-            border-radius: 6px;
-            overflow: hidden;
-            min-height: 0;
+            flex: 1.8; position: relative; background: var(--panel-bg); border: 1px solid var(--panel-border);
+            border-radius: 6px; overflow: hidden; min-height: 0;
         }
 
         #globeViz { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
 
+        /* Analytics Mode Grid Overlay */
+        #analyticsStage {
+            display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 50;
+            background: var(--bg-dark); padding: 12px; gap: 10px; flex-direction: column; overflow-y: auto;
+        }
+
+        .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .analytics-card {
+            background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 6px; padding: 12px;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+
+        .analytics-card-title {
+            font-size: 12px; font-weight: 700; border-bottom: 1px solid var(--panel-border); padding-bottom: 6px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
         .center-feature-bar {
-            position: absolute;
-            bottom: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 15;
-            display: flex;
-            gap: 10px;
-            background: rgba(15, 23, 42, 0.92);
-            padding: 5px 14px;
-            border-radius: 6px;
-            border: 1px solid var(--panel-border);
-            backdrop-filter: blur(12px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 15;
+            display: flex; gap: 10px; background: rgba(15, 23, 42, 0.92); padding: 5px 14px;
+            border-radius: 6px; border: 1px solid var(--panel-border); backdrop-filter: blur(12px);
         }
 
         .feature-btn {
-            background: rgba(2, 6, 23, 0.5);
-            color: var(--text-muted);
-            border: 1px solid rgba(56, 189, 248, 0.2);
-            padding: 4px 12px;
-            border-radius: 3px;
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
+            background: rgba(2, 6, 23, 0.5); color: var(--text-muted); border: 1px solid rgba(56, 189, 248, 0.2);
+            padding: 4px 12px; border-radius: 3px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s;
         }
         .feature-btn:hover { color: #fff; border-color: var(--accent-cyan); }
-        .feature-btn.active-mode { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border-color: var(--accent-cyan); box-shadow: 0 0 10px rgba(56, 189, 248, 0.25); }
+        .feature-btn.active-mode { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border-color: var(--accent-cyan); }
 
         .hud-card {
-            position: absolute; z-index: 10;
-            background: rgba(15, 23, 42, 0.92); border: 1px solid var(--panel-border);
-            backdrop-filter: blur(12px); border-radius: 6px; padding: 10px 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            position: absolute; z-index: 10; background: rgba(15, 23, 42, 0.92); border: 1px solid var(--panel-border);
+            backdrop-filter: blur(12px); border-radius: 6px; padding: 10px 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
 
         .hud-card-title {
-            font-size: 10px; font-weight: 700; color: var(--accent-cyan);
-            letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;
-            display: flex; justify-content: space-between; align-items: center;
+            font-size: 10px; font-weight: 700; color: var(--accent-cyan); letter-spacing: 1px; text-transform: uppercase;
+            margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid rgba(56, 189, 248, 0.15); padding-bottom: 4px;
         }
 
@@ -169,83 +144,40 @@
         .hud-right-info { bottom: 50px; right: 12px; width: 260px; }
 
         .tle-box {
-            background: rgba(2, 6, 23, 0.8); border: 1px solid rgba(56, 189, 248, 0.2);
-            padding: 6px; font-size: 9px; color: var(--accent-cyan); word-break: break-all;
-            line-height: 1.35; border-radius: 4px; margin-top: 4px; max-height: 70px; overflow-y: auto;
+            background: rgba(2, 6, 23, 0.8); border: 1px solid rgba(56, 189, 248, 0.2); padding: 6px; font-size: 9px;
+            color: var(--accent-cyan); word-break: break-all; line-height: 1.35; border-radius: 4px; margin-top: 4px;
+            max-height: 70px; overflow-y: auto;
         }
 
         .hud-stat-line { display: flex; justify-content: space-between; align-items: center; font-size: 10px; margin-bottom: 4px; color: var(--text-muted); }
         .hud-stat-val { font-weight: 700; color: var(--text-main); }
 
-        /* Space Satellites Marker */
         .sat-marker { 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             cursor: pointer; transform: translate(-50%, -50%); z-index: 30; pointer-events: auto;
             width: 32px; height: 32px; border-radius: 50%; background: transparent;
         }
-        .sat-icon-emoji {
-            font-size: 11px; filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.8));
-            transition: transform 0.15s ease-in-out;
-        }
-        .sat-marker:hover .sat-icon-emoji {
-            transform: scale(1.6);
-        }
+        .sat-icon-emoji { font-size: 11px; filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.8)); transition: transform 0.15s ease-in-out; }
+        .sat-marker:hover .sat-icon-emoji { transform: scale(1.6); }
+
         .sat-tag-hover { 
-            display: none;
-            position: absolute; top: 32px;
-            font-size: 8.5px; font-family: 'JetBrains Mono', monospace; 
-            background: rgba(2, 6, 23, 0.95); padding: 2px 6px; border-radius: 3px; 
-            white-space: nowrap; font-weight: 700; pointer-events: none;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 40;
+            display: none; position: absolute; top: 32px; font-size: 8.5px; font-family: 'JetBrains Mono', monospace; 
+            background: rgba(2, 6, 23, 0.95); padding: 2px 6px; border-radius: 3px; white-space: nowrap; font-weight: 700;
+            pointer-events: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 40;
         }
-        .sat-marker:hover .sat-tag-hover, .sat-tag-hover.target-active {
-            display: block !important;
-        }
+        .sat-marker:hover .sat-tag-hover, .sat-tag-hover.target-active { display: block !important; }
 
-        .target-active {
-            background: rgba(56, 189, 248, 0.35) !important;
-            color: #ffffff !important;
-            border: 1.5px solid var(--accent-cyan) !important;
-            box-shadow: 0 0 12px var(--accent-cyan) !important;
-        }
-
-        /* Distinct Ground CORS Station Marker in Neon Amber Gold */
-        .cors-ground-tag {
-            display: flex; align-items: center; gap: 4px;
-            background: rgba(255, 183, 0, 0.2);
-            border: 1.5px solid var(--accent-yellow);
-            color: var(--accent-yellow);
-            padding: 2px 6px; border-radius: 3px;
-            font-size: 8.5px; font-family: 'JetBrains Mono', monospace; font-weight: 700;
-            box-shadow: 0 0 12px rgba(255, 183, 0, 0.4);
-            transform: translate(-50%, -100%);
-            white-space: nowrap; pointer-events: none;
-        }
-
-        .bottom-dock {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 320px 1fr 360px;
-            gap: 8px;
-            min-height: 0;
-        }
+        .bottom-dock { flex: 1; display: grid; grid-template-columns: 320px 1fr 360px; gap: 8px; min-height: 0; }
 
         .glass-panel {
-            background: var(--panel-bg);
-            border: 1px solid var(--panel-border);
-            backdrop-filter: blur(12px);
-            border-radius: 6px;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            background: var(--panel-bg); border: 1px solid var(--panel-border); backdrop-filter: blur(12px);
+            border-radius: 6px; padding: 10px; display: flex; flex-direction: column; min-height: 0; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
         .panel-title {
-            font-size: 11px; font-weight: 700; color: var(--text-main); margin-bottom: 6px;
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid rgba(56, 189, 248, 0.15); padding-bottom: 4px; flex-shrink: 0;
+            font-size: 11px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; display: flex;
+            justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(56, 189, 248, 0.15);
+            padding-bottom: 4px; flex-shrink: 0;
         }
 
         .cyber-table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 2px; }
@@ -253,11 +185,7 @@
         .cyber-table td { padding: 5px 4px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #cbd5e1; }
         .cyber-table tr { cursor: pointer; transition: background 0.15s; }
         .cyber-table tr:hover { background: rgba(56, 189, 248, 0.08); }
-        
-        .table-row-selected {
-            background: rgba(56, 189, 248, 0.18) !important;
-            border-left: 3px solid var(--accent-cyan) !important;
-        }
+        .table-row-selected { background: rgba(56, 189, 248, 0.18) !important; border-left: 3px solid var(--accent-cyan) !important; }
 
         .status-pill { padding: 2px 6px; border-radius: 3px; font-size: 8px; font-weight: 700; }
         .pill-green { background: rgba(16, 185, 129, 0.12); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.4); }
@@ -272,28 +200,22 @@
         .upload-box { display: flex; gap: 6px; align-items: center; background: rgba(2, 6, 23, 0.6); padding: 6px; border-radius: 4px; border: 1px dashed var(--panel-border); }
         .upload-btn { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 4px 10px; border-radius: 3px; font-size: 9.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
         .upload-btn:hover { background: rgba(56, 189, 248, 0.35); }
-
-        #detailModal {
-            display: none; position: absolute; top: 15px; left: 50%; transform: translateX(-50%); z-index: 200;
-            width: 450px; background: rgba(15, 23, 42, 0.98); border: 1px solid var(--accent-cyan); border-radius: 6px;
-            padding: 12px 16px; backdrop-filter: blur(16px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-        }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--panel-border); padding-bottom: 6px; margin-bottom: 8px; font-size: 12px; font-weight: 700; color: var(--accent-cyan); }
-        .modal-close { cursor: pointer; color: var(--text-muted); font-size: 16px; font-weight: 700; }
-        .modal-close:hover { color: var(--accent-red); }
     </style>
 </head>
 <body>
 
     <header class="top-nav">
-        <div class="nav-tabs mono">
-            <span style="font-size: 9px; color: var(--text-muted); margin-right: 2px;">COMPARE:</span>
-            <button class="nav-tab-btn toggle-on" data-sys="gps" onclick="toggleSystemFilter('gps', this)">🛰️ GPS</button>
-            <button class="nav-tab-btn toggle-on" data-sys="bds" onclick="toggleSystemFilter('bds', this)">🛰️ BEIDOU</button>
-            <button class="nav-tab-btn toggle-on" data-sys="galileo" onclick="toggleSystemFilter('galileo', this)">🛰️ GALILEO</button>
-            <button class="nav-tab-btn toggle-on" data-sys="glonass" onclick="toggleSystemFilter('glonass', this)">🛰️ GLONASS</button>
-            <button class="nav-tab-btn toggle-on" data-sys="other" onclick="toggleSystemFilter('other', this)">🌐 OTHER</button>
-            <button class="nav-tab-btn active" onclick="selectAllSystems()" style="margin-left: 4px; border: 1px solid var(--accent-cyan);">✨ ALL</button>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <button class="view-switch-btn mono" id="view-mode-btn" onclick="toggleMainDisplayMode()">📊 PURE ANALYTICS MODE</button>
+            <div class="nav-tabs mono" id="constellation-tabs">
+                <span style="font-size: 9px; color: var(--text-muted); margin-right: 2px;">COMPARE:</span>
+                <button class="nav-tab-btn toggle-on" data-sys="gps" onclick="toggleSystemFilter('gps', this)">🛰️ GPS</button>
+                <button class="nav-tab-btn toggle-on" data-sys="bds" onclick="toggleSystemFilter('bds', this)">🛰️ BEIDOU</button>
+                <button class="nav-tab-btn toggle-on" data-sys="galileo" onclick="toggleSystemFilter('galileo', this)">🛰️ GALILEO</button>
+                <button class="nav-tab-btn toggle-on" data-sys="glonass" onclick="toggleSystemFilter('glonass', this)">🛰️ GLONASS</button>
+                <button class="nav-tab-btn toggle-on" data-sys="other" onclick="toggleSystemFilter('other', this)">🌐 OTHER</button>
+                <button class="nav-tab-btn active" onclick="selectAllSystems()" style="margin-left: 4px; border: 1px solid var(--accent-cyan);">✨ ALL</button>
+            </div>
         </div>
 
         <div class="brand-title-box">
@@ -315,37 +237,114 @@
         <section class="globe-stage">
             <div id="globeViz"></div>
 
-            <div id="detailModal" class="mono">
-                <div class="modal-header">
-                    <span id="modal-title">🛰️ SGP4 REAL-TIME TELEMETRY</span>
-                    <span class="modal-close" onclick="closeModal()">✕</span>
+            <!-- Pure Analytics Overlay Panel -->
+            <div id="analyticsStage" class="mono">
+                <div class="analytics-grid">
+                    <!-- GPS Card -->
+                    <div class="analytics-card" style="border-color: rgba(16, 185, 129, 0.4);">
+                        <div class="analytics-card-title" style="color: #10b981;">
+                            <span>🇺🇸 GPS (NAVSTAR) ARCHITECTURE</span>
+                            <span>GLOBAL MEO CONSTELLATION</span>
+                        </div>
+                        <div class="dop-grid">
+                            <div class="dop-card"><div style="font-size:7.5px; color:var(--text-muted);">ACTIVE SATS</div><div class="dop-val" style="color:#10b981;" id="gps-stat-count">31</div></div>
+                            <div class="dop-card"><div style="font-size:7.5px; color:var(--text-muted);">ORBIT ALTITUDE</div><div class="dop-val">20,200 km</div></div>
+                            <div class="dop-card"><div style="font-size:7.5px; color:var(--text-muted);">INCLINATION</div><div class="dop-val">55.0°</div></div>
+                        </div>
+                        <table class="cyber-table">
+                            <tr><td>Frequencies</td><td><b>L1 (1575.42 MHz), L2 (1227.60 MHz), L5 (1176.45 MHz)</b></td></tr>
+                            <tr><td>Orbit Type</td><td><b>100% MEO (Medium Earth Orbit)</b></td></tr>
+                            <tr><td>Avg Visible in Myanmar</td><td><b>9 - 12 Satellites</b></td></tr>
+                            <tr><td>Standalone PDOP</td><td><b>1.8 - 2.4 (Good)</b></td></tr>
+                        </table>
+                    </div>
+
+                    <!-- BeiDou Card -->
+                    <div class="analytics-card" style="border-color: rgba(239, 68, 68, 0.4);">
+                        <div class="analytics-card-title" style="color: #ef4444;">
+                            <span>🇨🇳 BEIDOU (BDS-3) ARCHITECTURE</span>
+                            <span>HYBRID GEO / IGSO / MEO</span>
+                        </div>
+                        <div class="dop-grid">
+                            <div class="dop-card"><div style="font-size:7.5px; color:var(--text-muted);">ACTIVE SATS</div><div class="dop-val" style="color:#ef4444;" id="bds-stat-count">54</div></div>
+                            <div class="dop-card"><div style="font-size:7.5px; color:var(--text-muted);">ORBIT ALTITUDE</div><div class="dop-val">21,500 - 35,786 km</div></div>
+                            <div class="dop-card"><div style="font-size:7.5px; color:var(--text-muted);">INCLINATION</div><div class="dop-val">55° / 1.8° (GEO)</div></div>
+                        </div>
+                        <table class="cyber-table">
+                            <tr><td>Frequencies</td><td><b>B1I (1561.098 MHz), B2a (1176.45 MHz), B3I (1268.52 MHz)</b></td></tr>
+                            <tr><td>Orbit Type</td><td><b>3 Orbit Types (MEO + GEO + IGSO Hybrid)</b></td></tr>
+                            <tr><td>Avg Visible in Myanmar</td><td><b>16 - 22 Satellites (High Density)</b></td></tr>
+                            <tr><td>Standalone PDOP</td><td><b>1.1 - 1.5 (Excellent in Asia)</b></td></tr>
+                        </table>
+                    </div>
                 </div>
-                <div id="modal-content-body"></div>
+
+                <div class="analytics-card" style="flex:1;">
+                    <div class="analytics-card-title">
+                        <span>📊 TECHNICAL PARAMETER COMPARISON MATRIX</span>
+                        <span style="color:var(--accent-cyan);">GPS vs BEIDOU DETAILED COMPARISON</span>
+                    </div>
+                    <table class="cyber-table" style="font-size: 11px;">
+                        <thead>
+                            <tr style="background: rgba(2, 6, 23, 0.6);">
+                                <th>PARAMETER</th>
+                                <th>🇺🇸 GPS (UNITED STATES)</th>
+                                <th>🇨🇳 BEIDOU (CHINA)</th>
+                                <th>TAKEAWAY / ADVANTAGE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><b>Regional Density</b></td>
+                                <td>Standard Global Coverage</td>
+                                <td style="color:#ef4444;"><b>Enhanced Asia-Pacific Density</b></td>
+                                <td>BDS has 2x more visible sats in Myanmar due to GEO/IGSO.</td>
+                            </tr>
+                            <tr>
+                                <td><b>Constellation Geometry</b></td>
+                                <td>MEO Only (Global distribution)</td>
+                                <td style="color:#ef4444;"><b>Hybrid (3 GEO + 3 IGSO + 24 MEO)</b></td>
+                                <td>BDS GEO sats stay fixed over Asia for zero-loss lock.</td>
+                            </tr>
+                            <tr>
+                                <td><b>Multi-Frequency</b></td>
+                                <td>L1, L2C, L5</td>
+                                <td style="color:#ef4444;"><b>B1I, B1C, B2a, B2b, B3I</b></td>
+                                <td>BDS offers wider frequency diversity for RTK precision.</td>
+                            </tr>
+                            <tr>
+                                <td><b>Combined GPS + BDS PDOP</b></td>
+                                <td colspan="2" style="text-align: center; color: var(--accent-green);"><b>PDOP: 0.85 (Optimal Precision when combined)</b></td>
+                                <td>Multi-constellation receivers achieve sub-centimeter RTK.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            <div class="center-feature-bar mono">
+            <div class="center-feature-bar mono" id="globe-controls-bar">
                 <button class="feature-btn" id="btn-stations" onclick="toggleFeatureMode('stations', this)">📡 CORS Stations</button>
                 <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit Ring</button>
                 <button class="feature-btn" id="btn-heatmap" onclick="toggleFeatureMode('heatmap', this)">🔥 TEC Ionosphere</button>
             </div>
 
-            <!-- Left HUD: TLE Data Display -->
+            <!-- Left HUD -->
             <div class="hud-card hud-left-tle mono">
                 <div class="hud-card-title">
                     <span>► TLE DATA INPUT</span>
-                    <span style="color:var(--accent-cyan); font-size:8px;" id="tle-status-badge">FETCHING CELESTRAK...</span>
+                    <span style="color:var(--accent-cyan); font-size:8px;" id="tle-status-badge">FETCHING...</span>
                 </div>
                 <div class="hud-stat-line" style="margin-bottom: 5px;">
                     <span>TARGET SAT:</span>
                     <select id="sat-dropdown" class="mono" style="background:#020617; color:var(--accent-cyan); border:1px solid var(--panel-border); font-size:9.5px; padding:3px 6px; border-radius:3px; cursor:pointer; max-width:160px;" onchange="selectSatellite(this.value)">
-                        <option value="">Loading Satellites...</option>
+                        <option value="">Loading...</option>
                     </select>
                 </div>
                 <div class="hud-stat-line"><span>SELECTED:</span><b class="hud-stat-val" id="tle-sat-name">--</b></div>
                 <div class="tle-box" id="tle-display">Fetching NORAD TLE Data...</div>
             </div>
 
-            <!-- Right HUD (Top): Upcoming Passes -->
+            <!-- Right HUD (Top) -->
             <div class="hud-card hud-right-passes mono">
                 <div class="hud-card-title">
                     <span>► UPCOMING PASSES</span>
@@ -357,7 +356,7 @@
                 <div class="hud-stat-line"><span>MAX ELEVATION:</span><b class="hud-stat-val" style="color:var(--accent-green);">75.2°</b></div>
             </div>
 
-            <!-- Right HUD (Bottom): Live Satellite Info -->
+            <!-- Right HUD (Bottom) -->
             <div class="hud-card hud-right-info mono">
                 <div class="hud-card-title">
                     <span id="hud-sat-title">► SATELLITE INFO</span>
@@ -422,6 +421,7 @@
     </main>
 
     <script>
+        let isAnalyticsMode = false;
         let selectedSatId = '';
         let fleetChart = null, waveformChart = null;
         let myGlobe = null;
@@ -432,7 +432,6 @@
         let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass', 'other']);
         let currentLiveSatObjects = [];
 
-        // Ground-based CORS Stations with Neon Gold Rings
         const CORS_STATIONS_DATA = [
             { lat: 16.8661, lng: 96.1951, name: '📡 CORS Yangon Base Station', color: '#ffb700', size: 3.5 },
             { lat: 19.7633, lng: 96.0785, name: '📡 CORS Naypyidaw Central Station', color: '#ffb700', size: 3.0 },
@@ -448,6 +447,24 @@
             { lat: 12.4, lng: 98.6, size: 5.5, color: 'rgba(239, 68, 68, 0.5)' },
             { lat: 25.3, lng: 97.3, size: 3.8, color: 'rgba(245, 158, 11, 0.35)' }
         ];
+
+        function toggleMainDisplayMode() {
+            isAnalyticsMode = !isAnalyticsMode;
+            const btn = document.getElementById('view-mode-btn');
+            const analyticsOverlay = document.getElementById('analyticsStage');
+            const globeControls = document.getElementById('globe-controls-bar');
+
+            if (isAnalyticsMode) {
+                btn.innerText = '🌐 3D GLOBE VIEW';
+                analyticsOverlay.style.display = 'flex';
+                globeControls.style.display = 'none';
+            } else {
+                btn.innerText = '📊 PURE ANALYTICS MODE';
+                analyticsOverlay.style.display = 'none';
+                globeControls.style.display = 'flex';
+                resizeGlobe();
+            }
+        }
 
         function getSatColor(satName) {
             let uname = (satName || '').toUpperCase();
@@ -477,27 +494,15 @@
                     let l1 = lines[i+1];
                     let l2 = lines[i+2];
                     let noradId = l1.substring(2, 7).trim();
-                    parsedSats.push({
-                        id: noradId,
-                        name: `${satName} (${noradId})`,
-                        line1: l1,
-                        line2: l2
-                    });
+                    parsedSats.push({ id: noradId, name: `${satName} (${noradId})`, line1: l1, line2: l2 });
                     i += 3;
                 } else if (lines[i].startsWith('1 ') && i + 1 < lines.length && lines[i+1].startsWith('2 ')) {
                     let l1 = lines[i];
                     let l2 = lines[i+1];
                     let noradId = l1.substring(2, 7).trim();
-                    parsedSats.push({
-                        id: noradId,
-                        name: `SAT-${noradId}`,
-                        line1: l1,
-                        line2: l2
-                    });
+                    parsedSats.push({ id: noradId, name: `SAT-${noradId}`, line1: l1, line2: l2 });
                     i += 2;
-                } else {
-                    i++;
-                }
+                } else { i++; }
             }
             return parsedSats;
         }
@@ -506,21 +511,18 @@
             let cat = { gps: [], bds: [], galileo: [], glonass: [], other: [], all: list };
             list.forEach(s => {
                 let uname = s.name.toUpperCase();
-                if (uname.includes('GPS') || uname.includes('NAVSTAR')) {
-                    cat.gps.push(s);
-                } else if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('C0')) {
-                    cat.bds.push(s);
-                } else if (uname.includes('GALILEO') || uname.includes('GSAT')) {
-                    cat.galileo.push(s);
-                } else if (uname.includes('GLONASS') || uname.includes('COSMOS')) {
-                    cat.glonass.push(s);
-                } else {
-                    cat.other.push(s);
-                }
+                if (uname.includes('GPS') || uname.includes('NAVSTAR')) cat.gps.push(s);
+                else if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('C0')) cat.bds.push(s);
+                else if (uname.includes('GALILEO') || uname.includes('GSAT')) cat.galileo.push(s);
+                else if (uname.includes('GLONASS') || uname.includes('COSMOS')) cat.glonass.push(s);
+                else cat.other.push(s);
 
                 TLE_DATABASE[s.id] = s;
             });
             CONSTELLATION_SATS = cat;
+
+            document.getElementById('gps-stat-count').innerText = cat.gps.length || 31;
+            document.getElementById('bds-stat-count').innerText = cat.bds.length || 54;
         }
 
         async function loadCelesTrakTLEs() {
@@ -589,9 +591,7 @@
         function getFilteredSatellites() {
             let combined = [];
             activeSystems.forEach(sys => {
-                if (CONSTELLATION_SATS[sys]) {
-                    combined = combined.concat(CONSTELLATION_SATS[sys]);
-                }
+                if (CONSTELLATION_SATS[sys]) combined = combined.concat(CONSTELLATION_SATS[sys]);
             });
             return combined;
         }
@@ -611,8 +611,7 @@
                 <tr data-id="${s.id}">
                     <td><b style="color:${cColor};">${s.name.substring(0, 18)}</b></td>
                     <td>${s.name.split(' ')[0]}</td>
-                    <td>75°</td>
-                    <td>45°</td>
+                    <td>75°</td><td>45°</td>
                     <td><span class="status-pill pill-green">SGP4 TRACKING</span></td>
                 </tr>
             `;}).join('');
@@ -620,41 +619,27 @@
             currentLiveSatObjects = satList.map(s => {
                 const sgp4Pos = propagateSGP4(s.id);
                 return {
-                    id: s.id,
-                    fullName: s.name,
-                    name: s.name.substring(0, 14),
-                    lat: sgp4Pos.lat,
-                    lng: sgp4Pos.lng,
-                    alt: 0.22,
-                    color: getSatColor(s.name)
+                    id: s.id, fullName: s.name, name: s.name.substring(0, 14),
+                    lat: sgp4Pos.lat, lng: sgp4Pos.lng, alt: 0.22, color: getSatColor(s.name)
                 };
             });
 
-            if (myGlobe) {
-                myGlobe.htmlElementsData(currentLiveSatObjects);
-            }
-
-            if (satList.length > 0) {
-                selectSatellite(satList[0].id);
-            }
+            if (myGlobe) myGlobe.htmlElementsData(currentLiveSatObjects);
+            if (satList.length > 0) selectSatellite(satList[0].id);
             resizeGlobe();
         }
 
         function generateSatOrbitTrack(id) {
             const sat = TLE_DATABASE[id];
             if (!sat || typeof satellite === 'undefined') return { coords: [], color: '#38bdf8', stroke: 3.2 };
-            
             const satrec = satellite.twoline2satrec(sat.line1, sat.line2);
             const satColor = getSatColor(sat.name);
-            
             const meanMotionRadMin = satrec.no_kozai || satrec.no || 0.004;
             const periodMin = (2 * Math.PI) / meanMotionRadMin;
             const periodSec = periodMin * 60;
-            
             const points = [];
             const now = new Date();
             const currentGmst = satellite.gstime(now);
-            
             const numSteps = 120;
             const stepSec = periodSec / numSteps;
             
@@ -662,15 +647,12 @@
                 const timeOffset = i * stepSec;
                 const targetTime = new Date(now.getTime() + timeOffset * 1000);
                 const posVel = satellite.propagate(satrec, targetTime);
-                
                 if (posVel.position) {
                     const posGd = satellite.eciToGeodetic(posVel.position, currentGmst);
                     const lat = satellite.degreesLat(posGd.latitude);
                     const lng = satellite.degreesLong(posGd.longitude);
-                    
                     let normAlt = 0.18 + (posGd.height / 35786) * 0.22;
                     if (normAlt > 0.45) normAlt = 0.45;
-                    
                     points.push({ lat, lng, alt: normAlt });
                 }
             }
@@ -679,10 +661,7 @@
 
         function updateTargetOrbitPath(id) {
             if (!myGlobe || !id || !TLE_DATABASE[id]) return;
-            if (!modes.tracks) {
-                myGlobe.pathsData([]);
-                return;
-            }
+            if (!modes.tracks) { myGlobe.pathsData([]); return; }
             const track = generateSatOrbitTrack(id);
             myGlobe.pathsData([track]);
         }
@@ -694,33 +673,21 @@
 
             if (feature === 'stations') {
                 if (modes.stations) {
-                    myGlobe.ringsData(CORS_STATIONS_DATA)
-                           .ringColor(d => d.color)
-                           .ringMaxRadius(d => d.size)
-                           .ringPropagationSpeed(2.5)
-                           .ringRepeatPeriod(800);
-                } else if (!modes.heatmap) {
-                    myGlobe.ringsData([]);
-                }
+                    myGlobe.ringsData(CORS_STATIONS_DATA).ringColor(d => d.color).ringMaxRadius(d => d.size).ringPropagationSpeed(2.5).ringRepeatPeriod(800);
+                } else if (!modes.heatmap) { myGlobe.ringsData([]); }
             }
 
             if (feature === 'heatmap') {
                 if (modes.heatmap) {
                     myGlobe.atmosphereColor('#f59e0b').atmosphereAltitude(0.35);
-                    myGlobe.ringsData(TEC_IONOSPHERE_DATA)
-                           .ringColor(d => d.color)
-                           .ringMaxRadius(d => d.size)
-                           .ringPropagationSpeed(1.8)
-                           .ringRepeatPeriod(1000);
+                    myGlobe.ringsData(TEC_IONOSPHERE_DATA).ringColor(d => d.color).ringMaxRadius(d => d.size).ringPropagationSpeed(1.8).ringRepeatPeriod(1000);
                 } else {
                     myGlobe.atmosphereColor('#38bdf8').atmosphereAltitude(0.22);
                     myGlobe.ringsData(modes.stations ? CORS_STATIONS_DATA : []);
                 }
             }
 
-            if (feature === 'tracks') {
-                updateTargetOrbitPath(selectedSatId);
-            }
+            if (feature === 'tracks') updateTargetOrbitPath(selectedSatId);
         }
 
         function selectSatellite(id) {
@@ -729,18 +696,15 @@
             const sat = TLE_DATABASE[id];
             
             const dropdown = document.getElementById('sat-dropdown');
-            if (dropdown && dropdown.value !== id) { dropdown.value = id; }
+            if (dropdown && dropdown.value !== id) dropdown.value = id;
 
             document.getElementById('tle-sat-name').innerText = sat.name;
             document.getElementById('hud-sat-title').innerText = `► SATELLITE INFO (${id})`;
             document.getElementById('tle-display').innerHTML = `${sat.line1}<br>${sat.line2}`;
 
             document.querySelectorAll('#sat-table-body tr').forEach(row => {
-                if (row.getAttribute('data-id') === id) {
-                    row.classList.add('table-row-selected');
-                } else {
-                    row.classList.remove('table-row-selected');
-                }
+                if (row.getAttribute('data-id') === id) row.classList.add('table-row-selected');
+                else row.classList.remove('table-row-selected');
             });
 
             updateTargetOrbitPath(id);
@@ -752,24 +716,14 @@
                 alert('ကျေးဇူးပြု၍ RINEX (.rnx / .obs) ဖိုင်တစ်ခု ရွေးချယ်ပေးပါ ခင်ဗျာ။');
                 return;
             }
-
             const file = fileInput.files[0];
             const reader = new FileReader();
-
-            reader.onload = function(e) {
-                const content = e.target.result;
-                parseAndRenderRINEX(content, file.name);
-            };
-
+            reader.onload = function(e) { parseAndRenderRINEX(e.target.result, file.name); };
             reader.readAsText(file);
         }
 
         function parseAndRenderRINEX(text, filename) {
-            let epochs = [];
-            let snrGps = [];
-            let snrBds = [];
-
-            let numPoints = 16;
+            let epochs = [], snrGps = [], snrBds = [], numPoints = 16;
             for (let i = 0; i < numPoints; i++) {
                 epochs.push(`${i * 2}:00`);
                 snrGps.push(Math.floor(38 + Math.sin(i / 2.5) * 6 + Math.random() * 3));
@@ -782,45 +736,20 @@
 
             const ctx = document.getElementById('waveformChart');
             if (!ctx) return;
-
-            if (waveformChart) {
-                waveformChart.destroy();
-            }
+            if (waveformChart) waveformChart.destroy();
 
             waveformChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
                 data: {
                     labels: epochs,
                     datasets: [
-                        {
-                            label: '🇨🇳 BDS B1I C/N₀ (dB-Hz)',
-                            data: snrBds,
-                            borderColor: '#ef4444',
-                            backgroundColor: 'rgba(239, 68, 68, 0.12)',
-                            borderWidth: 2,
-                            tension: 0.3,
-                            pointRadius: 2.5
-                        },
-                        {
-                            label: '🇺🇸 GPS L1 C/N₀ (dB-Hz)',
-                            data: snrGps,
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.12)',
-                            borderWidth: 2,
-                            tension: 0.3,
-                            pointRadius: 2.5
-                        }
+                        { label: '🇨🇳 BDS B1I C/N₀ (dB-Hz)', data: snrBds, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.12)', borderWidth: 2, tension: 0.3, pointRadius: 2.5 },
+                        { label: '🇺🇸 GPS L1 C/N₀ (dB-Hz)', data: snrGps, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.12)', borderWidth: 2, tension: 0.3, pointRadius: 2.5 }
                     ]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            labels: { color: '#94a3b8', font: { size: 8 } }
-                        }
-                    },
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: true, labels: { color: '#94a3b8', font: { size: 8 } } } },
                     scales: {
                         x: { grid: { color: 'rgba(56, 189, 248, 0.05)' }, ticks: { color: '#94a3b8', font: { size: 7 } } },
                         y: { grid: { color: 'rgba(56, 189, 248, 0.1)' }, ticks: { color: '#94a3b8', font: { size: 8 } }, min: 30, max: 55 }
@@ -836,9 +765,7 @@
             if (tbody) {
                 tbody.addEventListener('click', (e) => {
                     const row = e.target.closest('tr');
-                    if (row && row.getAttribute('data-id')) {
-                        selectSatellite(row.getAttribute('data-id'));
-                    }
+                    if (row && row.getAttribute('data-id')) selectSatellite(row.getAttribute('data-id'));
                 });
             }
             loadCelesTrakTLEs();
@@ -855,28 +782,14 @@
 
             const gmst = satellite.gstime(targetTime);
             const positionGd = satellite.eciToGeodetic(positionEci, gmst);
-            return {
-                lat: satellite.degreesLat(positionGd.latitude),
-                lng: satellite.degreesLong(positionGd.longitude),
-                alt: Math.round(positionGd.height)
-            };
+            return { lat: satellite.degreesLat(positionGd.latitude), lng: satellite.degreesLong(positionGd.longitude), alt: Math.round(positionGd.height) };
         }
-
-        function updateMyanmarTime() {
-            const now = new Date();
-            const options = { timeZone: 'Asia/Yangon', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
-            const timeEl = document.getElementById('mmt-time');
-            if (timeEl) timeEl.innerText = now.toLocaleTimeString('en-US', options) + ' MMT';
-        }
-        setInterval(updateMyanmarTime, 1000);
-        updateMyanmarTime();
 
         function resizeGlobe() {
             if (myGlobe) {
                 const container = document.getElementById('globeViz');
                 if (container && container.clientWidth > 0 && container.clientHeight > 0) {
-                    myGlobe.width(container.clientWidth);
-                    myGlobe.height(container.clientHeight);
+                    myGlobe.width(container.clientWidth); myGlobe.height(container.clientHeight);
                 }
             }
         }
@@ -888,17 +801,9 @@
                     .globeImageUrl('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-dark.jpg')
                     .backgroundImageUrl('https://cdn.jsdelivr.net/npm/three-globe/example/img/night-sky.png')
                     .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.18 })
-                    .showAtmosphere(true)
-                    .atmosphereColor('#38bdf8')
-                    .atmosphereAltitude(0.22)
-                    .polygonCapColor(() => 'rgba(56, 189, 248, 0.18)')
-                    .polygonSideColor(() => 'rgba(56, 189, 248, 0.05)')
-                    .polygonStrokeColor(() => '#38bdf8')
-                    .polygonAltitude(0.012)
-                    .htmlElementsData([])
-                    .htmlLat(d => d.lat)
-                    .htmlLng(d => d.lng)
-                    .htmlAltitude(d => d.alt)
+                    .showAtmosphere(true).atmosphereColor('#38bdf8').atmosphereAltitude(0.22)
+                    .polygonCapColor(() => 'rgba(56, 189, 248, 0.18)').polygonSideColor(() => 'rgba(56, 189, 248, 0.05)').polygonStrokeColor(() => '#38bdf8').polygonAltitude(0.012)
+                    .htmlElementsData([]).htmlLat(d => d.lat).htmlLng(d => d.lng).htmlAltitude(d => d.alt)
                     .htmlElement(d => {
                         const el = document.createElement('div');
                         el.className = 'sat-marker';
@@ -912,35 +817,16 @@
                             </div>
                         `;
                         
-                        const handleSatClick = (e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            selectSatellite(d.id);
-                        };
-
+                        const handleSatClick = (e) => { e.stopPropagation(); e.preventDefault(); selectSatellite(d.id); };
                         el.addEventListener('pointerdown', handleSatClick);
                         el.addEventListener('click', handleSatClick);
-
                         return el;
                     })
-                    .pointsData([])
-                    .pointLat(d => d.lat)
-                    .pointLng(d => d.lng)
-                    .pointColor(d => d.color || '#38bdf8')
-                    .pointRadius(d => d.size || 0.6)
-                    .pointAltitude(0.02)
-                    .pathsData([])
-                    .pathPoints(d => d.coords)
-                    .pathPointLat(p => p.lat)
-                    .pathPointLng(p => p.lng)
-                    .pathPointAlt(p => p.alt)
-                    .pathColor(d => d.color || '#38bdf8')
-                    .pathStroke(d => d.stroke || 3.2);
+                    .pointsData([]).pointLat(d => d.lat).pointLng(d => d.lng).pointColor(d => d.color || '#38bdf8').pointRadius(d => d.size || 0.6).pointAltitude(0.02)
+                    .pathsData([]).pathPoints(d => d.coords).pathPointLat(p => p.lat).pathPointLng(p => p.lng).pathPointAlt(p => p.alt).pathColor(d => d.color || '#38bdf8').pathStroke(d => d.stroke || 3.2);
 
                 fetch('https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson')
-                    .then(res => res.json())
-                    .then(countries => { if (myGlobe) myGlobe.polygonsData(countries.features); })
-                    .catch(() => {});
+                    .then(res => res.json()).then(countries => { if (myGlobe) myGlobe.polygonsData(countries.features); }).catch(() => {});
 
                 myGlobe.controls().autoRotate = true;
                 myGlobe.controls().autoRotateSpeed = 0.3;
@@ -954,16 +840,13 @@
         function animateSatellites(timestamp) {
             if (timestamp - lastFrameTime > 80) {
                 lastFrameTime = timestamp;
-
                 if (currentLiveSatObjects.length > 0) {
                     let activeIds = currentLiveSatObjects.map(s => s.id);
                     let targetId = activeIds.includes(selectedSatId) ? selectedSatId : activeIds[0];
 
                     currentLiveSatObjects.forEach(s => {
                         const sgp4Pos = propagateSGP4(s.id);
-                        s.lat = sgp4Pos.lat;
-                        s.lng = sgp4Pos.lng;
-
+                        s.lat = sgp4Pos.lat; s.lng = sgp4Pos.lng;
                         if (s.id === targetId) {
                             document.getElementById('hud-lat').innerText = `${sgp4Pos.lat.toFixed(4)}° N`;
                             document.getElementById('hud-lng').innerText = `${sgp4Pos.lng.toFixed(4)}° E`;
@@ -984,24 +867,8 @@
             if (fc) {
                 fleetChart = new Chart(fc.getContext('2d'), {
                     type: 'bar',
-                    data: { 
-                        labels: ['Blk I', 'Blk II', 'Blk III', 'Blk IV'], 
-                        datasets: [{ 
-                            label: 'Sats', 
-                            data: [12, 8, 7, 4], 
-                            backgroundColor: ['#38bdf8', '#818cf8', '#c084fc', '#34d399'],
-                            borderRadius: 3
-                        }] 
-                    },
-                    options: { 
-                        responsive: true, 
-                        maintainAspectRatio: false, 
-                        plugins: { legend: { display: false } }, 
-                        scales: { 
-                            x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 8 } } }, 
-                            y: { grid: { color: 'rgba(56, 189, 248, 0.1)' }, ticks: { color: '#94a3b8', font: { size: 8 } } } 
-                        } 
-                    }
+                    data: { labels: ['Blk I', 'Blk II', 'Blk III', 'Blk IV'], datasets: [{ label: 'Sats', data: [12, 8, 7, 4], backgroundColor: ['#38bdf8', '#818cf8', '#c084fc', '#34d399'], borderRadius: 3 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 8 } } }, y: { grid: { color: 'rgba(56, 189, 248, 0.1)' }, ticks: { color: '#94a3b8', font: { size: 8 } } } } }
                 });
             }
         }
