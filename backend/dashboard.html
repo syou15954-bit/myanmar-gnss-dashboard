@@ -151,21 +151,22 @@
         .fill-gps { background: linear-gradient(90deg, #059669, #10b981); box-shadow: 0 0 8px #10b981; }
         .fill-bds { background: linear-gradient(90deg, #dc2626, #ef4444); box-shadow: 0 0 8px #ef4444; }
 
+        /* Compact Fixed-Size Satellite Dot Marker (No Huge Scaling) */
         .sat-marker { 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             cursor: pointer; transform: translate(-50%, -50%); z-index: 30; pointer-events: auto;
-            width: 28px; height: 28px; border-radius: 50%; background: transparent;
+            width: 16px; height: 16px; border-radius: 50%; background: transparent;
         }
         .sat-dot-glow {
-            width: 8px; height: 8px; border-radius: 50%;
+            width: 6px; height: 6px; border-radius: 50%;
             transition: all 0.2s ease-in-out; pointer-events: none;
         }
         .sat-marker:hover .sat-dot-glow {
-            transform: scale(2.0);
-            box-shadow: 0 0 16px #fff !important;
+            transform: scale(1.2);
+            box-shadow: 0 0 6px #fff !important;
         }
         .sat-tag-hover { 
-            display: none; position: absolute; top: 28px; font-size: 8.5px; font-family: 'JetBrains Mono', monospace; 
+            display: none; position: absolute; top: 18px; font-size: 8.5px; font-family: 'JetBrains Mono', monospace; 
             background: rgba(2, 6, 23, 0.95); padding: 2px 6px; border-radius: 3px; white-space: nowrap; font-weight: 700;
             pointer-events: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 40;
         }
@@ -850,7 +851,7 @@
                         const countryColor = getSatColor(d.fullName);
                         
                         el.innerHTML = `
-                            <div class="sat-dot-glow" style="background: ${countryColor}; box-shadow: 0 0 10px ${countryColor};"></div>
+                            <div class="sat-dot-glow" style="background: ${countryColor}; box-shadow: 0 0 6px ${countryColor};"></div>
                             <div class="sat-tag-hover ${isTarget ? 'target-active' : ''}" style="border: 1px solid ${countryColor}; color: ${countryColor};">
                                 ${isTarget ? '🎯 TARGET: ' + d.name : '🛰️ ' + d.name}
                             </div>
