@@ -771,7 +771,7 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
-        // --- FIXED 3D ORBIT RING & GROUND TRACK PATH GENERATOR ---
+        // --- FULL DUAL TRAJECTORY GENERATOR (3D ORBIT RING & RED GROUND TRACK) ---
         function generateSatOrbitTrack(id, isGroundTrack = false) {
             try {
                 const sat = TLE_DATABASE[id];
@@ -802,12 +802,12 @@
                         let lng = satellite.degreesLong(posGd.longitude);
 
                         if (!isGroundTrack) {
-                            // 3D Orbit Ring
+                            // 3D Space Orbit Ring (Cyan / Constellation Colored)
                             let normAlt = 0.28 + (posGd.height / 35786) * 0.15;
                             if (normAlt > 0.42) normAlt = 0.42;
                             points.push({ lat, lng, alt: normAlt });
                         } else {
-                            // Ground Track (Red Line)
+                            // Red Ground Track on Earth Surface
                             points.push({ lat, lng, alt: 0.005 });
                         }
                     }
@@ -815,16 +815,20 @@
                 return { 
                     coords: points, 
                     color: isGroundTrack ? 'rgba(239, 68, 68, 0.95)' : satColor, 
-                    stroke: isGroundTrack ? 2.0 : 3.0 
+                    stroke: isGroundTrack ? 2.5 : 3.0 
                 };
             } catch(e) { return { coords: [], color: '#38bdf8', stroke: 3.2 }; }
         }
 
         function updateTargetOrbitPath(id) {
             if (!myGlobe || !id || !TLE_DATABASE[id]) return;
-            if (!modes.tracks) { myGlobe.pathsData([]); return; }
-            const orbitTrack = generateSatOrbitTrack(id, false); // 3D Orbit Ring
-            const groundTrack = generateSatOrbitTrack(id, true);   // Red Ground Track
+            if (!modes.tracks) { 
+                myGlobe.pathsData([]); 
+                return; 
+            }
+            // Pass an array containing BOTH independent trajectory objects (Orbit Ring + Ground Track)
+            const orbitTrack = generateSatOrbitTrack(id, false); 
+            const groundTrack = generateSatOrbitTrack(id, true);   
             myGlobe.pathsData([orbitTrack, groundTrack]);
         }
 
@@ -1048,6 +1052,7 @@
                         `;
                         return el;
                     })
+                    // Ensure globe.gl path accessors properly read the array of path objects
                     .pathsData([])
                     .pathPoints(d => d.coords)
                     .pathPointLat(p => p.lat)
