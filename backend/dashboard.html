@@ -398,9 +398,9 @@
                     
                     <!-- Left Sidebar (Upload & Cards) -->
                     <div class="rinex-left">
-                        <div class="mono" style="display:flex; flex-direction: column; align-items: stretch; margin-bottom: 12px; gap: 8px; padding: 10px; border: 1px dashed rgba(56,189,248,0.4); border-radius: 4px; background: rgba(15,23,42,0.6);">
-                            <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:9px; color:var(--text-muted); width: 100%; cursor: pointer;">
-                            <button onclick="uploadAndCompare()" class="upload-btn" style="padding: 6px; font-size: 10px;">🚀 ANALYZE RINEX</button>
+                        <div class="mono" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px; padding: 10px; border: 1px dashed rgba(56,189,248,0.4); border-radius: 4px; background: rgba(15,23,42,0.6);">
+                            <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:9px; color:var(--text-muted); width: 130px; cursor: pointer;">
+                            <button onclick="uploadAndCompare()" class="upload-btn">🚀 ANALYZE RINEX</button>
                         </div>
 
                         <!-- Parsed Metadata Cards -->
@@ -417,8 +417,8 @@
                             <canvas id="waveformChart"></canvas>
                         </div>
                     </div>
+                    
                 </div>
-
             </div>
         </section>
 
@@ -498,30 +498,25 @@
 
         function generateHighDensityFallbackList() {
             let list = [];
-            const addSats = (startId, prefix, count, inc, no) => {
-                for(let i=1; i<=count; i++) {
-                    let satId = (startId + i).toString().padStart(5, '0');
-                    let prn = i.toString().padStart(2, '0');
-                    let raan = ((i * 15.5) % 360).toFixed(4).padStart(8, ' ');
-                    let ma = ((i * 25.1) % 360).toFixed(4).padStart(8, ' ');
-                    let incStr = inc.toFixed(4).padStart(8, ' ');
-                    let noStr = no.toFixed(8).padStart(11, ' ');
-                    
-                    list.push({
-                        id: satId,
-                        name: `${prefix}-${prn}`,
-                        line1: `1 ${satId}U 18014A   23264.44421296 -.00000038  00000-0  00000-0 0  9992`,
-                        line2: `2 ${satId} ${incStr} ${raan} 0041234  30.1234 ${ma} ${noStr} 12342`
-                    });
-                }
-            };
-            
-            addSats(20000, "GPS SVN", 31, 55.1500, 2.00561234);
-            addSats(30000, "BDS MEO", 35, 55.0000, 1.86234123);
-            addSats(40000, "GALILEO GSAT", 24, 56.0000, 1.70481234);
-            addSats(50000, "GLONASS-M", 24, 64.8000, 2.13101234);
-            addSats(60000, "QZSS/IRNSS", 10, 15.0000, 1.00271234); 
+            const baseTLEs = [
+                { sys: "GPS SVN", line1: "1 28474U 04045A   24001.00000000 -.00000000  00000-0  00000-0 0  9999", line2: "2 28474  55.0000 150.0000 0100000   0.0000 359.0000  2.00560000100000" },
+                { sys: "BDS MEO", line1: "1 43539U 18062A   24001.00000000 -.00000000  00000-0  00000-0 0  9999", line2: "2 43539  55.0000 120.0000 0050000  10.0000 350.0000  1.86230000100000" },
+                { sys: "GALILEO GSAT", line1: "1 41859U 16069A   24001.00000000 -.00000000  00000-0  00000-0 0  9999", line2: "2 41859  56.0000 110.0000 0005000  20.0000 340.0000  1.70480000100000" },
+                { sys: "GLONASS-M", line1: "1 39572U 14015A   24001.00000000 -.00000000  00000-0  00000-0 0  9999", line2: "2 39572  64.8000 100.0000 0010000  30.0000 330.0000  2.13100000100000" }
+            ];
 
+            baseTLEs.forEach((base, idx) => {
+                for(let i=1; i<=30; i++) {
+                    let satId = (parseInt(base.line1.substring(2,7)) + i).toString().padStart(5, '0');
+                    let prn = i.toString().padStart(2, '0');
+                    let newRaan = ((i * 12.5) % 360).toFixed(4).padStart(8, ' ');
+                    
+                    let newLine1 = base.line1.substring(0, 2) + satId + base.line1.substring(7);
+                    let newLine2 = base.line2.substring(0, 2) + satId + base.line2.substring(7, 17) + newRaan + base.line2.substring(25);
+
+                    list.push({ id: satId, name: `${base.sys}-${prn}`, line1: newLine1, line2: newLine2 });
+                }
+            });
             return list;
         }
 
@@ -750,28 +745,43 @@
             }
         }
 
+        // --- ENHANCED: Sort by Earliest AOS Time and Mix Constellations ---
         function populateUpcomingPassesList() {
             try {
                 const listContainer = document.getElementById('upcoming-passes-list');
                 if (!listContainer || currentLiveSatObjects.length === 0) return;
                 
-                let passes = currentLiveSatObjects.slice(0, 12).map((sat, index) => {
+                // Assign a pseudo-random start time based on ID and current index to all visible sats
+                let allPasses = currentLiveSatObjects.map((sat, index) => {
                     const idNum = parseInt(sat.id) || Math.floor(Math.random() * 10000);
-                    const startOffsetMins = (index * 6) + (idNum % 15); 
-                    const durMins = (idNum % 15) + 12; 
-                    const maxEl = 40 + (idNum % 45);
+                    // Start anywhere from 2 mins to 120 mins from now
+                    const startOffsetMins = ((idNum * 7 + index * 13) % 120) + 2; 
+                    const durMins = (idNum % 15) + 12; // Duration 12-26 mins
+                    const maxEl = 40 + (idNum % 45); // Elevation 40-85 deg
                     
                     const now = new Date();
                     const aosTime = new Date(now.getTime() + startOffsetMins * 60000);
-                    const formatTime = (d) => d.toTimeString().split(' ')[0];
+                    
+                    // Format time cleanly (HH:MM:SS)
+                    const formatTime = (d) => {
+                        return d.getHours().toString().padStart(2, '0') + ':' + 
+                               d.getMinutes().toString().padStart(2, '0') + ':' + 
+                               d.getSeconds().toString().padStart(2, '0');
+                    };
                     
                     const dirs = ['NW -> SE', 'SW -> NE', 'N -> S', 'S -> N', 'W -> E'];
                     const dir = dirs[idNum % dirs.length];
 
                     return { sat, aosTime, durMins, maxEl, timeStr: formatTime(aosTime), dir };
-                }).sort((a, b) => a.aosTime - b.aosTime);
+                });
 
-                listContainer.innerHTML = passes.map(p => {
+                // Sort all passes chronologically (earliest first)
+                allPasses.sort((a, b) => a.aosTime - b.aosTime);
+
+                // Take top 15 to display
+                let passesToShow = allPasses.slice(0, 15);
+
+                listContainer.innerHTML = passesToShow.map(p => {
                     let cColor = getSatColor(p.sat.fullName);
                     return `
                     <div class="pass-card" data-id="${p.sat.id}" onclick="selectSatellite('${p.sat.id}')" style="background: rgba(2,6,23,0.6); border: 1px solid rgba(56,189,248,0.15); border-left: 3px solid ${cColor}; padding: 8px 10px; border-radius: 4px; cursor: pointer; transition: all 0.2s;">
@@ -993,7 +1003,7 @@
                 data: {
                     labels: epochs,
                     datasets: [
-                        { label: `🎯 ${satName.substring(0,12)} C/N₀`, data: snrGps, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.12)', borderWidth: 2, tension: 0.3, pointRadius: 2.5 },
+                        { label: `🎯 ${satName.substring(0,10)} C/N₀`, data: snrGps, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.12)', borderWidth: 2, tension: 0.3, pointRadius: 2.5 },
                         { label: '🇨🇳 BDS / Rival Baseline C/N₀', data: snrBds, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.12)', borderWidth: 2, tension: 0.3, pointRadius: 2.5 }
                     ]
                 },
