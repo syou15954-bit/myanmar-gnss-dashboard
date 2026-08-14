@@ -771,7 +771,7 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
-        // --- ROBUST 3D ORBIT RING & GROUND TRACK GENERATOR ---
+        // --- FIXED 3D ORBIT RING & GROUND TRACK PATH GENERATOR ---
         function generateSatOrbitTrack(id, isGroundTrack = false) {
             try {
                 const sat = TLE_DATABASE[id];
@@ -790,8 +790,6 @@
                 const halfPeriod = periodSec / 2;
                 const stepSec = periodSec / numSteps;
                 
-                let prevLng = null;
-
                 for (let i = 0; i <= numSteps; i++) {
                     const timeOffset = -halfPeriod + (i * stepSec);
                     const targetTime = new Date(now.getTime() + timeOffset * 1000);
@@ -802,29 +800,22 @@
                         const posGd = satellite.eciToGeodetic(posVel.position, targetGmst);
                         let lat = satellite.degreesLat(posGd.latitude);
                         let lng = satellite.degreesLong(posGd.longitude);
-                        
-                        // Prevent longitude wrapping spikes on ground track render
-                        if (prevLng !== null && Math.abs(lng - prevLng) > 180) {
-                            // Break path segment to prevent erratic visual lines across globe
-                            if (isGroundTrack) {
-                                points.push({ lat: null, lng: null, alt: null });
-                            }
-                        }
-                        prevLng = lng;
 
                         if (!isGroundTrack) {
+                            // 3D Orbit Ring
                             let normAlt = 0.28 + (posGd.height / 35786) * 0.15;
                             if (normAlt > 0.42) normAlt = 0.42;
                             points.push({ lat, lng, alt: normAlt });
                         } else {
-                            points.push({ lat, lng, alt: 0.004 });
+                            // Ground Track (Red Line)
+                            points.push({ lat, lng, alt: 0.005 });
                         }
                     }
                 }
                 return { 
                     coords: points, 
-                    color: isGroundTrack ? 'rgba(239, 68, 68, 0.9)' : satColor, 
-                    stroke: isGroundTrack ? 1.8 : 3.0 
+                    color: isGroundTrack ? 'rgba(239, 68, 68, 0.95)' : satColor, 
+                    stroke: isGroundTrack ? 2.0 : 3.0 
                 };
             } catch(e) { return { coords: [], color: '#38bdf8', stroke: 3.2 }; }
         }
@@ -832,8 +823,8 @@
         function updateTargetOrbitPath(id) {
             if (!myGlobe || !id || !TLE_DATABASE[id]) return;
             if (!modes.tracks) { myGlobe.pathsData([]); return; }
-            const orbitTrack = generateSatOrbitTrack(id, false); 
-            const groundTrack = generateSatOrbitTrack(id, true);   
+            const orbitTrack = generateSatOrbitTrack(id, false); // 3D Orbit Ring
+            const groundTrack = generateSatOrbitTrack(id, true);   // Red Ground Track
             myGlobe.pathsData([orbitTrack, groundTrack]);
         }
 
@@ -1057,7 +1048,6 @@
                         `;
                         return el;
                     })
-                    // Configured with proper accessor functions for multi-paths data (Orbit Ring + Ground Track)
                     .pathsData([])
                     .pathPoints(d => d.coords)
                     .pathPointLat(p => p.lat)
