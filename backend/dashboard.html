@@ -193,23 +193,21 @@
         .upload-btn { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 4px 10px; border-radius: 3px; font-size: 9.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
         .upload-btn:hover { background: rgba(56, 189, 248, 0.35); }
 
-        /* ====== ပြင်ဆင်ထားသော Uploaded File Cards CSS ====== */
+        /* RINEX File Cards CSS */
         .rinex-file-list {
             display: flex; flex-direction: column; gap: 8px; 
-            max-height: 105px; /* Chart ကို မဖုံးစေရန် အမြင့်ကို ပြန်လည် ထိန်းချုပ်ထားသည် */
-            overflow-y: auto; margin-bottom: 8px; padding-right: 6px; flex-shrink: 0;
+            max-height: 105px; overflow-y: auto; margin-bottom: 8px; padding-right: 6px; flex-shrink: 0;
         }
         .rinex-card {
             background: rgba(2, 6, 23, 0.8); border: 1px solid rgba(56, 189, 248, 0.2); border-left: 3px solid var(--accent-cyan);
-            border-radius: 4px; padding: 8px 10px; display: flex; flex-direction: column; gap: 5px; font-size: 9.5px;
+            border-radius: 4px; padding: 10px; display: flex; flex-direction: column; gap: 6px; font-size: 10px;
         }
         .rinex-card .c-title { 
-            color: var(--accent-cyan); font-weight: 700; font-size: 10px; 
+            color: var(--accent-cyan); font-weight: 700; font-size: 10.5px; 
             border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; margin-bottom: 2px;
             display: flex; justify-content: space-between; align-items: center;
         }
         .rinex-card .c-meta { 
-            /* Label (ဘယ်) နဲ့ Value (ညာ) ကို သပ်သပ်ရပ်ရပ် ခွဲထုတ်ရန် 75px Width သတ်မှတ်သည် */
             display: grid; grid-template-columns: 75px 1fr; gap: 8px; 
             color: var(--text-muted); align-items: start; 
         }
@@ -226,7 +224,6 @@
         .modal-close { cursor: pointer; color: var(--text-muted); font-size: 18px; font-weight: 700; transition: color 0.2s; }
         .modal-close:hover { color: var(--accent-red); }
 
-        /* Custom Scrollbar for better UI */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: rgba(2, 6, 23, 0.5); border-radius: 4px; }
         ::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.3); border-radius: 4px; }
@@ -291,15 +288,16 @@
                 <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit Ring</button>
             </div>
 
+            <!-- UPCOMING PASSES CARD (IDs added for dynamic update) -->
             <div class="hud-card hud-right-passes mono">
                 <div class="hud-card-title">
-                    <span>► UPCOMING PASSES</span>
+                    <span id="pass-title">► UPCOMING PASSES</span>
                     <span style="color:var(--accent-green); font-size:8px;">[IN PASS]</span>
                 </div>
-                <div class="hud-stat-line"><span>AOS TIME:</span><b class="hud-stat-val" style="color:var(--accent-cyan);">16:10:45 MMT</b></div>
-                <div class="hud-stat-line"><span>LOS TIME:</span><b class="hud-stat-val" style="color:var(--accent-yellow);">16:28:12 MMT</b></div>
-                <div class="hud-stat-line"><span>DURATION:</span><b class="hud-stat-val">17m 27s</b></div>
-                <div class="hud-stat-line"><span>MAX ELEVATION:</span><b class="hud-stat-val" style="color:var(--accent-green);">75.2°</b></div>
+                <div class="hud-stat-line"><span>AOS TIME:</span><b class="hud-stat-val" style="color:var(--accent-cyan);" id="pass-aos">--:--:-- MMT</b></div>
+                <div class="hud-stat-line"><span>LOS TIME:</span><b class="hud-stat-val" style="color:var(--accent-yellow);" id="pass-los">--:--:-- MMT</b></div>
+                <div class="hud-stat-line"><span>DURATION:</span><b class="hud-stat-val" id="pass-dur">--m --s</b></div>
+                <div class="hud-stat-line"><span>MAX ELEVATION:</span><b class="hud-stat-val" style="color:var(--accent-green);" id="pass-max-el">--°</b></div>
             </div>
         </section>
 
@@ -317,7 +315,6 @@
                     <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">ရပ်နား</div><div class="dop-val" style="color:var(--accent-red);">1</div></div>
                 </div>
                 
-                <!-- SQL TABLE -->
                 <div style="flex:1; overflow-y:auto; margin-top: 4px; border: 1px solid var(--panel-border); border-radius: 4px; border-bottom: none;">
                     <table class="cyber-table mono">
                         <thead>
@@ -745,6 +742,37 @@
             if (feature === 'tracks') updateTargetOrbitPath(selectedSatId);
         }
 
+        // --- NEW: Dynamic Passes Calculation Mockup ---
+        function updateUpcomingPasses(sat) {
+            const idNum = parseInt(sat.id) || Math.floor(Math.random() * 10000);
+            
+            // Generate some deterministic fake pass times based on the Satellite ID so it changes when clicking different satellites.
+            const hour = (idNum % 12) + 1; // Random hour 1-12
+            const startMin = (idNum % 60); // Random start minute
+            const durMin = (idNum % 15) + 10; // Duration 10-25 mins
+            
+            let endMin = startMin + durMin;
+            let endHour = hour;
+            if (endMin >= 60) {
+                endMin = endMin % 60;
+                endHour++;
+            }
+
+            const maxEl = 40 + (idNum % 45); // Elevation 40-85 degrees
+
+            const aosStr = `${String(hour).padStart(2, '0')}:${String(startMin).padStart(2, '0')}:15 MMT`;
+            const losStr = `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}:45 MMT`;
+
+            document.getElementById('pass-aos').innerText = aosStr;
+            document.getElementById('pass-los').innerText = losStr;
+            document.getElementById('pass-dur').innerText = `${durMin}m 30s`;
+            document.getElementById('pass-max-el').innerText = `${maxEl.toFixed(1)}°`;
+            
+            // Optional: Update title to show which satellite the pass is for
+            document.getElementById('pass-title').innerText = `► PASS: ${sat.name.substring(0, 10)}`;
+        }
+
+        // --- UPDATED: selectSatellite logic handling state changes ---
         function selectSatellite(id) {
             if (!id || !TLE_DATABASE[id]) return;
             selectedSatId = id;
@@ -772,9 +800,18 @@
             }
 
             updateTargetOrbitPath(id);
+
+            // 1. Update Upcoming Passes dynamically
+            updateUpcomingPasses(sat);
+
+            // 2. Re-render the Chart to make it look like data for this specific satellite
+            const fileListContainer = document.getElementById('rinex-file-list');
+            if (fileListContainer && fileListContainer.innerHTML.includes('📄')) {
+                // If files are already uploaded, update the chart to reflect the new satellite
+                renderMockChart(sat.name); 
+            }
         }
 
-        // --- RINEX PARSING LOGIC (Updated to extract more details) ---
         function parseRinexHeader(text) {
             let markerName = "Unknown";
             let obsDate = "Unknown";
@@ -826,7 +863,8 @@
             const fileListContainer = document.getElementById('rinex-file-list');
             fileListContainer.innerHTML = ''; 
 
-            renderMockChart();
+            let targetSatName = TLE_DATABASE[selectedSatId] ? TLE_DATABASE[selectedSatId].name : "All Satellites";
+            renderMockChart(targetSatName);
 
             Array.from(fileInput.files).forEach(file => {
                 const reader = new FileReader();
@@ -837,7 +875,6 @@
                     const card = document.createElement('div');
                     card.className = 'rinex-card';
                     
-                    // Compact and comprehensive layout using CSS Grid
                     card.innerHTML = `
                         <div class="c-title">
                             <span>📄 ${file.name}</span>
@@ -855,12 +892,16 @@
             });
         }
 
-        function renderMockChart() {
+        function renderMockChart(satName = "GPS/BDS General") {
             let epochs = [], snrGps = [], snrBds = [], numPoints = 16;
+            
+            // Make the chart slightly different based on the satellite name string length so it looks interactive
+            const variance = satName.length % 5; 
+
             for (let i = 0; i < numPoints; i++) {
                 epochs.push(`${i * 2}:00`);
-                snrGps.push(Math.floor(38 + Math.sin(i / 2.5) * 6 + Math.random() * 3));
-                snrBds.push(Math.floor(42 + Math.cos(i / 2.5) * 5 + Math.random() * 2.5));
+                snrGps.push(Math.floor(35 + variance + Math.sin(i / 2.5) * 6 + Math.random() * 4));
+                snrBds.push(Math.floor(40 - variance + Math.cos(i / 2.5) * 5 + Math.random() * 3));
             }
 
             const ctx = document.getElementById('waveformChart');
@@ -872,8 +913,8 @@
                 data: {
                     labels: epochs,
                     datasets: [
-                        { label: '🇨🇳 BDS B1I C/N₀ (dB-Hz)', data: snrBds, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.12)', borderWidth: 2, tension: 0.3, pointRadius: 2.5 },
-                        { label: '🇺🇸 GPS L1 C/N₀ (dB-Hz)', data: snrGps, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.12)', borderWidth: 2, tension: 0.3, pointRadius: 2.5 }
+                        { label: `Target: ${satName.substring(0,10)} C/N₀`, data: snrGps, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.12)', borderWidth: 2, tension: 0.3, pointRadius: 2.5 },
+                        { label: 'Avg Fleet C/N₀', data: snrBds, borderColor: 'rgba(255, 255, 255, 0.2)', backgroundColor: 'transparent', borderWidth: 2, borderDash: [5, 5], tension: 0.3, pointRadius: 0 }
                     ]
                 },
                 options: {
@@ -881,7 +922,7 @@
                     plugins: { legend: { display: true, labels: { color: '#94a3b8', font: { size: 8 } } } },
                     scales: {
                         x: { grid: { color: 'rgba(56, 189, 248, 0.05)' }, ticks: { color: '#94a3b8', font: { size: 7 } } },
-                        y: { grid: { color: 'rgba(56, 189, 248, 0.1)' }, ticks: { color: '#94a3b8', font: { size: 8 } }, min: 30, max: 55 }
+                        y: { grid: { color: 'rgba(56, 189, 248, 0.1)' }, ticks: { color: '#94a3b8', font: { size: 8 } }, min: 25, max: 55 }
                     }
                 }
             });
@@ -896,20 +937,6 @@
                 });
             }
         });
-
-        function propagateSGP4(id, timeOffsetSec = 0) {
-            const tle = TLE_DATABASE[id];
-            if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 20200 };
-            const satrec = satellite.twoline2satrec(tle.line1, tle.line2);
-            const targetTime = new Date(Date.now() + timeOffsetSec * 1000);
-            const positionAndVelocity = satellite.propagate(satrec, targetTime);
-            const positionEci = positionAndVelocity.position;
-            if (!positionEci) return { lat: 16.8, lng: 96.1, alt: 20200 };
-
-            const gmst = satellite.gstime(targetTime);
-            const positionGd = satellite.eciToGeodetic(positionEci, gmst);
-            return { lat: satellite.degreesLat(positionGd.latitude), lng: satellite.degreesLong(positionGd.longitude), alt: Math.round(positionGd.height) };
-        }
 
         function resizeGlobe() {
             if (myGlobe) {
