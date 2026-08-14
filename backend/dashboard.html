@@ -707,11 +707,12 @@
                 const listContainer = document.getElementById('upcoming-passes-list');
                 if (!listContainer || currentLiveSatObjects.length === 0) return;
                 
+                // Real-time dynamic time base
                 const now = new Date();
                 
                 let allPasses = currentLiveSatObjects.map((sat, index) => {
                     const idNum = parseInt(sat.id) || Math.floor(Math.random() * 10000);
-                    const offsetMinutes = ((idNum * 13 + index * 19) % 170) + 4;
+                    const offsetMinutes = ((idNum * 13 + index * 19) % 170) + 2; 
                     const durMins = (idNum % 14) + 12; 
                     const maxEl = 45 + (idNum % 42); 
                     
@@ -1054,6 +1055,8 @@
         window.addEventListener('resize', resizeGlobe);
 
         let lastFrameTime = performance.now();
+        let lastPassUpdate = 0;
+
         function animateSatellites(currentTime) {
             const deltaSec = (currentTime - lastFrameTime) / 1000;
             lastFrameTime = currentTime;
@@ -1069,6 +1072,12 @@
                     myGlobe.objectsData(currentLiveSatObjects);
                     myGlobe.htmlElementsData(targetLabelData);
                 }
+            }
+
+            // Real-time dynamic live update for Upcoming Passes every 1 second
+            if (currentTime - lastPassUpdate > 1000) {
+                lastPassUpdate = currentTime;
+                populateUpcomingPassesList();
             }
 
             requestAnimationFrame(animateSatellites);
