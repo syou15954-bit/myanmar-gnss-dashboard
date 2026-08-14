@@ -151,7 +151,6 @@
         .fill-gps { background: linear-gradient(90deg, #059669, #10b981); box-shadow: 0 0 8px #10b981; }
         .fill-bds { background: linear-gradient(90deg, #dc2626, #ef4444); box-shadow: 0 0 8px #ef4444; }
 
-        /* Bottom panels: 3 Equal Width Columns filling 100% */
         .bottom-dock { 
             flex: 1; 
             display: grid; 
@@ -274,6 +273,7 @@
         </section>
 
         <section class="bottom-dock">
+            <!-- LEFT PANEL: GNSS Fleet Status + SQL Database Table -->
             <div class="glass-panel" style="padding-bottom: 0;">
                 <div class="panel-title">
                     <span id="fleet-title-text">🗄️ Local GNSS DB & Fleet Status</span>
@@ -286,6 +286,7 @@
                     <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">ရပ်နား</div><div class="dop-val" style="color:var(--accent-red);">1</div></div>
                 </div>
                 
+                <!-- SQL TABLE -->
                 <div style="flex:1; overflow-y:auto; margin-top: 4px; border: 1px solid var(--panel-border); border-radius: 4px; border-bottom: none;">
                     <table class="cyber-table mono">
                         <thead>
@@ -296,6 +297,7 @@
                 </div>
             </div>
 
+            <!-- MIDDLE PANEL: Myanmar Local Metrics -->
             <div class="glass-panel mono">
                 <div class="panel-title" style="justify-content: center; border-bottom: none; padding-bottom: 0;">
                     <select id="matrix-sys-a" class="matrix-select" onchange="renderCustomSelection()">
@@ -362,6 +364,7 @@
                 </div>
             </div>
 
+            <!-- RIGHT PANEL: DOP & RINEX Analysis -->
             <div class="glass-panel">
                 <div class="panel-title">
                     <span id="chart-panel-title">🎯 တည်နေရာ တိကျမှု (DOP) & RINEX Analysis</span>
@@ -392,10 +395,11 @@
         let CONSTELLATION_SATS = { gps: [], bds: [], galileo: [], glonass: [], other: [], all: [] };
         let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass', 'other']);
         let currentLiveSatObjects = [];
+        let targetLabelData = [];
 
         // --- GLOBAL GEOMETRY & MATERIALS ---
         const SAT_GEOM = new THREE.SphereGeometry(1.2, 12, 12);
-        const TARGET_GEOM = new THREE.SphereGeometry(1.6, 16, 16);
+        const TARGET_GEOM = new THREE.SphereGeometry(1.8, 16, 16);
 
         const SAT_MATS = {
             'gps': new THREE.MeshBasicMaterial({ color: '#10b981' }),
@@ -405,7 +409,6 @@
             'other': new THREE.MeshBasicMaterial({ color: '#f59e0b' })
         };
 
-        // အရောင်ကို အဖြူမသုံးတော့ဘဲ သူ့မူလအရောင်ကိုပဲ ပြန်ယူပါမည်။
         function getSatMaterial(name) {
             let uname = (name || '').toUpperCase();
             if (uname.includes('GPS') || uname.includes('NAVSTAR')) return SAT_MATS['gps'];
@@ -659,10 +662,13 @@
                 `;}).join('');
             }
 
+            targetLabelData = currentLiveSatObjects.filter(s => s.id === selectedSatId);
+
             if (myGlobe) {
-                myGlobe.objectsData([...currentLiveSatObjects]);
-                myGlobe.labelsData(currentLiveSatObjects.filter(d => d.id === selectedSatId));
+                myGlobe.objectsData(currentLiveSatObjects);
+                myGlobe.htmlElementsData(targetLabelData);
             }
+            
             if (currentLiveSatObjects.length > 0 && !currentLiveSatObjects.some(s => s.id === selectedSatId)) {
                 selectSatellite(currentLiveSatObjects[0].id);
             }
@@ -739,9 +745,11 @@
                 else row.classList.remove('table-row-selected');
             });
 
+            targetLabelData = currentLiveSatObjects.filter(s => s.id === id);
+
             if (myGlobe) {
-                myGlobe.objectsData([...currentLiveSatObjects]);
-                myGlobe.labelsData(currentLiveSatObjects.filter(d => d.id === selectedSatId));
+                myGlobe.objectsData(currentLiveSatObjects);
+                myGlobe.htmlElementsData(targetLabelData);
             }
 
             updateTargetOrbitPath(id);
@@ -849,15 +857,32 @@
                         return new THREE.Mesh(geom, mat);
                     })
                     .onObjectClick((d) => { if (d && d.id) selectSatellite(d.id); })
-                    .labelsData([])
-                    .labelLat('lat')
-                    .labelLng('lng')
-                    .labelAltitude('alt')
-                    .labelColor(d => getSatColor(d.fullName))
-                    .labelDotRadius(0)
-                    .labelSize(1.2)
-                    .labelText(d => `🎯 TARGET: ${d.name}`)
-                    .labelResolution(2)
+                    .htmlElementsData(targetLabelData)
+                    .htmlLat('lat')
+                    .htmlLng('lng')
+                    .htmlAltitude('alt')
+                    .htmlElement(d => {
+                        const el = document.createElement('div');
+                        const countryColor = getSatColor(d.fullName);
+                        // Clean ASCII text to prevent U+25BA or emoji rendering bug (the ? box)
+                        el.innerHTML = `
+                            <div style="
+                                border: 1px solid ${countryColor}; 
+                                background: rgba(2, 6, 23, 0.9); 
+                                color: ${countryColor}; 
+                                padding: 3px 6px; 
+                                border-radius: 4px; 
+                                font-size: 9px; 
+                                font-family: 'JetBrains Mono', monospace; 
+                                font-weight: 700; 
+                                white-space: nowrap; 
+                                pointer-events: none; 
+                                transform: translate(12px, -12px); 
+                                box-shadow: 0 0 10px ${countryColor};
+                            ">TARGET: ${d.name}</div>
+                        `;
+                        return el;
+                    })
                     .pathsData([]).pathPoints(d => d.coords).pathPointLat(p => p.lat).pathPointLng(p => p.lng).pathPointAlt(p => p.alt).pathColor(d => d.color || '#38bdf8').pathStroke(d => d.stroke || 3.2);
 
                 fetch('https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson')
@@ -882,8 +907,8 @@
                         s.lng = sgp4Pos.lng;
                     });
                     if (myGlobe) {
-                        myGlobe.objectsData([...currentLiveSatObjects]);
-                        myGlobe.labelsData(currentLiveSatObjects.filter(d => d.id === selectedSatId));
+                        myGlobe.objectsData(currentLiveSatObjects);
+                        myGlobe.htmlElementsData(targetLabelData);
                     }
                 }
             }
