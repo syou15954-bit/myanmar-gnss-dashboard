@@ -277,7 +277,6 @@
                 <div class="tle-box" id="tle-display-modal" style="max-height: 120px;">Fetching NORAD TLE Data...</div>
             </div>
 
-            <!-- TIME CONTROL & ORBIT TOGGLES -->
             <div class="center-feature-bar mono" id="globe-controls-bar">
                 <button class="feature-btn" id="btn-stations" onclick="toggleFeatureMode('stations', this)">📡 CORS Stations</button>
                 <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit Ring & Ground Track</button>
@@ -288,7 +287,6 @@
                 <button class="speed-btn" onclick="setSimSpeed(300, this)">300x</button>
             </div>
 
-            <!-- UPCOMING PASSES CARD -->
             <div class="hud-card hud-right-passes mono">
                 <div class="hud-card-title">
                     <span id="pass-title">► UPCOMING PASSES</span>
@@ -374,7 +372,7 @@
                 </div>
             </div>
 
-            <!-- RIGHT PANEL -->
+            <!-- RIGHT PANEL: RINEX Analysis -->
             <div class="glass-panel">
                 <div class="panel-title">
                     <span id="chart-panel-title">📡 RINEX Data Analysis</span>
@@ -411,8 +409,7 @@
         let myGlobe = null;
         let modes = { stations: false, tracks: true };
 
-        // REAL-TIME / SIMULATION TIME SYSTEM
-        let simSpeed = 30; // Default 30x real-time speed for visible satellite glide
+        let simSpeed = 30; 
         let simTimeElapsedSec = 0;
 
         let TLE_DATABASE = {};
@@ -725,7 +722,6 @@
             }
         }
 
-        // --- FIXED DYNAMIC TIME-SHIFTED UPCOMING PASSES ---
         function populateUpcomingPassesList() {
             try {
                 const listContainer = document.getElementById('upcoming-passes-list');
@@ -735,11 +731,9 @@
                 
                 let allPasses = currentLiveSatObjects.map((sat, index) => {
                     const idNum = parseInt(sat.id) || Math.floor(Math.random() * 10000);
-                    
-                    // Staggered distinct start offsets from 4m up to 180m
                     const offsetMinutes = ((idNum * 13 + index * 19) % 170) + 4;
-                    const durMins = (idNum % 14) + 12; // 12m to 26m duration
-                    const maxEl = 45 + (idNum % 42); // 45 to 87 deg
+                    const durMins = (idNum % 14) + 12; 
+                    const maxEl = 45 + (idNum % 42); 
                     
                     const aosTime = new Date(now.getTime() + offsetMinutes * 60000);
                     
@@ -752,10 +746,9 @@
                     const dirs = ['NW -> SE', 'SW -> NE', 'N -> S', 'S -> N', 'W -> E'];
                     const dir = dirs[idNum % dirs.length];
 
-                    return { sat, aosTime, durMins, maxEl, timeStr: formatTime(aosTime), offsetMinutes, dir };
+                    return { sat, aosTime, durMins, maxEl, timeStr: formatTime(aosTime), dir };
                 });
 
-                // Chronological sort: earliest upcoming pass first
                 allPasses.sort((a, b) => a.aosTime - b.aosTime);
                 let passesToShow = allPasses.slice(0, 15);
 
@@ -778,44 +771,62 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
-        // --- FULL CONTINUOUS 3D ORBIT RING & GROUND TRACK ---
-        function generateSatOrbitTrack(id, fixedAlt = null) {
+        // --- FIXED TRUE ORBITAL PATH & GROUND TRACK GENERATOR ---
+        function generateSatOrbitTrack(id, isGroundTrack = false) {
             try {
                 const sat = TLE_DATABASE[id];
                 if (!sat || typeof satellite === 'undefined') return { coords: [], color: '#38bdf8', stroke: 3.2 };
                 const satrec = satellite.twoline2satrec(sat.line1, sat.line2);
                 const satColor = getSatColor(sat.name);
+                
                 const meanMotionRadMin = satrec.no_kozai || satrec.no || 0.004;
                 const periodMin = (2 * Math.PI) / meanMotionRadMin;
                 const periodSec = periodMin * 60;
+                
                 const points = [];
+                // Center orbit calculation around current simulation time
                 const now = new Date(Date.now() + simTimeElapsedSec * 1000);
-                const numSteps = 120;
+                const numSteps = 100;
+                
+                // For a full smooth orbit loop, span across 1 full orbital period (-0.5 to +0.5 of period)
+                const halfPeriod = periodSec / 2;
                 const stepSec = periodSec / numSteps;
                 
                 for (let i = 0; i <= numSteps; i++) {
-                    const timeOffset = i * stepSec;
+                    const timeOffset = -halfPeriod + (i * stepSec);
                     const targetTime = new Date(now.getTime() + timeOffset * 1000);
                     const posVel = satellite.propagate(satrec, targetTime);
+                    
                     if (posVel && posVel.position && !isNaN(posVel.position.x)) {
                         const targetGmst = satellite.gstime(targetTime);
                         const posGd = satellite.eciToGeodetic(posVel.position, targetGmst);
                         const lat = satellite.degreesLat(posGd.latitude);
                         const lng = satellite.degreesLong(posGd.longitude);
-                        let normAlt = fixedAlt !== null ? fixedAlt : (0.18 + (posGd.height / 35786) * 0.22);
-                        if (normAlt > 0.45 && fixedAlt === null) normAlt = 0.45;
-                        points.push({ lat, lng, alt: normAlt });
+                        
+                        if (!isGroundTrack) {
+                            // 3D Space Orbit Ring (Floating above Earth)
+                            let normAlt = 0.28 + (posGd.height / 35786) * 0.15;
+                            if (normAlt > 0.42) normAlt = 0.42;
+                            points.push({ lat, lng, alt: normAlt });
+                        } else {
+                            // 2D Ground Track (Hugging Earth Surface)
+                            points.push({ lat, lng, alt: 0.005 });
+                        }
                     }
                 }
-                return { coords: points, color: fixedAlt !== null ? 'rgba(239, 68, 68, 0.9)' : satColor, stroke: fixedAlt !== null ? 1.5 : 3.2 };
+                return { 
+                    coords: points, 
+                    color: isGroundTrack ? 'rgba(239, 68, 68, 0.85)' : satColor, 
+                    stroke: isGroundTrack ? 1.5 : 3.0 
+                };
             } catch(e) { return { coords: [], color: '#38bdf8', stroke: 3.2 }; }
         }
 
         function updateTargetOrbitPath(id) {
             if (!myGlobe || !id || !TLE_DATABASE[id]) return;
             if (!modes.tracks) { myGlobe.pathsData([]); return; }
-            const orbitTrack = generateSatOrbitTrack(id, null); 
-            const groundTrack = generateSatOrbitTrack(id, 0.005); 
+            const orbitTrack = generateSatOrbitTrack(id, false); // 3D Ring
+            const groundTrack = generateSatOrbitTrack(id, true);   // Ground Track
             myGlobe.pathsData([orbitTrack, groundTrack]);
         }
 
@@ -1052,7 +1063,6 @@
 
         window.addEventListener('resize', resizeGlobe);
 
-        // REAL-TIME ORBITAL PROPAGATION ANIMATION LOOP
         let lastFrameTime = performance.now();
         let lastPassUpdateTime = 0;
 
@@ -1060,7 +1070,6 @@
             const deltaSec = (currentTime - lastFrameTime) / 1000;
             lastFrameTime = currentTime;
 
-            // Advance simulation time by speed factor
             simTimeElapsedSec += deltaSec * simSpeed;
 
             if (currentLiveSatObjects.length > 0) {
@@ -1075,13 +1084,11 @@
                     myGlobe.htmlElementsData(targetLabelData);
                 }
 
-                // Update active orbit path smoothly as satellite moves
                 if (selectedSatId && modes.tracks) {
                     updateTargetOrbitPath(selectedSatId);
                 }
             }
 
-            // Periodically refresh pass times
             if (currentTime - lastPassUpdateTime > 3000) {
                 lastPassUpdateTime = currentTime;
                 populateUpcomingPassesList();
