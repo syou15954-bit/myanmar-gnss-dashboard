@@ -751,7 +751,7 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
-        // --- PRECISE 3D ORBIT RING & GROUND TRACK GENERATOR (FIXED LOOP ISSUE) ---
+        // --- WORKING 3D ORBIT RING & GROUND TRACK GENERATOR ---
         function generateSatOrbitTrack(id, isGroundTrack = false) {
             try {
                 const sat = TLE_DATABASE[id];
@@ -766,12 +766,11 @@
                 
                 const points = [];
                 const now = new Date();
-                const numSteps = 120;
+                const numSteps = 100;
                 const stepSec = periodSec / numSteps;
                 
                 for (let i = 0; i <= numSteps; i++) {
-                    // Forward projection for 1 full orbital period without wrapping/looping loops
-                    const timeOffset = i * stepSec;
+                    const timeOffset = (i * stepSec) - (periodSec / 2);
                     const targetTime = new Date(now.getTime() + timeOffset * 1000);
                     const posVel = satellite.propagate(satrec, targetTime);
                     
@@ -793,7 +792,7 @@
                 if (points.length === 0) return null;
                 return { 
                     coords: points, 
-                    color: isGroundTrack ? 'rgba(239, 68, 68, 0.95)' : satColor, 
+                    color: isGroundTrack ? '#ef4444' : satColor, 
                     stroke: isGroundTrack ? 2.5 : 3.0 
                 };
             } catch(e) { return null; }
@@ -1035,6 +1034,7 @@
                         `;
                         return el;
                     })
+                    // Correct globe.gl path mapping configuration
                     .pathsData([])
                     .pathPoints(d => d.coords)
                     .pathPointLat(p => p.lat)
