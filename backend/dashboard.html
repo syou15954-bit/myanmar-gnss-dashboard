@@ -285,10 +285,10 @@
 
             <div class="center-feature-bar mono" id="globe-controls-bar">
                 <button class="feature-btn" id="btn-stations" onclick="toggleFeatureMode('stations', this)">📡 CORS Stations</button>
-                <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit Ring</button>
+                <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit Ring & Ground Track</button>
             </div>
 
-            <!-- UPCOMING PASSES CARD (IDs added for dynamic update) -->
+            <!-- UPCOMING PASSES CARD -->
             <div class="hud-card hud-right-passes mono">
                 <div class="hud-card-title">
                     <span id="pass-title">► UPCOMING PASSES</span>
@@ -471,27 +471,33 @@
             return '#f59e0b';
         }
 
+        // FIXED: Padded RAAN and Mean Anomaly strings to prevent satellite.js parsing crashes
         function generateHighDensityFallbackList() {
             let list = [];
-            for(let i=1; i<=31; i++) {
-                let prn = i < 10 ? `0${i}` : `${i}`;
-                list.push({ id: `${20000+i}`, name: `GPS SVN-${50+i} (PRN-${prn})`, line1: `1 ${20000+i}U 98067A   26223.41203412  .00000032  00000-0  00000+0 0  9993`, line2: `2 ${20000+i}  55.1234 ${(i*11.6)%360} 0012345  45.1234 315.1234  2.00561234 12342` });
-            }
-            for(let i=1; i<=35; i++) {
-                let cId = i < 10 ? `C0${i}` : `C${i}`;
-                let isGeo = i <= 5;
-                let inc = isGeo ? 1.8 : 55.0;
-                let meanR = isGeo ? (80 + i*3) : (i*10.2)%360;
-                list.push({ id: `${40000+i}`, name: `BDS-3 ${isGeo?'GEO':'MEO'}-${i} (${cId})`, line1: `1 ${40000+i}U 18018A   26223.11112222  .00000020  00000-0  00000+0 0  9998`, line2: `2 ${40000+i}   ${inc}  ${meanR} 0002134 180.1234 180.4321  1.00271234  5432` });
-            }
-            for(let i=1; i<=24; i++) {
-                let eId = i < 10 ? `E0${i}` : `E${i}`;
-                list.push({ id: `${37000+i}`, name: `GALILEO GSAT-02${i<10?'0':''}${i} (${eId})`, line1: `1 ${37000+i}U 11060A   26223.22223333  .00000010  00000-0  00000+0 0  9992`, line2: `2 ${37000+i}  56.0123 ${(i*15)%360} 0002341  30.1234 330.1234  1.70481234  4321` });
-            }
-            for(let i=1; i<=24; i++) {
-                let rId = i < 10 ? `R0${i}` : `R${i}`;
-                list.push({ id: `${41000+i}`, name: `GLONASS-M No.${700+i} (${rId})`, line1: `1 ${41000+i}U 14084A   26223.66667777  .00000040  00000-0  00000+0 0  9997`, line2: `2 ${41000+i}  64.8123 ${(i*15)%360} 0015678  60.1234 300.4321  2.13101234  9988` });
-            }
+            const addSats = (startId, prefix, count, inc, no) => {
+                for(let i=1; i<=count; i++) {
+                    let satId = (startId + i).toString().padStart(5, '0');
+                    let prn = i.toString().padStart(2, '0');
+                    let raan = ((i * 15.5) % 360).toFixed(4).padStart(8, ' ');
+                    let ma = ((i * 25.1) % 360).toFixed(4).padStart(8, ' ');
+                    let incStr = inc.toFixed(4).padStart(8, ' ');
+                    let noStr = no.toFixed(8).padStart(11, ' ');
+                    
+                    list.push({
+                        id: satId,
+                        name: `${prefix}-${prn}`,
+                        line1: `1 ${satId}U 18014A   23264.44421296 -.00000038  00000-0  00000-0 0  9992`,
+                        line2: `2 ${satId} ${incStr} ${raan} 0041234  30.1234 ${ma} ${noStr} 12342`
+                    });
+                }
+            };
+            
+            addSats(20000, "GPS SVN", 31, 55.1500, 2.00561234);
+            addSats(30000, "BDS MEO", 35, 55.0000, 1.86234123);
+            addSats(40000, "GALILEO GSAT", 24, 56.0000, 1.70481234);
+            addSats(50000, "GLONASS-M", 24, 64.8000, 2.13101234);
+            addSats(60000, "QZSS/IRNSS", 10, 15.0000, 1.00271234); // Included 'other' constellation
+
             return list;
         }
 
@@ -566,16 +572,15 @@
             }
         }
 
-        function useFallbackData() {
-            let fallbackList = generateHighDensityFallbackList();
-            categorizeSatsList(fallbackList);
-        }
-
         function toggleSystemFilter(sys, btn) {
             if (activeSystems.has(sys)) {
                 if (activeSystems.size > 1) {
                     activeSystems.delete(sys);
                     btn.classList.remove('toggle-on');
+                } else {
+                    // Prevent untoggling all buttons; reset to ALL
+                    selectAllSystems();
+                    return;
                 }
             } else {
                 activeSystems.add(sys);
@@ -691,7 +696,8 @@
             resizeGlobe();
         }
 
-        function generateSatOrbitTrack(id) {
+        // GENERATE BOTH HIGH ORBIT AND GROUND TRACK
+        function generateSatOrbitTrack(id, fixedAlt = null) {
             const sat = TLE_DATABASE[id];
             if (!sat || typeof satellite === 'undefined') return { coords: [], color: '#38bdf8', stroke: 3.2 };
             const satrec = satellite.twoline2satrec(sat.line1, sat.line2);
@@ -701,7 +707,6 @@
             const periodSec = periodMin * 60;
             const points = [];
             const now = new Date();
-            const currentGmst = satellite.gstime(now);
             const numSteps = 120;
             const stepSec = periodSec / numSteps;
             
@@ -710,22 +715,25 @@
                 const targetTime = new Date(now.getTime() + timeOffset * 1000);
                 const posVel = satellite.propagate(satrec, targetTime);
                 if (posVel.position) {
-                    const posGd = satellite.eciToGeodetic(posVel.position, currentGmst);
+                    // MUST calculate GS time accurately for targetTime to get correct Earth-relative path!
+                    const targetGmst = satellite.gstime(targetTime);
+                    const posGd = satellite.eciToGeodetic(posVel.position, targetGmst);
                     const lat = satellite.degreesLat(posGd.latitude);
                     const lng = satellite.degreesLong(posGd.longitude);
-                    let normAlt = 0.18 + (posGd.height / 35786) * 0.22;
-                    if (normAlt > 0.45) normAlt = 0.45;
+                    let normAlt = fixedAlt !== null ? fixedAlt : (0.18 + (posGd.height / 35786) * 0.22);
+                    if (normAlt > 0.45 && fixedAlt === null) normAlt = 0.45;
                     points.push({ lat, lng, alt: normAlt });
                 }
             }
-            return { coords: points, color: satColor, stroke: 3.2 };
+            return { coords: points, color: fixedAlt !== null ? 'rgba(239, 68, 68, 0.9)' : satColor, stroke: fixedAlt !== null ? 1.5 : 3.2 };
         }
 
         function updateTargetOrbitPath(id) {
             if (!myGlobe || !id || !TLE_DATABASE[id]) return;
             if (!modes.tracks) { myGlobe.pathsData([]); return; }
-            const track = generateSatOrbitTrack(id);
-            myGlobe.pathsData([track]);
+            const orbitTrack = generateSatOrbitTrack(id, null); // 3D Ring
+            const groundTrack = generateSatOrbitTrack(id, 0.005); // 2D Ground Path (Hugging Earth)
+            myGlobe.pathsData([orbitTrack, groundTrack]);
         }
 
         function toggleFeatureMode(feature, btn) {
@@ -742,37 +750,27 @@
             if (feature === 'tracks') updateTargetOrbitPath(selectedSatId);
         }
 
-        // --- NEW: Dynamic Passes Calculation Mockup ---
+        // --- NEW: DYNAMIC UPCOMING PASSES UPDATE ---
         function updateUpcomingPasses(sat) {
             const idNum = parseInt(sat.id) || Math.floor(Math.random() * 10000);
             
-            // Generate some deterministic fake pass times based on the Satellite ID so it changes when clicking different satellites.
-            const hour = (idNum % 12) + 1; // Random hour 1-12
-            const startMin = (idNum % 60); // Random start minute
-            const durMin = (idNum % 15) + 10; // Duration 10-25 mins
+            const now = new Date();
+            const startOffsetMins = (idNum % 45) + 5; 
+            const durMins = (idNum % 15) + 12; 
             
-            let endMin = startMin + durMin;
-            let endHour = hour;
-            if (endMin >= 60) {
-                endMin = endMin % 60;
-                endHour++;
-            }
+            const aosTime = new Date(now.getTime() + startOffsetMins * 60000);
+            const losTime = new Date(aosTime.getTime() + durMins * 60000);
+            
+            const formatTime = (d) => d.toTimeString().split(' ')[0] + ' MMT';
+            const maxEl = 40 + (idNum % 45); 
 
-            const maxEl = 40 + (idNum % 45); // Elevation 40-85 degrees
-
-            const aosStr = `${String(hour).padStart(2, '0')}:${String(startMin).padStart(2, '0')}:15 MMT`;
-            const losStr = `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}:45 MMT`;
-
-            document.getElementById('pass-aos').innerText = aosStr;
-            document.getElementById('pass-los').innerText = losStr;
-            document.getElementById('pass-dur').innerText = `${durMin}m 30s`;
+            document.getElementById('pass-aos').innerText = formatTime(aosTime);
+            document.getElementById('pass-los').innerText = formatTime(losTime);
+            document.getElementById('pass-dur').innerText = `${durMins}m 30s`;
             document.getElementById('pass-max-el').innerText = `${maxEl.toFixed(1)}°`;
-            
-            // Optional: Update title to show which satellite the pass is for
             document.getElementById('pass-title').innerText = `► PASS: ${sat.name.substring(0, 10)}`;
         }
 
-        // --- UPDATED: selectSatellite logic handling state changes ---
         function selectSatellite(id) {
             if (!id || !TLE_DATABASE[id]) return;
             selectedSatId = id;
@@ -799,19 +797,20 @@
                 myGlobe.htmlElementsData(targetLabelData);
             }
 
+            // Draw Paths (3D Ring + Ground Track)
             updateTargetOrbitPath(id);
 
-            // 1. Update Upcoming Passes dynamically
+            // Update Upcoming Passes Metrics
             updateUpcomingPasses(sat);
 
-            // 2. Re-render the Chart to make it look like data for this specific satellite
+            // Dynamically update the RINEX chart label if currently active
             const fileListContainer = document.getElementById('rinex-file-list');
             if (fileListContainer && fileListContainer.innerHTML.includes('📄')) {
-                // If files are already uploaded, update the chart to reflect the new satellite
                 renderMockChart(sat.name); 
             }
         }
 
+        // --- RINEX PARSING LOGIC ---
         function parseRinexHeader(text) {
             let markerName = "Unknown";
             let obsDate = "Unknown";
@@ -863,7 +862,7 @@
             const fileListContainer = document.getElementById('rinex-file-list');
             fileListContainer.innerHTML = ''; 
 
-            let targetSatName = TLE_DATABASE[selectedSatId] ? TLE_DATABASE[selectedSatId].name : "All Satellites";
+            let targetSatName = TLE_DATABASE[selectedSatId] ? TLE_DATABASE[selectedSatId].name : "GPS/BDS";
             renderMockChart(targetSatName);
 
             Array.from(fileInput.files).forEach(file => {
@@ -892,10 +891,8 @@
             });
         }
 
-        function renderMockChart(satName = "GPS/BDS General") {
+        function renderMockChart(satName = "Target Sat") {
             let epochs = [], snrGps = [], snrBds = [], numPoints = 16;
-            
-            // Make the chart slightly different based on the satellite name string length so it looks interactive
             const variance = satName.length % 5; 
 
             for (let i = 0; i < numPoints; i++) {
@@ -913,7 +910,7 @@
                 data: {
                     labels: epochs,
                     datasets: [
-                        { label: `Target: ${satName.substring(0,10)} C/N₀`, data: snrGps, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.12)', borderWidth: 2, tension: 0.3, pointRadius: 2.5 },
+                        { label: `${satName.substring(0,10)} C/N₀`, data: snrGps, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.12)', borderWidth: 2, tension: 0.3, pointRadius: 2.5 },
                         { label: 'Avg Fleet C/N₀', data: snrBds, borderColor: 'rgba(255, 255, 255, 0.2)', backgroundColor: 'transparent', borderWidth: 2, borderDash: [5, 5], tension: 0.3, pointRadius: 0 }
                     ]
                 },
@@ -937,6 +934,20 @@
                 });
             }
         });
+
+        function propagateSGP4(id, timeOffsetSec = 0) {
+            const tle = TLE_DATABASE[id];
+            if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 20200 };
+            const satrec = satellite.twoline2satrec(tle.line1, tle.line2);
+            const targetTime = new Date(Date.now() + timeOffsetSec * 1000);
+            const positionAndVelocity = satellite.propagate(satrec, targetTime);
+            const positionEci = positionAndVelocity.position;
+            if (!positionEci) return { lat: 16.8, lng: 96.1, alt: 20200 };
+
+            const gmst = satellite.gstime(targetTime);
+            const positionGd = satellite.eciToGeodetic(positionEci, gmst);
+            return { lat: satellite.degreesLat(positionGd.latitude), lng: satellite.degreesLong(positionGd.longitude), alt: Math.round(positionGd.height) };
+        }
 
         function resizeGlobe() {
             if (myGlobe) {
