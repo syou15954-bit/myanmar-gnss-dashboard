@@ -185,6 +185,7 @@
         .dop-card { background: rgba(2, 6, 23, 0.6); padding: 8px; border-radius: 4px; text-align: center; border: 1px solid var(--panel-border); }
         .dop-val { font-size: 16px; font-weight: 700; color: var(--accent-cyan); margin-top: 4px; }
 
+        /* ====== RINEX Side-by-Side Split Layout CSS ====== */
         .rinex-split-view {
             display: flex; gap: 16px; flex: 1; min-height: 0;
         }
@@ -308,7 +309,7 @@
         </section>
 
         <section class="bottom-dock">
-            <!-- LEFT PANEL: Local GNSS DB & Fleet Status -->
+            <!-- LEFT PANEL -->
             <div class="glass-panel" style="padding-bottom: 0;">
                 <div class="panel-title">
                     <span id="fleet-title-text">🗄️ Local GNSS DB & Fleet Status</span>
@@ -331,7 +332,7 @@
                 </div>
             </div>
 
-            <!-- MIDDLE PANEL: Myanmar Local Metrics -->
+            <!-- MIDDLE PANEL -->
             <div class="glass-panel mono">
                 <div class="panel-title" style="justify-content: center; border-bottom: none; padding-bottom: 0;">
                     <select id="matrix-sys-a" class="matrix-select" onchange="renderCustomSelection()">
@@ -389,13 +390,11 @@
                 </div>
                 
                 <div class="rinex-split-view">
-                    
                     <div class="rinex-left">
                         <div class="mono" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px; padding: 10px; border: 1px dashed rgba(56,189,248,0.4); border-radius: 4px; background: rgba(15,23,42,0.6);">
                             <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:9px; color:var(--text-muted); width: 130px; cursor: pointer;">
                             <button onclick="uploadAndCompare()" class="upload-btn">🚀 ANALYZE RINEX</button>
                         </div>
-
                         <div id="rinex-file-list" class="rinex-file-list mono">
                             <div style="text-align: center; color: var(--text-muted); font-size: 9px; padding: 10px; border: 1px dashed rgba(56, 189, 248, 0.2); border-radius: 4px;">
                                 ဖိုင်များ ထည့်သွင်းရန် စောင့်ဆိုင်းနေပါသည်...
@@ -408,7 +407,6 @@
                             <canvas id="waveformChart"></canvas>
                         </div>
                     </div>
-                    
                 </div>
             </div>
         </section>
@@ -499,10 +497,12 @@
                 for(let i=1; i<=30; i++) {
                     let satId = (parseInt(base.line1.substring(2,7)) + i).toString().padStart(5, '0');
                     let prn = i.toString().padStart(2, '0');
+                    
                     let newRaan = ((i * 12.5) % 360).toFixed(4).padStart(8, ' ');
+                    let newMa = ((i * 25.1) % 360).toFixed(4).padStart(8, ' '); // 0 SATS Error အား ကာကွယ်ရန် Mean Anomaly ကို ဖြန့်ကျက်ထားပါသည်
                     
                     let newLine1 = base.line1.substring(0, 2) + satId + base.line1.substring(7);
-                    let newLine2 = base.line2.substring(0, 2) + satId + base.line2.substring(7, 17) + newRaan + base.line2.substring(25);
+                    let newLine2 = base.line2.substring(0, 2) + satId + base.line2.substring(7, 17) + newRaan + base.line2.substring(25, 43) + newMa + base.line2.substring(51);
 
                     list.push({ id: satId, name: `${base.sys}-${prn}`, line1: newLine1, line2: newLine2 });
                 }
@@ -510,45 +510,32 @@
             return list;
         }
 
-        async function loadCelesTrakTLEs() {
-            try {
-                // Fetch directly from the Python Backend API
-                let response = await fetch('/api/tle');
-                if (response.ok) {
-                    let json = await response.json();
-                    
-                    if (json.data && json.data.all && json.data.all.length > 0) {
-                        // Assign pre-categorized data directly from Python backend
-                        CONSTELLATION_SATS = json.data;
-                        
-                        json.data.all.forEach(s => {
-                            TLE_DATABASE[s.id] = s;
-                        });
-
-                        document.getElementById('tle-status-badge') && 
-                            (document.getElementById('tle-status-badge').innerText = `● LIVE SYNC (${json.data.all.length} SATS)`);
-                        
-                        renderCustomSelection();
-                        return; // Stop here if successful
-                    }
-                }
-            } catch (err) {
-                console.error("Backend API Fetch Error:", err);
+        function parseRawTLEString(text) {
+            let parsedSats = [];
+            let lines = text.split('\n').map(l => l.replace(/\r/g, '')).filter(l => l.trim().length > 0);
+            let i = 0;
+            while (i < lines.length) {
+                if (i + 2 < lines.length && lines[i+1].startsWith('1 ') && lines[i+2].startsWith('2 ')) {
+                    let satName = lines[i].trim();
+                    let l1 = lines[i+1];
+                    let l2 = lines[i+2];
+                    let noradId = l1.substring(2, 7).trim();
+                    parsedSats.push({ id: noradId, name: `${satName} (${noradId})`, line1: l1, line2: l2 });
+                    i += 3;
+                } else if (lines[i].startsWith('1 ') && i + 1 < lines.length && lines[i+1].startsWith('2 ')) {
+                    let l1 = lines[i];
+                    let l2 = lines[i+1];
+                    let noradId = l1.substring(2, 7).trim();
+                    parsedSats.push({ id: noradId, name: `SAT-${noradId}`, line1: l1, line2: l2 });
+                    i += 2;
+                } else { i++; }
             }
-
-            // Fallback strategy if Python API is unreachable or fails
-            console.warn("Using Fallback TLE Data due to API failure.");
-            document.getElementById('tle-status-badge') && 
-                (document.getElementById('tle-status-badge').innerText = `● FALLBACK MODE`);
-            useFallbackData();
-            renderCustomSelection();
+            return parsedSats;
         }
 
-        function useFallbackData() {
-            let fallbackList = generateHighDensityFallbackList();
-            
-            let cat = { gps: [], bds: [], galileo: [], glonass: [], other: [], all: fallbackList };
-            fallbackList.forEach(s => {
+        function categorizeSatsList(list) {
+            let cat = { gps: [], bds: [], galileo: [], glonass: [], other: [], all: list };
+            list.forEach(s => {
                 let uname = (s.name || "").toUpperCase();
                 if (uname.includes('GPS') || uname.includes('NAVSTAR')) cat.gps.push(s);
                 else if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('C0')) cat.bds.push(s);
@@ -559,6 +546,61 @@
                 TLE_DATABASE[s.id] = s;
             });
             CONSTELLATION_SATS = cat;
+        }
+
+        async function loadCelesTrakTLEs() {
+            // Tier 1: Try Python API First (Fastest and prevents CORS)
+            try {
+                let response = await fetch('/api/tle');
+                if (response.ok) {
+                    let json = await response.json();
+                    if (json.data && json.data.all && json.data.all.length > 0) {
+                        CONSTELLATION_SATS = json.data;
+                        json.data.all.forEach(s => { TLE_DATABASE[s.id] = s; });
+                        document.getElementById('tle-status-badge') && (document.getElementById('tle-status-badge').innerText = `● LIVE SYNC (${json.data.all.length} SATS)`);
+                        renderCustomSelection();
+                        return; 
+                    }
+                }
+            } catch (err) { console.warn("Backend API Fetch Error, trying direct fetch..."); }
+
+            // Tier 2: Try Direct Celestrak Fetch (Fallback if Python is down)
+            let loadedSuccessfully = false;
+            const urls = [
+                'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://celestrak.org/NORAD/elements/gp.php?GROUP=gnss&FORMAT=tle'),
+                'https://corsproxy.io/?' + encodeURIComponent('https://celestrak.org/NORAD/elements/gp.php?GROUP=gnss&FORMAT=tle')
+            ];
+
+            for (let url of urls) {
+                try {
+                    let response = await fetch(url, { mode: 'cors' });
+                    if (response.ok) {
+                        let text = await response.text();
+                        if (text && text.includes('1 ') && text.includes('2 ')) {
+                            let parsedList = parseRawTLEString(text);
+                            if (parsedList.length > 30) {
+                                categorizeSatsList(parsedList);
+                                loadedSuccessfully = true;
+                                document.getElementById('tle-status-badge') && (document.getElementById('tle-status-badge').innerText = `● LIVE CELESTRAK (${parsedList.length} SATS)`);
+                                renderCustomSelection();
+                                break;
+                            }
+                        }
+                    }
+                } catch (err) {}
+            }
+
+            // Tier 3: Hardcoded Fallback Mock (If all internet fetches fail)
+            if (!loadedSuccessfully) {
+                document.getElementById('tle-status-badge') && (document.getElementById('tle-status-badge').innerText = `● FALLBACK MODE`);
+                useFallbackData();
+                renderCustomSelection();
+            }
+        }
+
+        function useFallbackData() {
+            let fallbackList = generateHighDensityFallbackList();
+            categorizeSatsList(fallbackList);
         }
 
         function toggleSystemFilter(sys, btn) {
@@ -979,6 +1021,16 @@
                 }
             });
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const tbody = document.getElementById('sat-table-body');
+            if (tbody) {
+                tbody.addEventListener('click', (e) => {
+                    const row = e.target.closest('tr');
+                    if (row && row.getAttribute('data-id')) selectSatellite(row.getAttribute('data-id'));
+                });
+            }
+        });
 
         function resizeGlobe() {
             if (myGlobe) {
