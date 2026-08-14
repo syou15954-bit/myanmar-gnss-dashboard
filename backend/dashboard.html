@@ -116,8 +116,8 @@
 
         .center-feature-bar {
             position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 15;
-            display: flex; gap: 8px; background: rgba(15, 23, 42, 0.92); padding: 5px 14px;
-            border-radius: 6px; border: 1px solid var(--panel-border); backdrop-filter: blur(12px); align-items: center;
+            display: flex; gap: 10px; background: rgba(15, 23, 42, 0.92); padding: 5px 14px;
+            border-radius: 6px; border: 1px solid var(--panel-border); backdrop-filter: blur(12px);
         }
 
         .feature-btn {
@@ -126,12 +126,6 @@
         }
         .feature-btn:hover { color: #fff; border-color: var(--accent-cyan); }
         .feature-btn.active-mode { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border-color: var(--accent-cyan); }
-
-        .speed-btn {
-            background: #020617; color: var(--text-muted); border: 1px solid var(--panel-border);
-            padding: 3px 8px; border-radius: 3px; font-size: 9.5px; font-weight: 700; cursor: pointer;
-        }
-        .speed-btn.active-spd { background: var(--accent-cyan); color: #000; }
 
         .hud-card {
             position: absolute; z-index: 10; background: rgba(15, 23, 42, 0.92); border: 1px solid var(--panel-border);
@@ -280,11 +274,6 @@
             <div class="center-feature-bar mono" id="globe-controls-bar">
                 <button class="feature-btn" id="btn-stations" onclick="toggleFeatureMode('stations', this)">📡 CORS Stations</button>
                 <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit Ring & Ground Track</button>
-                <span style="font-size:9px; color:var(--text-muted); margin-left:6px;">SPEED:</span>
-                <button class="speed-btn" onclick="setSimSpeed(1, this)">1x</button>
-                <button class="speed-btn active-spd" onclick="setSimSpeed(30, this)">30x</button>
-                <button class="speed-btn" onclick="setSimSpeed(120, this)">120x</button>
-                <button class="speed-btn" onclick="setSimSpeed(300, this)">300x</button>
             </div>
 
             <div class="hud-card hud-right-passes mono">
@@ -409,9 +398,6 @@
         let myGlobe = null;
         let modes = { stations: false, tracks: true };
 
-        let simSpeed = 30; 
-        let simTimeElapsedSec = 0;
-
         let TLE_DATABASE = {};
         let CONSTELLATION_SATS = { gps: [], bds: [], galileo: [], glonass: [], other: [], all: [] };
         let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass', 'other']);
@@ -448,12 +434,6 @@
 
         function openTLEModal() { document.getElementById('tleModal').style.display = 'block'; }
         function closeTLEModal() { document.getElementById('tleModal').style.display = 'none'; }
-
-        function setSimSpeed(speed, btn) {
-            simSpeed = speed;
-            document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active-spd'));
-            btn.classList.add('active-spd');
-        }
 
         function toggleMyanmarVisibleOnly(btn) {
             isMyanmarOnlyMode = !isMyanmarOnlyMode;
@@ -602,7 +582,7 @@
                 if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 20200 };
                 
                 const satrec = satellite.twoline2satrec(tle.line1, tle.line2);
-                const targetTime = new Date(Date.now() + (timeOffsetSec + simTimeElapsedSec) * 1000);
+                const targetTime = new Date(Date.now() + timeOffsetSec * 1000);
                 const posVel = satellite.propagate(satrec, targetTime);
                 
                 if (!posVel || !posVel.position || isNaN(posVel.position.x)) {
@@ -727,7 +707,7 @@
                 const listContainer = document.getElementById('upcoming-passes-list');
                 if (!listContainer || currentLiveSatObjects.length === 0) return;
                 
-                const now = new Date(Date.now() + simTimeElapsedSec * 1000);
+                const now = new Date();
                 
                 let allPasses = currentLiveSatObjects.map((sat, index) => {
                     const idNum = parseInt(sat.id) || Math.floor(Math.random() * 10000);
@@ -771,7 +751,7 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
-        // --- FULL DUAL TRAJECTORY GENERATOR (3D ORBIT RING & RED GROUND TRACK) ---
+        // --- 3D ORBIT RING & RED GROUND TRACK PATH GENERATOR ---
         function generateSatOrbitTrack(id, isGroundTrack = false) {
             try {
                 const sat = TLE_DATABASE[id];
@@ -785,7 +765,7 @@
                 const periodSec = periodMin * 60;
                 
                 const points = [];
-                const now = new Date(Date.now() + simTimeElapsedSec * 1000);
+                const now = new Date();
                 const numSteps = 120;
                 const halfPeriod = periodSec / 2;
                 const stepSec = periodSec / numSteps;
@@ -802,12 +782,10 @@
                         let lng = satellite.degreesLong(posGd.longitude);
 
                         if (!isGroundTrack) {
-                            // 3D Space Orbit Ring (Cyan / Constellation Colored)
                             let normAlt = 0.28 + (posGd.height / 35786) * 0.15;
                             if (normAlt > 0.42) normAlt = 0.42;
                             points.push({ lat, lng, alt: normAlt });
                         } else {
-                            // Red Ground Track on Earth Surface
                             points.push({ lat, lng, alt: 0.005 });
                         }
                     }
@@ -826,7 +804,6 @@
                 myGlobe.pathsData([]); 
                 return; 
             }
-            // Pass an array containing BOTH independent trajectory objects (Orbit Ring + Ground Track)
             const orbitTrack = generateSatOrbitTrack(id, false); 
             const groundTrack = generateSatOrbitTrack(id, true);   
             myGlobe.pathsData([orbitTrack, groundTrack]);
@@ -1052,7 +1029,6 @@
                         `;
                         return el;
                     })
-                    // Ensure globe.gl path accessors properly read the array of path objects
                     .pathsData([])
                     .pathPoints(d => d.coords)
                     .pathPointLat(p => p.lat)
@@ -1073,13 +1049,9 @@
         window.addEventListener('resize', resizeGlobe);
 
         let lastFrameTime = performance.now();
-        let lastPassUpdateTime = 0;
-
         function animateSatellites(currentTime) {
             const deltaSec = (currentTime - lastFrameTime) / 1000;
             lastFrameTime = currentTime;
-
-            simTimeElapsedSec += deltaSec * simSpeed;
 
             if (currentLiveSatObjects.length > 0) {
                 currentLiveSatObjects.forEach(s => {
@@ -1096,11 +1068,6 @@
                 if (selectedSatId && modes.tracks) {
                     updateTargetOrbitPath(selectedSatId);
                 }
-            }
-
-            if (currentTime - lastPassUpdateTime > 3000) {
-                lastPassUpdateTime = currentTime;
-                populateUpcomingPassesList();
             }
 
             requestAnimationFrame(animateSatellites);
