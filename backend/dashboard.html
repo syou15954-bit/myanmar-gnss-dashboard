@@ -751,7 +751,7 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
-        // --- DIRECT TRUE ORBIT PATH & GROUND TRACK GENERATOR ---
+        // --- RELIABLE 3D ORBIT RING & GROUND TRACK GENERATOR ---
         function generateSatOrbitTrack(id, isGroundTrack = false) {
             try {
                 const sat = TLE_DATABASE[id];
@@ -766,7 +766,7 @@
                 
                 const points = [];
                 const now = new Date();
-                const numSteps = 100;
+                const numSteps = 120;
                 const stepSec = periodSec / numSteps;
                 
                 for (let i = 0; i <= numSteps; i++) {
