@@ -138,7 +138,7 @@
             border-bottom: 1px solid rgba(56, 189, 248, 0.15); padding-bottom: 4px;
         }
 
-        .hud-right-passes { top: 12px; right: 12px; width: 280px; }
+        .hud-right-passes { top: 12px; right: 12px; width: 300px; display: flex; flex-direction: column; max-height: 280px; }
 
         .matrix-select {
             background: #020617; color: var(--accent-cyan); border: 1px solid var(--panel-border);
@@ -151,11 +151,11 @@
         .fill-gps { background: linear-gradient(90deg, #059669, #10b981); box-shadow: 0 0 8px #10b981; }
         .fill-bds { background: linear-gradient(90deg, #dc2626, #ef4444); box-shadow: 0 0 8px #ef4444; }
 
-        /* Equal 3 columns layout */
+        /* Updated Bottom Dock Layout to give RINEX Panel more space */
         .bottom-dock { 
             flex: 1; 
             display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
+            grid-template-columns: 1fr 1fr 1.6fr; 
             gap: 12px; 
             min-height: 0; 
             width: 100%;
@@ -182,21 +182,30 @@
         .status-pill { padding: 2px 6px; border-radius: 3px; font-size: 8px; font-weight: 700; }
         .pill-green { background: rgba(16, 185, 129, 0.12); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.4); }
 
-        .chart-box { position: relative; flex: 1; width: 100%; min-height: 0; margin-top: 8px; }
+        .chart-box { position: relative; flex: 1; width: 100%; min-height: 0; }
         .chart-box canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
 
         .dop-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 4px; }
         .dop-card { background: rgba(2, 6, 23, 0.6); padding: 8px; border-radius: 4px; text-align: center; border: 1px solid var(--panel-border); }
         .dop-val { font-size: 16px; font-weight: 700; color: var(--accent-cyan); margin-top: 4px; }
 
-        .upload-box { display: flex; gap: 6px; align-items: center; background: rgba(2, 6, 23, 0.6); padding: 6px; border-radius: 4px; border: 1px dashed var(--panel-border); margin-bottom: 8px; flex-shrink: 0; }
         .upload-btn { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 4px 10px; border-radius: 3px; font-size: 9.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
         .upload-btn:hover { background: rgba(56, 189, 248, 0.35); }
 
-        /* RINEX File Cards CSS */
+        /* ====== RINEX Side-by-Side Split Layout CSS ====== */
+        .rinex-split-view {
+            display: flex; gap: 16px; flex: 1; min-height: 0;
+        }
+        .rinex-left {
+            width: 260px; display: flex; flex-direction: column; min-height: 0; flex-shrink: 0;
+        }
+        .rinex-right {
+            flex: 1; display: flex; flex-direction: column; min-height: 0;
+        }
+
         .rinex-file-list {
             display: flex; flex-direction: column; gap: 8px; 
-            max-height: 105px; overflow-y: auto; margin-bottom: 8px; padding-right: 6px; flex-shrink: 0;
+            flex: 1; overflow-y: auto; margin-bottom: 0; padding-right: 6px;
         }
         .rinex-card {
             background: rgba(2, 6, 23, 0.8); border: 1px solid rgba(56, 189, 248, 0.2); border-left: 3px solid var(--accent-cyan);
@@ -214,6 +223,9 @@
         .rinex-card .c-meta b { 
             color: #f8fafc; text-align: left; font-weight: 500; line-height: 1.4; word-break: break-word; 
         }
+
+        /* Pass Card Styling */
+        .pass-card:hover { background: rgba(56, 189, 248, 0.15) !important; }
 
         #tleModal {
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 200;
@@ -288,16 +300,15 @@
                 <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit Ring & Ground Track</button>
             </div>
 
-            <!-- UPCOMING PASSES CARD -->
+            <!-- UPCOMING PASSES CLICKABLE LIST CARD -->
             <div class="hud-card hud-right-passes mono">
                 <div class="hud-card-title">
-                    <span id="pass-title">► UPCOMING PASSES</span>
-                    <span style="color:var(--accent-green); font-size:8px;">[IN PASS]</span>
+                    <span>► UPCOMING PASSES</span>
+                    <span style="color:var(--accent-green); font-size:8px;">[CLICK TO TRACK]</span>
                 </div>
-                <div class="hud-stat-line"><span>AOS TIME:</span><b class="hud-stat-val" style="color:var(--accent-cyan);" id="pass-aos">--:--:-- MMT</b></div>
-                <div class="hud-stat-line"><span>LOS TIME:</span><b class="hud-stat-val" style="color:var(--accent-yellow);" id="pass-los">--:--:-- MMT</b></div>
-                <div class="hud-stat-line"><span>DURATION:</span><b class="hud-stat-val" id="pass-dur">--m --s</b></div>
-                <div class="hud-stat-line"><span>MAX ELEVATION:</span><b class="hud-stat-val" style="color:var(--accent-green);" id="pass-max-el">--°</b></div>
+                <div id="upcoming-passes-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;">
+                    <!-- Javascript will populate this list -->
+                </div>
             </div>
         </section>
 
@@ -376,25 +387,35 @@
                 </div>
             </div>
 
-            <!-- RIGHT PANEL: RINEX Analysis -->
+            <!-- RIGHT PANEL: RINEX Analysis SIDE-BY-SIDE VIEW -->
             <div class="glass-panel">
                 <div class="panel-title">
                     <span id="chart-panel-title">📡 RINEX Data Analysis</span>
                 </div>
                 
-                <div class="upload-box mono">
-                    <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:8.5px; color:var(--text-muted); width:180px;">
-                    <button onclick="uploadAndCompare()" class="upload-btn">🚀 ANALYZE RINEX</button>
-                </div>
+                <div class="rinex-split-view">
+                    <!-- Left Sidebar (Upload & Cards) -->
+                    <div class="rinex-left">
+                        <div class="mono" style="display:flex; flex-direction: column; align-items: stretch; margin-bottom: 12px; gap: 8px; padding: 10px; border: 1px dashed rgba(56,189,248,0.4); border-radius: 4px; background: rgba(15,23,42,0.6);">
+                            <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:9px; color:var(--text-muted); width: 100%; cursor: pointer;">
+                            <button onclick="uploadAndCompare()" class="upload-btn" style="padding: 6px; font-size: 10px;">🚀 ANALYZE RINEX</button>
+                        </div>
 
-                <!-- Container to display parsed RINEX metadata -->
-                <div id="rinex-file-list" class="rinex-file-list mono">
-                    <div style="text-align: center; color: var(--text-muted); font-size: 9px; padding: 10px; border: 1px dashed rgba(56, 189, 248, 0.2); border-radius: 4px;">
-                        ဖိုင်များ ထည့်သွင်းရန် စောင့်ဆိုင်းနေပါသည်...
+                        <div id="rinex-file-list" class="rinex-file-list mono">
+                            <div style="text-align: center; color: var(--text-muted); font-size: 9px; padding: 10px; border: 1px dashed rgba(56, 189, 248, 0.2); border-radius: 4px;">
+                                ဖိုင်များ ထည့်သွင်းရန် စောင့်ဆိုင်းနေပါသည်...
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Main Area (Chart) -->
+                    <div class="rinex-right">
+                        <div class="chart-box" style="margin-top: 0; border: 1px solid rgba(56,189,248,0.15); border-radius: 4px; background: rgba(2,6,23,0.4);">
+                            <canvas id="waveformChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
-                <div class="chart-box"><canvas id="waveformChart"></canvas></div>
             </div>
         </section>
 
@@ -471,7 +492,6 @@
             return '#f59e0b';
         }
 
-        // FIXED: Padded RAAN and Mean Anomaly strings to prevent satellite.js parsing crashes
         function generateHighDensityFallbackList() {
             let list = [];
             const addSats = (startId, prefix, count, inc, no) => {
@@ -496,7 +516,7 @@
             addSats(30000, "BDS MEO", 35, 55.0000, 1.86234123);
             addSats(40000, "GALILEO GSAT", 24, 56.0000, 1.70481234);
             addSats(50000, "GLONASS-M", 24, 64.8000, 2.13101234);
-            addSats(60000, "QZSS/IRNSS", 10, 15.0000, 1.00271234); // Included 'other' constellation
+            addSats(60000, "QZSS/IRNSS", 10, 15.0000, 1.00271234); 
 
             return list;
         }
@@ -572,13 +592,17 @@
             }
         }
 
+        function useFallbackData() {
+            let fallbackList = generateHighDensityFallbackList();
+            categorizeSatsList(fallbackList);
+        }
+
         function toggleSystemFilter(sys, btn) {
             if (activeSystems.has(sys)) {
                 if (activeSystems.size > 1) {
                     activeSystems.delete(sys);
                     btn.classList.remove('toggle-on');
                 } else {
-                    // Prevent untoggling all buttons; reset to ALL
                     selectAllSystems();
                     return;
                 }
@@ -690,13 +714,54 @@
                 myGlobe.htmlElementsData(targetLabelData);
             }
             
+            // --- NEW: Refresh Upcoming Passes List ---
+            populateUpcomingPassesList();
+
             if (currentLiveSatObjects.length > 0 && !currentLiveSatObjects.some(s => s.id === selectedSatId)) {
                 selectSatellite(currentLiveSatObjects[0].id);
             }
             resizeGlobe();
         }
 
-        // GENERATE BOTH HIGH ORBIT AND GROUND TRACK
+        // --- NEW: Generate Clickable Passes List ---
+        function populateUpcomingPassesList() {
+            const listContainer = document.getElementById('upcoming-passes-list');
+            if (!listContainer || currentLiveSatObjects.length === 0) return;
+            
+            let passes = currentLiveSatObjects.slice(0, 12).map((sat, index) => {
+                const idNum = parseInt(sat.id) || Math.floor(Math.random() * 10000);
+                const startOffsetMins = (index * 6) + (idNum % 15); 
+                const durMins = (idNum % 15) + 12; 
+                const maxEl = 40 + (idNum % 45);
+                
+                const now = new Date();
+                const aosTime = new Date(now.getTime() + startOffsetMins * 60000);
+                const formatTime = (d) => d.toTimeString().split(' ')[0];
+                
+                const dirs = ['NW -> SE', 'SW -> NE', 'N -> S', 'S -> N', 'W -> E'];
+                const dir = dirs[idNum % dirs.length];
+
+                return { sat, aosTime, durMins, maxEl, timeStr: formatTime(aosTime), dir };
+            }).sort((a, b) => a.aosTime - b.aosTime);
+
+            listContainer.innerHTML = passes.map(p => {
+                let cColor = getSatColor(p.sat.fullName);
+                return `
+                <div class="pass-card" data-id="${p.sat.id}" onclick="selectSatellite('${p.sat.id}')" style="background: rgba(2,6,23,0.6); border: 1px solid rgba(56,189,248,0.15); border-left: 3px solid ${cColor}; padding: 8px 10px; border-radius: 4px; cursor: pointer; transition: all 0.2s;">
+                    <div style="display:flex; justify-content:space-between; font-weight:700; color:${cColor}; font-size: 10px; margin-bottom: 6px;">
+                        <span>${p.sat.name}</span>
+                        <span style="color:var(--text-main); font-size: 9px;">${p.timeStr} MMT</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; color:var(--text-muted); font-size: 8.5px;">
+                        <span>DUR: ${p.durMins}m</span>
+                        <span>DIR: ${p.dir}</span>
+                        <span style="color:var(--accent-green);">EL: ${p.maxEl.toFixed(1)}°</span>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
         function generateSatOrbitTrack(id, fixedAlt = null) {
             const sat = TLE_DATABASE[id];
             if (!sat || typeof satellite === 'undefined') return { coords: [], color: '#38bdf8', stroke: 3.2 };
@@ -715,7 +780,6 @@
                 const targetTime = new Date(now.getTime() + timeOffset * 1000);
                 const posVel = satellite.propagate(satrec, targetTime);
                 if (posVel.position) {
-                    // MUST calculate GS time accurately for targetTime to get correct Earth-relative path!
                     const targetGmst = satellite.gstime(targetTime);
                     const posGd = satellite.eciToGeodetic(posVel.position, targetGmst);
                     const lat = satellite.degreesLat(posGd.latitude);
@@ -731,8 +795,8 @@
         function updateTargetOrbitPath(id) {
             if (!myGlobe || !id || !TLE_DATABASE[id]) return;
             if (!modes.tracks) { myGlobe.pathsData([]); return; }
-            const orbitTrack = generateSatOrbitTrack(id, null); // 3D Ring
-            const groundTrack = generateSatOrbitTrack(id, 0.005); // 2D Ground Path (Hugging Earth)
+            const orbitTrack = generateSatOrbitTrack(id, null); 
+            const groundTrack = generateSatOrbitTrack(id, 0.005); 
             myGlobe.pathsData([orbitTrack, groundTrack]);
         }
 
@@ -748,27 +812,6 @@
             }
 
             if (feature === 'tracks') updateTargetOrbitPath(selectedSatId);
-        }
-
-        // --- NEW: DYNAMIC UPCOMING PASSES UPDATE ---
-        function updateUpcomingPasses(sat) {
-            const idNum = parseInt(sat.id) || Math.floor(Math.random() * 10000);
-            
-            const now = new Date();
-            const startOffsetMins = (idNum % 45) + 5; 
-            const durMins = (idNum % 15) + 12; 
-            
-            const aosTime = new Date(now.getTime() + startOffsetMins * 60000);
-            const losTime = new Date(aosTime.getTime() + durMins * 60000);
-            
-            const formatTime = (d) => d.toTimeString().split(' ')[0] + ' MMT';
-            const maxEl = 40 + (idNum % 45); 
-
-            document.getElementById('pass-aos').innerText = formatTime(aosTime);
-            document.getElementById('pass-los').innerText = formatTime(losTime);
-            document.getElementById('pass-dur').innerText = `${durMins}m 30s`;
-            document.getElementById('pass-max-el').innerText = `${maxEl.toFixed(1)}°`;
-            document.getElementById('pass-title').innerText = `► PASS: ${sat.name.substring(0, 10)}`;
         }
 
         function selectSatellite(id) {
@@ -790,6 +833,17 @@
                 else row.classList.remove('table-row-selected');
             });
 
+            // Highlight Active Pass Card
+            document.querySelectorAll('.pass-card').forEach(card => {
+                if (card.getAttribute('data-id') === id) {
+                    card.style.background = 'rgba(56, 189, 248, 0.2)';
+                    card.style.borderColor = 'var(--accent-cyan)';
+                } else {
+                    card.style.background = 'rgba(2, 6, 23, 0.6)';
+                    card.style.borderColor = 'rgba(56, 189, 248, 0.15)';
+                }
+            });
+
             targetLabelData = currentLiveSatObjects.filter(s => s.id === id);
 
             if (myGlobe) {
@@ -797,13 +851,8 @@
                 myGlobe.htmlElementsData(targetLabelData);
             }
 
-            // Draw Paths (3D Ring + Ground Track)
             updateTargetOrbitPath(id);
 
-            // Update Upcoming Passes Metrics
-            updateUpcomingPasses(sat);
-
-            // Dynamically update the RINEX chart label if currently active
             const fileListContainer = document.getElementById('rinex-file-list');
             if (fileListContainer && fileListContainer.innerHTML.includes('📄')) {
                 renderMockChart(sat.name); 
@@ -934,20 +983,6 @@
                 });
             }
         });
-
-        function propagateSGP4(id, timeOffsetSec = 0) {
-            const tle = TLE_DATABASE[id];
-            if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 20200 };
-            const satrec = satellite.twoline2satrec(tle.line1, tle.line2);
-            const targetTime = new Date(Date.now() + timeOffsetSec * 1000);
-            const positionAndVelocity = satellite.propagate(satrec, targetTime);
-            const positionEci = positionAndVelocity.position;
-            if (!positionEci) return { lat: 16.8, lng: 96.1, alt: 20200 };
-
-            const gmst = satellite.gstime(targetTime);
-            const positionGd = satellite.eciToGeodetic(positionEci, gmst);
-            return { lat: satellite.degreesLat(positionGd.latitude), lng: satellite.degreesLong(positionGd.longitude), alt: Math.round(positionGd.height) };
-        }
 
         function resizeGlobe() {
             if (myGlobe) {
