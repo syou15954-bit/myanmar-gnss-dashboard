@@ -151,7 +151,7 @@
         .fill-gps { background: linear-gradient(90deg, #059669, #10b981); box-shadow: 0 0 8px #10b981; }
         .fill-bds { background: linear-gradient(90deg, #dc2626, #ef4444); box-shadow: 0 0 8px #ef4444; }
 
-        /* Equal 3 columns layout */
+        /* Bottom panels: 3 Equal Width Columns filling 100% */
         .bottom-dock { 
             flex: 1; 
             display: grid; 
@@ -193,17 +193,27 @@
         .upload-btn { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 4px 10px; border-radius: 3px; font-size: 9.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
         .upload-btn:hover { background: rgba(56, 189, 248, 0.35); }
 
-        /* Uploaded File Cards CSS */
+        /* ====== ပြင်ဆင်ထားသော Uploaded File Cards CSS ====== */
         .rinex-file-list {
-            display: flex; flex-direction: column; gap: 6px; max-height: 120px; overflow-y: auto; margin-bottom: 10px; padding-right: 4px;
+            display: flex; flex-direction: column; gap: 8px; max-height: 180px; /* Height ချဲ့ပေးလိုက်သည် */
+            overflow-y: auto; margin-bottom: 12px; padding-right: 6px;
         }
         .rinex-card {
-            background: rgba(2, 6, 23, 0.8); border: 1px solid rgba(56, 189, 248, 0.3); border-left: 3px solid var(--accent-cyan);
-            border-radius: 4px; padding: 8px; display: flex; flex-direction: column; gap: 4px; font-size: 9px;
+            background: rgba(2, 6, 23, 0.8); border: 1px solid rgba(56, 189, 248, 0.2); border-left: 3px solid var(--accent-cyan);
+            border-radius: 4px; padding: 10px; display: flex; flex-direction: column; gap: 6px; font-size: 10px;
         }
-        .rinex-card .c-title { color: var(--accent-cyan); font-weight: 700; font-size: 10px; }
-        .rinex-card .c-meta { color: var(--text-muted); display: flex; justify-content: space-between; }
-        .rinex-card .c-meta span { color: #e2e8f0; }
+        .rinex-card .c-title { 
+            color: var(--accent-cyan); font-weight: 700; font-size: 10.5px; 
+            border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; margin-bottom: 2px;
+        }
+        .rinex-card .c-meta { 
+            display: grid; grid-template-columns: auto 1fr; gap: 10px; /* Label နဲ့ Value နေရာခွဲရန် Grid သုံးသည် */
+            color: var(--text-muted); align-items: start; 
+        }
+        .rinex-card .c-meta b { 
+            color: #f8fafc; text-align: right; font-weight: 400; line-height: 1.3; 
+            word-break: break-word; /* စာရှည်လျှင် အောက်တစ်ကြောင်း အလိုလျောက်ဆင်းရန် */
+        }
 
         #tleModal {
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 200;
@@ -213,6 +223,12 @@
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--panel-border); padding-bottom: 8px; margin-bottom: 10px; font-size: 12px; font-weight: 700; color: var(--accent-cyan); }
         .modal-close { cursor: pointer; color: var(--text-muted); font-size: 18px; font-weight: 700; transition: color 0.2s; }
         .modal-close:hover { color: var(--accent-red); }
+
+        /* Custom Scrollbar for better UI */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(2, 6, 23, 0.5); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.3); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(56, 189, 248, 0.6); }
     </style>
 </head>
 <body>
@@ -310,7 +326,7 @@
                 </div>
             </div>
 
-            <!-- MIDDLE PANEL: Myanmar Local Metrics (DOP Removed) -->
+            <!-- MIDDLE PANEL: Myanmar Local Metrics -->
             <div class="glass-panel mono">
                 <div class="panel-title" style="justify-content: center; border-bottom: none; padding-bottom: 0;">
                     <select id="matrix-sys-a" class="matrix-select" onchange="renderCustomSelection()">
@@ -361,14 +377,13 @@
                 </div>
             </div>
 
-            <!-- RIGHT PANEL: RINEX Analysis (DOP Removed, Added File List) -->
+            <!-- RIGHT PANEL: RINEX Analysis -->
             <div class="glass-panel">
                 <div class="panel-title">
                     <span id="chart-panel-title">📡 RINEX Data Analysis</span>
                 </div>
                 
                 <div class="upload-box mono">
-                    <!-- Added 'multiple' attribute to allow selecting multiple files -->
                     <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:8.5px; color:var(--text-muted); width:180px;">
                     <button onclick="uploadAndCompare()" class="upload-btn">🚀 ANALYZE RINEX</button>
                 </div>
@@ -630,7 +645,6 @@
             const visSysA = countSystemVisibles(sysA);
             const visSysB = countSystemVisibles(sysB);
 
-            // Updated Middle Panel to show counts instead of DOPs
             document.getElementById('sys-a-count').innerText = visSysA;
             document.getElementById('sys-b-count').innerText = visSysB;
 
@@ -790,30 +804,29 @@
             }
 
             const fileListContainer = document.getElementById('rinex-file-list');
-            fileListContainer.innerHTML = ''; // Clear waiting text
+            fileListContainer.innerHTML = ''; 
 
-            // Render mock chart once for the uploaded batch
             renderMockChart();
 
-            // Loop through all selected files
             Array.from(fileInput.files).forEach(file => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const text = e.target.result;
                     const metadata = parseRinexHeader(text);
                     
-                    // Create Card for each file
                     const card = document.createElement('div');
                     card.className = 'rinex-card';
+                    
+                    // Fixed Layout for Metadata
                     card.innerHTML = `
                         <div class="c-title">📄 ${file.name}</div>
-                        <div class="c-meta">📍 နေရာ: <span>${metadata.markerName}</span></div>
-                        <div class="c-meta">📅 ရက်စွဲ: <span>${metadata.obsDate}</span></div>
-                        <div class="c-meta">🏢 အဖွဲ့: <span>${metadata.agency}</span></div>
+                        <div class="c-meta"><span>📍 နေရာ:</span> <b>${metadata.markerName}</b></div>
+                        <div class="c-meta"><span>📅 ရက်စွဲ:</span> <b>${metadata.obsDate}</b></div>
+                        <div class="c-meta"><span>🏢 အဖွဲ့:</span> <b>${metadata.agency}</b></div>
                     `;
                     fileListContainer.appendChild(card);
                 };
-                reader.readAsText(file); // Only read header part optimally, but reading all as text is fine for small OBS files in demo
+                reader.readAsText(file); 
             });
         }
 
