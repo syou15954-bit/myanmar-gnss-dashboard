@@ -751,7 +751,7 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
-        // --- WORKING 3D ORBIT RING & GROUND TRACK GENERATOR ---
+        // --- DIRECT TRUE ORBIT PATH & GROUND TRACK GENERATOR ---
         function generateSatOrbitTrack(id, isGroundTrack = false) {
             try {
                 const sat = TLE_DATABASE[id];
@@ -1034,7 +1034,6 @@
                         `;
                         return el;
                     })
-                    // Correct globe.gl path mapping configuration
                     .pathsData([])
                     .pathPoints(d => d.coords)
                     .pathPointLat(p => p.lat)
