@@ -151,6 +151,7 @@
         .fill-gps { background: linear-gradient(90deg, #059669, #10b981); box-shadow: 0 0 8px #10b981; }
         .fill-bds { background: linear-gradient(90deg, #dc2626, #ef4444); box-shadow: 0 0 8px #ef4444; }
 
+        /* Equal 3 columns layout */
         .bottom-dock { 
             flex: 1; 
             display: grid; 
@@ -191,6 +192,18 @@
         .upload-box { display: flex; gap: 6px; align-items: center; background: rgba(2, 6, 23, 0.6); padding: 6px; border-radius: 4px; border: 1px dashed var(--panel-border); margin-bottom: 8px; }
         .upload-btn { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 4px 10px; border-radius: 3px; font-size: 9.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
         .upload-btn:hover { background: rgba(56, 189, 248, 0.35); }
+
+        /* Uploaded File Cards CSS */
+        .rinex-file-list {
+            display: flex; flex-direction: column; gap: 6px; max-height: 120px; overflow-y: auto; margin-bottom: 10px; padding-right: 4px;
+        }
+        .rinex-card {
+            background: rgba(2, 6, 23, 0.8); border: 1px solid rgba(56, 189, 248, 0.3); border-left: 3px solid var(--accent-cyan);
+            border-radius: 4px; padding: 8px; display: flex; flex-direction: column; gap: 4px; font-size: 9px;
+        }
+        .rinex-card .c-title { color: var(--accent-cyan); font-weight: 700; font-size: 10px; }
+        .rinex-card .c-meta { color: var(--text-muted); display: flex; justify-content: space-between; }
+        .rinex-card .c-meta span { color: #e2e8f0; }
 
         #tleModal {
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 200;
@@ -273,7 +286,7 @@
         </section>
 
         <section class="bottom-dock">
-            <!-- LEFT PANEL: GNSS Fleet Status + SQL Database Table -->
+            <!-- LEFT PANEL: Local GNSS DB & Fleet Status -->
             <div class="glass-panel" style="padding-bottom: 0;">
                 <div class="panel-title">
                     <span id="fleet-title-text">🗄️ Local GNSS DB & Fleet Status</span>
@@ -297,7 +310,7 @@
                 </div>
             </div>
 
-            <!-- MIDDLE PANEL: Myanmar Local Metrics -->
+            <!-- MIDDLE PANEL: Myanmar Local Metrics (DOP Removed) -->
             <div class="glass-panel mono">
                 <div class="panel-title" style="justify-content: center; border-bottom: none; padding-bottom: 0;">
                     <select id="matrix-sys-a" class="matrix-select" onchange="renderCustomSelection()">
@@ -318,67 +331,54 @@
                 </div>
 
                 <div style="display:grid; grid-template-columns:1fr 100px 1fr; align-items:center; text-align:center; margin-bottom:16px; margin-top:12px;">
-                    <b style="color:#10b981; font-size:18px;" id="sys-a-count">11 SATS</b>
-                    <span style="font-size:10px; color:var(--text-muted); letter-spacing: 1px;" id="fleet-type-label">VISIBLE</span>
-                    <b style="color:#ef4444; font-size:18px;" id="sys-b-count">19 SATS</b>
+                    <b style="color:#10b981; font-size:24px;" id="sys-a-count">11</b>
+                    <span style="font-size:10px; color:var(--text-muted); letter-spacing: 1px;" id="fleet-type-label">SATS IN VIEW</span>
+                    <b style="color:#ef4444; font-size:24px;" id="sys-b-count">19</b>
                 </div>
 
-                <div style="margin-bottom:14px;">
-                    <div style="display:flex; justify-content:space-between; font-size:10px; font-weight:700; margin-bottom:6px;">
+                <div style="margin-bottom:18px;">
+                    <div style="display:flex; justify-content:space-between; font-size:10px; font-weight:700; margin-bottom:8px;">
                         <span style="color:#10b981;" id="sys-a-vis-text">SYS-A: 35%</span>
-                        <span style="color:var(--text-muted);">VISIBILITY</span>
+                        <span style="color:var(--text-muted);">FLEET VISIBILITY</span>
                         <span style="color:#ef4444;" id="sys-b-vis-text">SYS-B: 65%</span>
                     </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                        <div class="bar-container"><div class="bar-fill fill-gps" id="sys-a-vis-bar" style="width:35%;"></div></div>
-                        <div class="bar-container"><div class="bar-fill fill-bds" id="sys-b-vis-bar" style="width:65%; margin-left:auto;"></div></div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <div class="bar-container" style="height: 10px;"><div class="bar-fill fill-gps" id="sys-a-vis-bar" style="width:35%;"></div></div>
+                        <div class="bar-container" style="height: 10px;"><div class="bar-fill fill-bds" id="sys-b-vis-bar" style="width:65%; margin-left:auto;"></div></div>
                     </div>
                 </div>
 
                 <div style="margin-bottom:14px;">
-                    <div style="display:flex; justify-content:space-between; font-size:10px; font-weight:700; margin-bottom:6px;">
+                    <div style="display:flex; justify-content:space-between; font-size:10px; font-weight:700; margin-bottom:8px;">
                         <span style="color:#10b981;" id="sys-a-cn0-text">42 dB-Hz</span>
-                        <span style="color:var(--text-muted);">SIGNAL C/N0</span>
+                        <span style="color:var(--text-muted);">AVG SIGNAL (C/N0)</span>
                         <span style="color:#ef4444;" id="sys-b-cn0-text">46 dB-Hz</span>
                     </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                        <div class="bar-container"><div class="bar-fill fill-gps" style="width:75%;"></div></div>
-                        <div class="bar-container"><div class="bar-fill fill-bds" style="width:88%; margin-left:auto;"></div></div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <div class="bar-container" style="height: 10px;"><div class="bar-fill fill-gps" style="width:75%;"></div></div>
+                        <div class="bar-container" style="height: 10px;"><div class="bar-fill fill-bds" style="width:88%; margin-left:auto;"></div></div>
                     </div>
-                </div>
-
-                <div style="margin-bottom:12px;">
-                    <div style="display:flex; justify-content:space-between; font-size:10px; font-weight:700; margin-bottom:6px;">
-                        <span style="color:#10b981;" id="sys-a-pdop-text">PDOP: 2.1</span>
-                        <span style="color:var(--text-muted);">ACCURACY</span>
-                        <span style="color:#ef4444;" id="sys-b-pdop-text">PDOP: 1.2</span>
-                    </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                        <div class="bar-container"><div class="bar-fill fill-gps" style="width:60%;"></div></div>
-                        <div class="bar-container"><div class="bar-fill fill-bds" style="width:90%; margin-left:auto;"></div></div>
-                    </div>
-                </div>
-
-                <div style="background:rgba(2, 6, 23, 0.8); padding:8px; border-radius:4px; border:1px solid var(--panel-border); text-align:center; margin-top:auto;">
-                    <span style="font-size:10px; color:var(--accent-green); font-weight:700;" id="combined-pdop-label">✨ COMBINED MULTI-GNSS PDOP: 0.85 (SUB-CENTIMETER RTK)</span>
                 </div>
             </div>
 
-            <!-- RIGHT PANEL: DOP & RINEX Analysis -->
+            <!-- RIGHT PANEL: RINEX Analysis (DOP Removed, Added File List) -->
             <div class="glass-panel">
                 <div class="panel-title">
-                    <span id="chart-panel-title">🎯 တည်နေရာ တိကျမှု (DOP) & RINEX Analysis</span>
+                    <span id="chart-panel-title">📡 RINEX Data Analysis</span>
                 </div>
-                <div class="dop-grid mono" style="grid-template-columns: repeat(3, 1fr); margin-bottom:8px;">
-                    <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">PDOP</div><div class="dop-val" style="color:var(--accent-cyan);" id="pdop-val">1.67</div></div>
-                    <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">HDOP</div><div class="dop-val" style="color:var(--accent-green);" id="hdop-val">0.81</div></div>
-                    <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">VDOP</div><div class="dop-val" style="color:var(--accent-yellow);" id="vdop-val">1.46</div></div>
-                </div>
+                
                 <div class="upload-box mono">
-                    <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" style="font-size:8.5px; color:var(--text-muted); width:140px;">
+                    <!-- Added 'multiple' attribute to allow selecting multiple files -->
+                    <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:8.5px; color:var(--text-muted); width:180px;">
                     <button onclick="uploadAndCompare()" class="upload-btn">🚀 ANALYZE RINEX</button>
                 </div>
-                <div class="chart-box" style="margin-top:12px;"><canvas id="waveformChart"></canvas></div>
+
+                <!-- Container to display parsed RINEX metadata -->
+                <div id="rinex-file-list" class="rinex-file-list mono">
+                    <div style="text-align: center; color: var(--text-muted); font-size: 9px; padding: 10px;">ဖိုင်များ ထည့်သွင်းရန် စောင့်ဆိုင်းနေပါသည်...</div>
+                </div>
+
+                <div class="chart-box" style="margin-top:4px;"><canvas id="waveformChart"></canvas></div>
             </div>
         </section>
 
@@ -630,8 +630,9 @@
             const visSysA = countSystemVisibles(sysA);
             const visSysB = countSystemVisibles(sysB);
 
-            document.getElementById('sys-a-count').innerText = `${visSysA} SATS`;
-            document.getElementById('sys-b-count').innerText = `${visSysB} SATS`;
+            // Updated Middle Panel to show counts instead of DOPs
+            document.getElementById('sys-a-count').innerText = visSysA;
+            document.getElementById('sys-b-count').innerText = visSysB;
 
             const pctA = Math.min(100, Math.round((visSysA / totalSysA) * 100));
             const pctB = Math.min(100, Math.round((visSysB / totalSysB) * 100));
@@ -755,29 +756,74 @@
             updateTargetOrbitPath(id);
         }
 
+        // --- RINEX PARSING LOGIC ---
+        function parseRinexHeader(text) {
+            let markerName = "Unknown Marker";
+            let obsDate = "Unknown Date";
+            let agency = "Unknown Agency";
+
+            const lines = text.split('\n');
+            for (let line of lines) {
+                if (line.includes('MARKER NAME')) {
+                    markerName = line.substring(0, 60).trim();
+                }
+                if (line.includes('OBSERVER / AGENCY')) {
+                    agency = line.substring(0, 60).trim();
+                }
+                if (line.includes('TIME OF FIRST OBS')) {
+                    let timeStr = line.substring(0, 60).trim();
+                    let parts = timeStr.split(/\s+/).filter(p => p !== "");
+                    if (parts.length >= 3) {
+                        obsDate = `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+                    }
+                }
+                if (line.includes('END OF HEADER')) break;
+            }
+            return { markerName, obsDate, agency };
+        }
+
         function uploadAndCompare() {
             const fileInput = document.getElementById('rinexFileInput');
             if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-                alert('ကျေးဇူးပြု၍ RINEX (.rnx / .obs) ဖိုင်တစ်ခု ရွေးချယ်ပေးပါ ခင်ဗျာ။');
+                alert('ကျေးဇူးပြု၍ RINEX (.rnx / .obs) ဖိုင်များကို ရွေးချယ်ပေးပါ ခင်ဗျာ။');
                 return;
             }
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-            reader.onload = function(e) { parseAndRenderRINEX(e.target.result, file.name); };
-            reader.readAsText(file);
+
+            const fileListContainer = document.getElementById('rinex-file-list');
+            fileListContainer.innerHTML = ''; // Clear waiting text
+
+            // Render mock chart once for the uploaded batch
+            renderMockChart();
+
+            // Loop through all selected files
+            Array.from(fileInput.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const text = e.target.result;
+                    const metadata = parseRinexHeader(text);
+                    
+                    // Create Card for each file
+                    const card = document.createElement('div');
+                    card.className = 'rinex-card';
+                    card.innerHTML = `
+                        <div class="c-title">📄 ${file.name}</div>
+                        <div class="c-meta">📍 နေရာ: <span>${metadata.markerName}</span></div>
+                        <div class="c-meta">📅 ရက်စွဲ: <span>${metadata.obsDate}</span></div>
+                        <div class="c-meta">🏢 အဖွဲ့: <span>${metadata.agency}</span></div>
+                    `;
+                    fileListContainer.appendChild(card);
+                };
+                reader.readAsText(file); // Only read header part optimally, but reading all as text is fine for small OBS files in demo
+            });
         }
 
-        function parseAndRenderRINEX(text, filename) {
+        function renderMockChart() {
             let epochs = [], snrGps = [], snrBds = [], numPoints = 16;
             for (let i = 0; i < numPoints; i++) {
                 epochs.push(`${i * 2}:00`);
                 snrGps.push(Math.floor(38 + Math.sin(i / 2.5) * 6 + Math.random() * 3));
                 snrBds.push(Math.floor(42 + Math.cos(i / 2.5) * 5 + Math.random() * 2.5));
             }
-
-            document.getElementById('pdop-val').innerText = (1.12 + Math.random() * 0.35).toFixed(2);
-            document.getElementById('hdop-val').innerText = (0.62 + Math.random() * 0.20).toFixed(2);
-            document.getElementById('vdop-val').innerText = (0.98 + Math.random() * 0.30).toFixed(2);
 
             const ctx = document.getElementById('waveformChart');
             if (!ctx) return;
@@ -801,8 +847,6 @@
                     }
                 }
             });
-
-            alert(`✅ RINEX ဖိုင် "${filename}" ကို အောင်မြင်စွာ ဖတ်ရှုပြီးပါပြီ!\n\n🇨🇳 BDS vs 🇺🇸 GPS Signal C/N₀ Waveform နှင့် တည်နေရာ တိကျမှု DOP ဒေတာများ ယှဉ်ပြထားပါသည်။`);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -864,7 +908,6 @@
                     .htmlElement(d => {
                         const el = document.createElement('div');
                         const countryColor = getSatColor(d.fullName);
-                        // Clean ASCII text to prevent U+25BA or emoji rendering bug (the ? box)
                         el.innerHTML = `
                             <div style="
                                 border: 1px solid ${countryColor}; 
