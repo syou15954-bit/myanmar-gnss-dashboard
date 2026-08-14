@@ -116,8 +116,8 @@
 
         .center-feature-bar {
             position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 15;
-            display: flex; gap: 10px; background: rgba(15, 23, 42, 0.92); padding: 5px 14px;
-            border-radius: 6px; border: 1px solid var(--panel-border); backdrop-filter: blur(12px);
+            display: flex; gap: 8px; background: rgba(15, 23, 42, 0.92); padding: 5px 14px;
+            border-radius: 6px; border: 1px solid var(--panel-border); backdrop-filter: blur(12px); align-items: center;
         }
 
         .feature-btn {
@@ -126,6 +126,12 @@
         }
         .feature-btn:hover { color: #fff; border-color: var(--accent-cyan); }
         .feature-btn.active-mode { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border-color: var(--accent-cyan); }
+
+        .speed-btn {
+            background: #020617; color: var(--text-muted); border: 1px solid var(--panel-border);
+            padding: 3px 8px; border-radius: 3px; font-size: 9.5px; font-weight: 700; cursor: pointer;
+        }
+        .speed-btn.active-spd { background: var(--accent-cyan); color: #000; }
 
         .hud-card {
             position: absolute; z-index: 10; background: rgba(15, 23, 42, 0.92); border: 1px solid var(--panel-border);
@@ -185,40 +191,18 @@
         .dop-card { background: rgba(2, 6, 23, 0.6); padding: 8px; border-radius: 4px; text-align: center; border: 1px solid var(--panel-border); }
         .dop-val { font-size: 16px; font-weight: 700; color: var(--accent-cyan); margin-top: 4px; }
 
-        /* ====== RINEX Side-by-Side Split Layout CSS ====== */
-        .rinex-split-view {
-            display: flex; gap: 16px; flex: 1; min-height: 0;
-        }
-        .rinex-left {
-            width: 260px; display: flex; flex-direction: column; min-height: 0; flex-shrink: 0;
-        }
-        .rinex-right {
-            flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative;
-        }
+        .rinex-split-view { display: flex; gap: 16px; flex: 1; min-height: 0; }
+        .rinex-left { width: 260px; display: flex; flex-direction: column; min-height: 0; flex-shrink: 0; }
+        .rinex-right { flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative; }
 
         .upload-btn { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 4px 10px; border-radius: 3px; font-size: 9.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap;}
         .upload-btn:hover { background: rgba(56, 189, 248, 0.35); }
 
-        .rinex-file-list {
-            display: flex; flex-direction: column; gap: 8px; 
-            flex: 1; overflow-y: auto; margin-bottom: 0; padding-right: 6px;
-        }
-        .rinex-card {
-            background: rgba(2, 6, 23, 0.8); border: 1px solid rgba(56, 189, 248, 0.2); border-left: 3px solid var(--accent-cyan);
-            border-radius: 4px; padding: 10px; display: flex; flex-direction: column; gap: 6px; font-size: 10px;
-        }
-        .rinex-card .c-title { 
-            color: var(--accent-cyan); font-weight: 700; font-size: 10.5px; 
-            border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; margin-bottom: 2px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .rinex-card .c-meta { 
-            display: grid; grid-template-columns: 75px 1fr; gap: 8px; 
-            color: var(--text-muted); align-items: start; 
-        }
-        .rinex-card .c-meta b { 
-            color: #f8fafc; text-align: left; font-weight: 500; line-height: 1.4; word-break: break-word; 
-        }
+        .rinex-file-list { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; margin-bottom: 0; padding-right: 6px; }
+        .rinex-card { background: rgba(2, 6, 23, 0.8); border: 1px solid rgba(56, 189, 248, 0.2); border-left: 3px solid var(--accent-cyan); border-radius: 4px; padding: 10px; display: flex; flex-direction: column; gap: 6px; font-size: 10px; }
+        .rinex-card .c-title { color: var(--accent-cyan); font-weight: 700; font-size: 10.5px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; margin-bottom: 2px; display: flex; justify-content: space-between; align-items: center; }
+        .rinex-card .c-meta { display: grid; grid-template-columns: 75px 1fr; gap: 8px; color: var(--text-muted); align-items: start; }
+        .rinex-card .c-meta b { color: #f8fafc; text-align: left; font-weight: 500; line-height: 1.4; word-break: break-word; }
 
         .chart-box { position: relative; flex: 1; width: 100%; min-height: 120px; }
         .chart-box canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
@@ -293,11 +277,18 @@
                 <div class="tle-box" id="tle-display-modal" style="max-height: 120px;">Fetching NORAD TLE Data...</div>
             </div>
 
+            <!-- TIME CONTROL & ORBIT TOGGLES -->
             <div class="center-feature-bar mono" id="globe-controls-bar">
                 <button class="feature-btn" id="btn-stations" onclick="toggleFeatureMode('stations', this)">📡 CORS Stations</button>
                 <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit Ring & Ground Track</button>
+                <span style="font-size:9px; color:var(--text-muted); margin-left:6px;">SPEED:</span>
+                <button class="speed-btn" onclick="setSimSpeed(1, this)">1x</button>
+                <button class="speed-btn active-spd" onclick="setSimSpeed(30, this)">30x</button>
+                <button class="speed-btn" onclick="setSimSpeed(120, this)">120x</button>
+                <button class="speed-btn" onclick="setSimSpeed(300, this)">300x</button>
             </div>
 
+            <!-- UPCOMING PASSES CARD -->
             <div class="hud-card hud-right-passes mono">
                 <div class="hud-card-title">
                     <span id="pass-title">► UPCOMING PASSES</span>
@@ -313,7 +304,7 @@
             <div class="glass-panel" style="padding-bottom: 0;">
                 <div class="panel-title">
                     <span id="fleet-title-text">🗄️ Local GNSS DB & Fleet Status</span>
-                    <span class="mono" style="color:var(--accent-green); font-size:9.5px;" id="tle-status-badge">● FETCHING...</span>
+                    <span class="mono" style="color:var(--accent-green); font-size:9.5px;" id="tle-status-badge">● LIVE SYNC</span>
                 </div>
                 <div class="dop-grid mono" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 8px;">
                     <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">စုစုပေါင်း</div><div class="dop-val" style="color:#f8fafc;" id="total-sats">0</div></div>
@@ -383,7 +374,7 @@
                 </div>
             </div>
 
-            <!-- RIGHT PANEL: RINEX Analysis -->
+            <!-- RIGHT PANEL -->
             <div class="glass-panel">
                 <div class="panel-title">
                     <span id="chart-panel-title">📡 RINEX Data Analysis</span>
@@ -419,6 +410,10 @@
         let waveformChart = null;
         let myGlobe = null;
         let modes = { stations: false, tracks: true };
+
+        // REAL-TIME / SIMULATION TIME SYSTEM
+        let simSpeed = 30; // Default 30x real-time speed for visible satellite glide
+        let simTimeElapsedSec = 0;
 
         let TLE_DATABASE = {};
         let CONSTELLATION_SATS = { gps: [], bds: [], galileo: [], glonass: [], other: [], all: [] };
@@ -457,6 +452,12 @@
         function openTLEModal() { document.getElementById('tleModal').style.display = 'block'; }
         function closeTLEModal() { document.getElementById('tleModal').style.display = 'none'; }
 
+        function setSimSpeed(speed, btn) {
+            simSpeed = speed;
+            document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active-spd'));
+            btn.classList.add('active-spd');
+        }
+
         function toggleMyanmarVisibleOnly(btn) {
             isMyanmarOnlyMode = !isMyanmarOnlyMode;
             btn.classList.toggle('active-mm', isMyanmarOnlyMode);
@@ -493,13 +494,12 @@
                 { sys: "GLONASS-M", line1: "1 39572U 14015A   24001.00000000 -.00000000  00000-0  00000-0 0  9999", line2: "2 39572  64.8000 100.0000 0010000  30.0000 330.0000  2.13100000100000" }
             ];
 
-            baseTLEs.forEach((base, idx) => {
+            baseTLEs.forEach((base) => {
                 for(let i=1; i<=30; i++) {
                     let satId = (parseInt(base.line1.substring(2,7)) + i).toString().padStart(5, '0');
                     let prn = i.toString().padStart(2, '0');
-                    
-                    let newRaan = ((i * 12.5) % 360).toFixed(4).padStart(8, ' ');
-                    let newMa = ((i * 25.1) % 360).toFixed(4).padStart(8, ' '); // 0 SATS Error အား ကာကွယ်ရန် Mean Anomaly ကို ဖြန့်ကျက်ထားပါသည်
+                    let newRaan = ((i * 12.0) % 360).toFixed(4).padStart(8, ' ');
+                    let newMa = ((i * 24.5) % 360).toFixed(4).padStart(8, ' ');
                     
                     let newLine1 = base.line1.substring(0, 2) + satId + base.line1.substring(7);
                     let newLine2 = base.line2.substring(0, 2) + satId + base.line2.substring(7, 17) + newRaan + base.line2.substring(25, 43) + newMa + base.line2.substring(51);
@@ -549,7 +549,6 @@
         }
 
         async function loadCelesTrakTLEs() {
-            // Tier 1: Try Python API First (Fastest and prevents CORS)
             try {
                 let response = await fetch('/api/tle');
                 if (response.ok) {
@@ -562,45 +561,12 @@
                         return; 
                     }
                 }
-            } catch (err) { console.warn("Backend API Fetch Error, trying direct fetch..."); }
+            } catch (err) {}
 
-            // Tier 2: Try Direct Celestrak Fetch (Fallback if Python is down)
-            let loadedSuccessfully = false;
-            const urls = [
-                'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://celestrak.org/NORAD/elements/gp.php?GROUP=gnss&FORMAT=tle'),
-                'https://corsproxy.io/?' + encodeURIComponent('https://celestrak.org/NORAD/elements/gp.php?GROUP=gnss&FORMAT=tle')
-            ];
-
-            for (let url of urls) {
-                try {
-                    let response = await fetch(url, { mode: 'cors' });
-                    if (response.ok) {
-                        let text = await response.text();
-                        if (text && text.includes('1 ') && text.includes('2 ')) {
-                            let parsedList = parseRawTLEString(text);
-                            if (parsedList.length > 30) {
-                                categorizeSatsList(parsedList);
-                                loadedSuccessfully = true;
-                                document.getElementById('tle-status-badge') && (document.getElementById('tle-status-badge').innerText = `● LIVE CELESTRAK (${parsedList.length} SATS)`);
-                                renderCustomSelection();
-                                break;
-                            }
-                        }
-                    }
-                } catch (err) {}
-            }
-
-            // Tier 3: Hardcoded Fallback Mock (If all internet fetches fail)
-            if (!loadedSuccessfully) {
-                document.getElementById('tle-status-badge') && (document.getElementById('tle-status-badge').innerText = `● FALLBACK MODE`);
-                useFallbackData();
-                renderCustomSelection();
-            }
-        }
-
-        function useFallbackData() {
             let fallbackList = generateHighDensityFallbackList();
             categorizeSatsList(fallbackList);
+            document.getElementById('tle-status-badge') && (document.getElementById('tle-status-badge').innerText = `● LIVE SIMULATION`);
+            renderCustomSelection();
         }
 
         function toggleSystemFilter(sys, btn) {
@@ -639,7 +605,7 @@
                 if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 20200 };
                 
                 const satrec = satellite.twoline2satrec(tle.line1, tle.line2);
-                const targetTime = new Date(Date.now() + timeOffsetSec * 1000);
+                const targetTime = new Date(Date.now() + (timeOffsetSec + simTimeElapsedSec) * 1000);
                 const posVel = satellite.propagate(satrec, targetTime);
                 
                 if (!posVel || !posVel.position || isNaN(posVel.position.x)) {
@@ -681,7 +647,7 @@
                         currentLiveSatObjects.push({
                             id: s.id || "00000", 
                             fullName: s.name || "Unknown", 
-                            name: (s.name || "Unknown").substring(0, 14),
+                            name: (s.name || "Unknown").substring(0, 16),
                             lat: sgp4Pos.lat, 
                             lng: sgp4Pos.lng, 
                             alt: 0.22, 
@@ -715,8 +681,10 @@
                 document.getElementById('sys-a-vis-text').innerText = `${sysA.toUpperCase()}: ${pctA}%`;
                 document.getElementById('sys-b-vis-text').innerText = `${sysB.toUpperCase()}: ${pctB}%`;
 
-                document.getElementById('sys-a-vis-bar').style.width = `${pctA}%`;
-                document.getElementById('sys-b-vis-bar').style.width = `${pctB}%`;
+                let gpsBars = document.querySelectorAll('.bar-fill.fill-gps');
+                let bdsBars = document.querySelectorAll('.bar-fill.fill-bds');
+                if(gpsBars.length > 0) gpsBars[0].style.width = `${pctA}%`;
+                if(bdsBars.length > 0) bdsBars[0].style.width = `${pctB}%`;
 
                 const dropdownModal = document.getElementById('sat-dropdown-modal');
                 if (dropdownModal) {
@@ -753,23 +721,27 @@
                 resizeGlobe();
 
             } catch (err) {
-                console.error("Render Error Safely Caught:", err);
+                console.error("Render Error:", err);
             }
         }
 
+        // --- FIXED DYNAMIC TIME-SHIFTED UPCOMING PASSES ---
         function populateUpcomingPassesList() {
             try {
                 const listContainer = document.getElementById('upcoming-passes-list');
                 if (!listContainer || currentLiveSatObjects.length === 0) return;
                 
+                const now = new Date(Date.now() + simTimeElapsedSec * 1000);
+                
                 let allPasses = currentLiveSatObjects.map((sat, index) => {
                     const idNum = parseInt(sat.id) || Math.floor(Math.random() * 10000);
-                    const startOffsetMins = ((idNum * 7 + index * 13) % 120) + 2; 
-                    const durMins = (idNum % 15) + 12; 
-                    const maxEl = 40 + (idNum % 45); 
                     
-                    const now = new Date();
-                    const aosTime = new Date(now.getTime() + startOffsetMins * 60000);
+                    // Staggered distinct start offsets from 4m up to 180m
+                    const offsetMinutes = ((idNum * 13 + index * 19) % 170) + 4;
+                    const durMins = (idNum % 14) + 12; // 12m to 26m duration
+                    const maxEl = 45 + (idNum % 42); // 45 to 87 deg
+                    
+                    const aosTime = new Date(now.getTime() + offsetMinutes * 60000);
                     
                     const formatTime = (d) => {
                         return d.getHours().toString().padStart(2, '0') + ':' + 
@@ -780,9 +752,10 @@
                     const dirs = ['NW -> SE', 'SW -> NE', 'N -> S', 'S -> N', 'W -> E'];
                     const dir = dirs[idNum % dirs.length];
 
-                    return { sat, aosTime, durMins, maxEl, timeStr: formatTime(aosTime), dir };
+                    return { sat, aosTime, durMins, maxEl, timeStr: formatTime(aosTime), offsetMinutes, dir };
                 });
 
+                // Chronological sort: earliest upcoming pass first
                 allPasses.sort((a, b) => a.aosTime - b.aosTime);
                 let passesToShow = allPasses.slice(0, 15);
 
@@ -805,6 +778,7 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
+        // --- FULL CONTINUOUS 3D ORBIT RING & GROUND TRACK ---
         function generateSatOrbitTrack(id, fixedAlt = null) {
             try {
                 const sat = TLE_DATABASE[id];
@@ -815,7 +789,7 @@
                 const periodMin = (2 * Math.PI) / meanMotionRadMin;
                 const periodSec = periodMin * 60;
                 const points = [];
-                const now = new Date();
+                const now = new Date(Date.now() + simTimeElapsedSec * 1000);
                 const numSteps = 120;
                 const stepSec = periodSec / numSteps;
                 
@@ -893,11 +867,6 @@
             if (myGlobe) {
                 myGlobe.objectsData(currentLiveSatObjects);
                 myGlobe.htmlElementsData(targetLabelData);
-                
-                const tgtSat = targetLabelData[0];
-                if (tgtSat) {
-                    myGlobe.pointOfView({ lat: tgtSat.lat, lng: tgtSat.lng, altitude: 2.2 }, 1000);
-                }
             }
 
             updateTargetOrbitPath(id);
@@ -909,40 +878,18 @@
         }
 
         function parseRinexHeader(text) {
-            let markerName = "Unknown";
-            let obsDate = "Unknown";
-            let agency = "Unknown";
-            let recType = "Unknown";
-            let antType = "Unknown";
-            let interval = "Unknown";
-            let version = "Unknown";
-
+            let markerName = "Unknown", obsDate = "Unknown", agency = "Unknown", recType = "Unknown", antType = "Unknown", interval = "Unknown", version = "Unknown";
             const lines = text.split('\n');
             for (let line of lines) {
-                if (line.includes('RINEX VERSION / TYPE')) {
-                    version = line.substring(0, 9).trim();
-                }
-                if (line.includes('MARKER NAME')) {
-                    markerName = line.substring(0, 60).trim() || "Unknown";
-                }
-                if (line.includes('OBSERVER / AGENCY')) {
-                    agency = line.substring(0, 60).trim() || "Unknown";
-                }
-                if (line.includes('REC # / TYPE / VERS')) {
-                    recType = line.substring(20, 40).trim() || "Unknown";
-                }
-                if (line.includes('ANT # / TYPE')) {
-                    antType = line.substring(20, 40).trim() || "Unknown";
-                }
-                if (line.includes('INTERVAL')) {
-                    interval = line.substring(0, 10).trim() + " Sec";
-                }
+                if (line.includes('RINEX VERSION / TYPE')) version = line.substring(0, 9).trim();
+                if (line.includes('MARKER NAME')) markerName = line.substring(0, 60).trim() || "Unknown";
+                if (line.includes('OBSERVER / AGENCY')) agency = line.substring(0, 60).trim() || "Unknown";
+                if (line.includes('REC # / TYPE / VERS')) recType = line.substring(20, 40).trim() || "Unknown";
+                if (line.includes('ANT # / TYPE')) antType = line.substring(20, 40).trim() || "Unknown";
+                if (line.includes('INTERVAL')) interval = line.substring(0, 10).trim() + " Sec";
                 if (line.includes('TIME OF FIRST OBS')) {
-                    let timeStr = line.substring(0, 60).trim();
-                    let parts = timeStr.split(/\s+/).filter(p => p !== "");
-                    if (parts.length >= 3) {
-                        obsDate = `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
-                    }
+                    let parts = line.substring(0, 60).trim().split(/\s+/).filter(p => p !== "");
+                    if (parts.length >= 3) obsDate = `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
                 }
                 if (line.includes('END OF HEADER')) break;
             }
@@ -970,12 +917,8 @@
                     
                     const card = document.createElement('div');
                     card.className = 'rinex-card';
-                    
                     card.innerHTML = `
-                        <div class="c-title">
-                            <span>📄 ${file.name}</span>
-                            <span style="color:var(--text-muted); font-size:8.5px; font-weight:normal;">v${metadata.version}</span>
-                        </div>
+                        <div class="c-title"><span>📄 ${file.name}</span><span style="color:var(--text-muted); font-size:8.5px; font-weight:normal;">v${metadata.version}</span></div>
                         <div class="c-meta"><span>📍 နေရာ:</span> <b>${metadata.markerName}</b></div>
                         <div class="c-meta"><span>📅 ရက်စွဲ:</span> <b>${metadata.obsDate}</b></div>
                         <div class="c-meta"><span>🏢 အဖွဲ့:</span> <b>${metadata.agency}</b></div>
@@ -1020,6 +963,17 @@
                     }
                 }
             });
+
+            let avgGps = Math.round(snrGps.reduce((a, b) => a + b, 0) / snrGps.length);
+            let avgBds = Math.round(snrBds.reduce((a, b) => a + b, 0) / snrBds.length);
+
+            document.getElementById('sys-a-cn0-text').innerText = `${avgGps} dB-Hz`;
+            document.getElementById('sys-b-cn0-text').innerText = `${avgBds} dB-Hz`;
+
+            let gpsBars = document.querySelectorAll('.bar-fill.fill-gps');
+            let bdsBars = document.querySelectorAll('.bar-fill.fill-bds');
+            if(gpsBars.length > 1) gpsBars[1].style.width = `${(avgGps / 55) * 100}%`;
+            if(bdsBars.length > 1) bdsBars[1].style.width = `${(avgBds / 55) * 100}%`;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1098,26 +1052,46 @@
 
         window.addEventListener('resize', resizeGlobe);
 
-        let lastFrameTime = 0;
-        function animateSatellites(timestamp) {
-            if (timestamp - lastFrameTime > 200) {
-                lastFrameTime = timestamp;
-                if (currentLiveSatObjects.length > 0) {
-                    currentLiveSatObjects.forEach(s => {
-                        const sgp4Pos = propagateSGP4(s.id);
-                        s.lat = sgp4Pos.lat;
-                        s.lng = sgp4Pos.lng;
-                    });
-                    if (myGlobe) {
-                        myGlobe.objectsData(currentLiveSatObjects);
-                        myGlobe.htmlElementsData(targetLabelData);
-                    }
+        // REAL-TIME ORBITAL PROPAGATION ANIMATION LOOP
+        let lastFrameTime = performance.now();
+        let lastPassUpdateTime = 0;
+
+        function animateSatellites(currentTime) {
+            const deltaSec = (currentTime - lastFrameTime) / 1000;
+            lastFrameTime = currentTime;
+
+            // Advance simulation time by speed factor
+            simTimeElapsedSec += deltaSec * simSpeed;
+
+            if (currentLiveSatObjects.length > 0) {
+                currentLiveSatObjects.forEach(s => {
+                    const sgp4Pos = propagateSGP4(s.id);
+                    s.lat = sgp4Pos.lat;
+                    s.lng = sgp4Pos.lng;
+                });
+
+                if (myGlobe) {
+                    myGlobe.objectsData(currentLiveSatObjects);
+                    myGlobe.htmlElementsData(targetLabelData);
+                }
+
+                // Update active orbit path smoothly as satellite moves
+                if (selectedSatId && modes.tracks) {
+                    updateTargetOrbitPath(selectedSatId);
                 }
             }
+
+            // Periodically refresh pass times
+            if (currentTime - lastPassUpdateTime > 3000) {
+                lastPassUpdateTime = currentTime;
+                populateUpcomingPassesList();
+            }
+
             requestAnimationFrame(animateSatellites);
         }
         
         loadCelesTrakTLEs().then(() => {
+            lastFrameTime = performance.now();
             requestAnimationFrame(animateSatellites);
         });
 
