@@ -138,7 +138,6 @@
             border-bottom: 1px solid rgba(56, 189, 248, 0.15); padding-bottom: 4px;
         }
 
-        /* Updated Upcoming Passes List Card */
         .hud-right-passes { top: 12px; right: 12px; width: 300px; display: flex; flex-direction: column; max-height: 280px; }
 
         .matrix-select {
@@ -304,7 +303,7 @@
             <!-- UPCOMING PASSES CLICKABLE LIST CARD -->
             <div class="hud-card hud-right-passes mono">
                 <div class="hud-card-title">
-                    <span>► UPCOMING PASSES</span>
+                    <span id="pass-title">► UPCOMING PASSES</span>
                     <span style="color:var(--accent-green); font-size:8px;">[CLICK TO TRACK]</span>
                 </div>
                 <!-- Javascript will populate this list -->
@@ -388,7 +387,7 @@
                 </div>
             </div>
 
-            <!-- RIGHT PANEL: RINEX Analysis (SIDE BY SIDE LAYOUT) -->
+            <!-- RIGHT PANEL: RINEX Analysis SIDE-BY-SIDE VIEW -->
             <div class="glass-panel">
                 <div class="panel-title">
                     <span id="chart-panel-title">📡 RINEX Data Analysis</span>
@@ -399,9 +398,9 @@
                     
                     <!-- Left Sidebar (Upload & Cards) -->
                     <div class="rinex-left">
-                        <div class="mono" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px; padding: 10px; border: 1px dashed rgba(56,189,248,0.4); border-radius: 4px; background: rgba(15,23,42,0.6);">
-                            <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:9px; color:var(--text-muted); width: 130px; cursor: pointer;">
-                            <button onclick="uploadAndCompare()" class="upload-btn">🚀 ANALYZE RINEX</button>
+                        <div class="mono" style="display:flex; flex-direction: column; align-items: stretch; margin-bottom: 12px; gap: 8px; padding: 10px; border: 1px dashed rgba(56,189,248,0.4); border-radius: 4px; background: rgba(15,23,42,0.6);">
+                            <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:9px; color:var(--text-muted); width: 100%; cursor: pointer;">
+                            <button onclick="uploadAndCompare()" class="upload-btn" style="padding: 6px; font-size: 10px;">🚀 ANALYZE RINEX</button>
                         </div>
 
                         <!-- Parsed Metadata Cards -->
@@ -418,8 +417,8 @@
                             <canvas id="waveformChart"></canvas>
                         </div>
                     </div>
-                    
                 </div>
+
             </div>
         </section>
 
@@ -499,29 +498,33 @@
 
         function generateHighDensityFallbackList() {
             let list = [];
-            const baseTLEs = [
-                { sys: "GPS SVN", line1: "1 28474U 04045A   24001.00000000 -.00000000  00000-0  00000-0 0  9999", line2: "2 28474  55.0000 150.0000 0100000   0.0000 359.0000  2.00560000100000" },
-                { sys: "BDS MEO", line1: "1 43539U 18062A   24001.00000000 -.00000000  00000-0  00000-0 0  9999", line2: "2 43539  55.0000 120.0000 0050000  10.0000 350.0000  1.86230000100000" },
-                { sys: "GALILEO GSAT", line1: "1 41859U 16069A   24001.00000000 -.00000000  00000-0  00000-0 0  9999", line2: "2 41859  56.0000 110.0000 0005000  20.0000 340.0000  1.70480000100000" },
-                { sys: "GLONASS-M", line1: "1 39572U 14015A   24001.00000000 -.00000000  00000-0  00000-0 0  9999", line2: "2 39572  64.8000 100.0000 0010000  30.0000 330.0000  2.13100000100000" }
-            ];
-
-            baseTLEs.forEach((base, idx) => {
-                for(let i=1; i<=30; i++) {
-                    let satId = (parseInt(base.line1.substring(2,7)) + i).toString().padStart(5, '0');
+            const addSats = (startId, prefix, count, inc, no) => {
+                for(let i=1; i<=count; i++) {
+                    let satId = (startId + i).toString().padStart(5, '0');
                     let prn = i.toString().padStart(2, '0');
-                    let newRaan = ((i * 12.5) % 360).toFixed(4).padStart(8, ' ');
+                    let raan = ((i * 15.5) % 360).toFixed(4).padStart(8, ' ');
+                    let ma = ((i * 25.1) % 360).toFixed(4).padStart(8, ' ');
+                    let incStr = inc.toFixed(4).padStart(8, ' ');
+                    let noStr = no.toFixed(8).padStart(11, ' ');
                     
-                    let newLine1 = base.line1.substring(0, 2) + satId + base.line1.substring(7);
-                    let newLine2 = base.line2.substring(0, 2) + satId + base.line2.substring(7, 17) + newRaan + base.line2.substring(25);
-
-                    list.push({ id: satId, name: `${base.sys}-${prn}`, line1: newLine1, line2: newLine2 });
+                    list.push({
+                        id: satId,
+                        name: `${prefix}-${prn}`,
+                        line1: `1 ${satId}U 18014A   23264.44421296 -.00000038  00000-0  00000-0 0  9992`,
+                        line2: `2 ${satId} ${incStr} ${raan} 0041234  30.1234 ${ma} ${noStr} 12342`
+                    });
                 }
-            });
+            };
+            
+            addSats(20000, "GPS SVN", 31, 55.1500, 2.00561234);
+            addSats(30000, "BDS MEO", 35, 55.0000, 1.86234123);
+            addSats(40000, "GALILEO GSAT", 24, 56.0000, 1.70481234);
+            addSats(50000, "GLONASS-M", 24, 64.8000, 2.13101234);
+            addSats(60000, "QZSS/IRNSS", 10, 15.0000, 1.00271234); 
+
             return list;
         }
 
-        // TLE parser - uses regex replace to safely preserve spacing needed by SGP4
         function parseRawTLEString(text) {
             let parsedSats = [];
             let lines = text.split('\n').map(l => l.replace(/\r/g, '')).filter(l => l.trim().length > 0);
@@ -584,7 +587,7 @@
                             }
                         }
                     }
-                } catch (err) {}
+                } catch (err) { console.error("Fetch Error:", err); }
             }
 
             if (!loadedSuccessfully) {
@@ -623,7 +626,6 @@
             return combined;
         }
 
-        // Safe SGP4 Wrapper
         function propagateSGP4(id, timeOffsetSec = 0) {
             try {
                 const tle = TLE_DATABASE[id];
@@ -748,7 +750,6 @@
             }
         }
 
-        // GENERATE CLICKABLE UPCOMING PASSES LIST
         function populateUpcomingPassesList() {
             try {
                 const listContainer = document.getElementById('upcoming-passes-list');
@@ -789,7 +790,6 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
-        // GENERATE TRACKS (ORBIT & GROUND)
         function generateSatOrbitTrack(id, fixedAlt = null) {
             try {
                 const sat = TLE_DATABASE[id];
@@ -863,7 +863,6 @@
                 else row.classList.remove('table-row-selected');
             });
 
-            // Highlight Active Pass Card
             document.querySelectorAll('.pass-card').forEach(card => {
                 if (card.getAttribute('data-id') === id) {
                     card.style.background = 'rgba(56, 189, 248, 0.2)';
@@ -880,7 +879,6 @@
                 myGlobe.objectsData(currentLiveSatObjects);
                 myGlobe.htmlElementsData(targetLabelData);
                 
-                // Animate camera to satellite location for better visual tracking
                 const tgtSat = targetLabelData[0];
                 if (tgtSat) {
                     myGlobe.pointOfView({ lat: tgtSat.lat, lng: tgtSat.lng, altitude: 2.2 }, 1000);
@@ -995,8 +993,8 @@
                 data: {
                     labels: epochs,
                     datasets: [
-                        { label: `${satName.substring(0,10)} C/N₀`, data: snrGps, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.12)', borderWidth: 2, tension: 0.3, pointRadius: 2.5 },
-                        { label: 'Avg Fleet C/N₀', data: snrBds, borderColor: 'rgba(255, 255, 255, 0.2)', backgroundColor: 'transparent', borderWidth: 2, borderDash: [5, 5], tension: 0.3, pointRadius: 0 }
+                        { label: `🎯 ${satName.substring(0,12)} C/N₀`, data: snrGps, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.12)', borderWidth: 2, tension: 0.3, pointRadius: 2.5 },
+                        { label: '🇨🇳 BDS / Rival Baseline C/N₀', data: snrBds, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.12)', borderWidth: 2, tension: 0.3, pointRadius: 2.5 }
                     ]
                 },
                 options: {
