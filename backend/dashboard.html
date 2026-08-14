@@ -751,7 +751,7 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
-        // --- RELIABLE ORBIT PATH & GROUND TRACK GENERATOR ---
+        // --- PRECISE 3D ORBIT RING & GROUND TRACK GENERATOR (FIXED LOOP ISSUE) ---
         function generateSatOrbitTrack(id, isGroundTrack = false) {
             try {
                 const sat = TLE_DATABASE[id];
@@ -766,12 +766,12 @@
                 
                 const points = [];
                 const now = new Date();
-                const numSteps = 80;
-                const halfPeriod = periodSec / 2;
+                const numSteps = 120;
                 const stepSec = periodSec / numSteps;
                 
                 for (let i = 0; i <= numSteps; i++) {
-                    const timeOffset = -halfPeriod + (i * stepSec);
+                    // Forward projection for 1 full orbital period without wrapping/looping loops
+                    const timeOffset = i * stepSec;
                     const targetTime = new Date(now.getTime() + timeOffset * 1000);
                     const posVel = satellite.propagate(satrec, targetTime);
                     
