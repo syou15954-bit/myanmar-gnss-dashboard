@@ -138,6 +138,7 @@
             border-bottom: 1px solid rgba(56, 189, 248, 0.15); padding-bottom: 4px;
         }
 
+        /* Updated Upcoming Passes List Card */
         .hud-right-passes { top: 12px; right: 12px; width: 300px; display: flex; flex-direction: column; max-height: 280px; }
 
         .matrix-select {
@@ -151,7 +152,7 @@
         .fill-gps { background: linear-gradient(90deg, #059669, #10b981); box-shadow: 0 0 8px #10b981; }
         .fill-bds { background: linear-gradient(90deg, #dc2626, #ef4444); box-shadow: 0 0 8px #ef4444; }
 
-        /* Updated Bottom Dock Layout to give RINEX Panel more space */
+        /* Adjusted Dock to give RINEX Panel more horizontal space */
         .bottom-dock { 
             flex: 1; 
             display: grid; 
@@ -182,15 +183,9 @@
         .status-pill { padding: 2px 6px; border-radius: 3px; font-size: 8px; font-weight: 700; }
         .pill-green { background: rgba(16, 185, 129, 0.12); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.4); }
 
-        .chart-box { position: relative; flex: 1; width: 100%; min-height: 0; }
-        .chart-box canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
-
         .dop-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 4px; }
         .dop-card { background: rgba(2, 6, 23, 0.6); padding: 8px; border-radius: 4px; text-align: center; border: 1px solid var(--panel-border); }
         .dop-val { font-size: 16px; font-weight: 700; color: var(--accent-cyan); margin-top: 4px; }
-
-        .upload-btn { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 4px 10px; border-radius: 3px; font-size: 9.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-        .upload-btn:hover { background: rgba(56, 189, 248, 0.35); }
 
         /* ====== RINEX Side-by-Side Split Layout CSS ====== */
         .rinex-split-view {
@@ -200,8 +195,11 @@
             width: 260px; display: flex; flex-direction: column; min-height: 0; flex-shrink: 0;
         }
         .rinex-right {
-            flex: 1; display: flex; flex-direction: column; min-height: 0;
+            flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative;
         }
+
+        .upload-btn { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 4px 10px; border-radius: 3px; font-size: 9.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap;}
+        .upload-btn:hover { background: rgba(56, 189, 248, 0.35); }
 
         .rinex-file-list {
             display: flex; flex-direction: column; gap: 8px; 
@@ -223,6 +221,9 @@
         .rinex-card .c-meta b { 
             color: #f8fafc; text-align: left; font-weight: 500; line-height: 1.4; word-break: break-word; 
         }
+
+        .chart-box { position: relative; flex: 1; width: 100%; min-height: 120px; }
+        .chart-box canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
 
         /* Pass Card Styling */
         .pass-card:hover { background: rgba(56, 189, 248, 0.15) !important; }
@@ -306,8 +307,8 @@
                     <span>► UPCOMING PASSES</span>
                     <span style="color:var(--accent-green); font-size:8px;">[CLICK TO TRACK]</span>
                 </div>
+                <!-- Javascript will populate this list -->
                 <div id="upcoming-passes-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;">
-                    <!-- Javascript will populate this list -->
                 </div>
             </div>
         </section>
@@ -357,20 +358,20 @@
                 </div>
 
                 <div style="display:grid; grid-template-columns:1fr 100px 1fr; align-items:center; text-align:center; margin-bottom:16px; margin-top:12px;">
-                    <b style="color:#10b981; font-size:24px;" id="sys-a-count">11</b>
+                    <b style="color:#10b981; font-size:24px;" id="sys-a-count">0</b>
                     <span style="font-size:10px; color:var(--text-muted); letter-spacing: 1px;" id="fleet-type-label">SATS IN VIEW</span>
-                    <b style="color:#ef4444; font-size:24px;" id="sys-b-count">19</b>
+                    <b style="color:#ef4444; font-size:24px;" id="sys-b-count">0</b>
                 </div>
 
                 <div style="margin-bottom:18px;">
                     <div style="display:flex; justify-content:space-between; font-size:10px; font-weight:700; margin-bottom:8px;">
-                        <span style="color:#10b981;" id="sys-a-vis-text">SYS-A: 35%</span>
+                        <span style="color:#10b981;" id="sys-a-vis-text">SYS-A: 0%</span>
                         <span style="color:var(--text-muted);">FLEET VISIBILITY</span>
-                        <span style="color:#ef4444;" id="sys-b-vis-text">SYS-B: 65%</span>
+                        <span style="color:#ef4444;" id="sys-b-vis-text">SYS-B: 0%</span>
                     </div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                        <div class="bar-container" style="height: 10px;"><div class="bar-fill fill-gps" id="sys-a-vis-bar" style="width:35%;"></div></div>
-                        <div class="bar-container" style="height: 10px;"><div class="bar-fill fill-bds" id="sys-b-vis-bar" style="width:65%; margin-left:auto;"></div></div>
+                        <div class="bar-container" style="height: 10px;"><div class="bar-fill fill-gps" id="sys-a-vis-bar" style="width:0%;"></div></div>
+                        <div class="bar-container" style="height: 10px;"><div class="bar-fill fill-bds" id="sys-b-vis-bar" style="width:0%; margin-left:auto;"></div></div>
                     </div>
                 </div>
 
@@ -387,20 +388,23 @@
                 </div>
             </div>
 
-            <!-- RIGHT PANEL: RINEX Analysis SIDE-BY-SIDE VIEW -->
+            <!-- RIGHT PANEL: RINEX Analysis (SIDE BY SIDE LAYOUT) -->
             <div class="glass-panel">
                 <div class="panel-title">
                     <span id="chart-panel-title">📡 RINEX Data Analysis</span>
                 </div>
                 
+                <!-- Split View Container -->
                 <div class="rinex-split-view">
+                    
                     <!-- Left Sidebar (Upload & Cards) -->
                     <div class="rinex-left">
-                        <div class="mono" style="display:flex; flex-direction: column; align-items: stretch; margin-bottom: 12px; gap: 8px; padding: 10px; border: 1px dashed rgba(56,189,248,0.4); border-radius: 4px; background: rgba(15,23,42,0.6);">
-                            <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:9px; color:var(--text-muted); width: 100%; cursor: pointer;">
-                            <button onclick="uploadAndCompare()" class="upload-btn" style="padding: 6px; font-size: 10px;">🚀 ANALYZE RINEX</button>
+                        <div class="mono" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px; padding: 10px; border: 1px dashed rgba(56,189,248,0.4); border-radius: 4px; background: rgba(15,23,42,0.6);">
+                            <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:9px; color:var(--text-muted); width: 130px; cursor: pointer;">
+                            <button onclick="uploadAndCompare()" class="upload-btn">🚀 ANALYZE RINEX</button>
                         </div>
 
+                        <!-- Parsed Metadata Cards -->
                         <div id="rinex-file-list" class="rinex-file-list mono">
                             <div style="text-align: center; color: var(--text-muted); font-size: 9px; padding: 10px; border: 1px dashed rgba(56, 189, 248, 0.2); border-radius: 4px;">
                                 ဖိုင်များ ထည့်သွင်းရန် စောင့်ဆိုင်းနေပါသည်...
@@ -414,8 +418,8 @@
                             <canvas id="waveformChart"></canvas>
                         </div>
                     </div>
+                    
                 </div>
-
             </div>
         </section>
 
@@ -480,6 +484,7 @@
         }
 
         function isSatVisibleInMyanmar(lat, lng) {
+            if (isNaN(lat) || isNaN(lng)) return false;
             return (lat >= -25.0 && lat <= 55.0 && lng >= 30.0 && lng <= 160.0);
         }
 
@@ -494,40 +499,36 @@
 
         function generateHighDensityFallbackList() {
             let list = [];
-            const addSats = (startId, prefix, count, inc, no) => {
-                for(let i=1; i<=count; i++) {
-                    let satId = (startId + i).toString().padStart(5, '0');
-                    let prn = i.toString().padStart(2, '0');
-                    let raan = ((i * 15.5) % 360).toFixed(4).padStart(8, ' ');
-                    let ma = ((i * 25.1) % 360).toFixed(4).padStart(8, ' ');
-                    let incStr = inc.toFixed(4).padStart(8, ' ');
-                    let noStr = no.toFixed(8).padStart(11, ' ');
-                    
-                    list.push({
-                        id: satId,
-                        name: `${prefix}-${prn}`,
-                        line1: `1 ${satId}U 18014A   23264.44421296 -.00000038  00000-0  00000-0 0  9992`,
-                        line2: `2 ${satId} ${incStr} ${raan} 0041234  30.1234 ${ma} ${noStr} 12342`
-                    });
-                }
-            };
-            
-            addSats(20000, "GPS SVN", 31, 55.1500, 2.00561234);
-            addSats(30000, "BDS MEO", 35, 55.0000, 1.86234123);
-            addSats(40000, "GALILEO GSAT", 24, 56.0000, 1.70481234);
-            addSats(50000, "GLONASS-M", 24, 64.8000, 2.13101234);
-            addSats(60000, "QZSS/IRNSS", 10, 15.0000, 1.00271234); 
+            const baseTLEs = [
+                { sys: "GPS SVN", line1: "1 28474U 04045A   24001.00000000 -.00000000  00000-0  00000-0 0  9999", line2: "2 28474  55.0000 150.0000 0100000   0.0000 359.0000  2.00560000100000" },
+                { sys: "BDS MEO", line1: "1 43539U 18062A   24001.00000000 -.00000000  00000-0  00000-0 0  9999", line2: "2 43539  55.0000 120.0000 0050000  10.0000 350.0000  1.86230000100000" },
+                { sys: "GALILEO GSAT", line1: "1 41859U 16069A   24001.00000000 -.00000000  00000-0  00000-0 0  9999", line2: "2 41859  56.0000 110.0000 0005000  20.0000 340.0000  1.70480000100000" },
+                { sys: "GLONASS-M", line1: "1 39572U 14015A   24001.00000000 -.00000000  00000-0  00000-0 0  9999", line2: "2 39572  64.8000 100.0000 0010000  30.0000 330.0000  2.13100000100000" }
+            ];
 
+            baseTLEs.forEach((base, idx) => {
+                for(let i=1; i<=30; i++) {
+                    let satId = (parseInt(base.line1.substring(2,7)) + i).toString().padStart(5, '0');
+                    let prn = i.toString().padStart(2, '0');
+                    let newRaan = ((i * 12.5) % 360).toFixed(4).padStart(8, ' ');
+                    
+                    let newLine1 = base.line1.substring(0, 2) + satId + base.line1.substring(7);
+                    let newLine2 = base.line2.substring(0, 2) + satId + base.line2.substring(7, 17) + newRaan + base.line2.substring(25);
+
+                    list.push({ id: satId, name: `${base.sys}-${prn}`, line1: newLine1, line2: newLine2 });
+                }
+            });
             return list;
         }
 
+        // TLE parser - uses regex replace to safely preserve spacing needed by SGP4
         function parseRawTLEString(text) {
             let parsedSats = [];
-            let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            let lines = text.split('\n').map(l => l.replace(/\r/g, '')).filter(l => l.trim().length > 0);
             let i = 0;
             while (i < lines.length) {
                 if (i + 2 < lines.length && lines[i+1].startsWith('1 ') && lines[i+2].startsWith('2 ')) {
-                    let satName = lines[i];
+                    let satName = lines[i].trim();
                     let l1 = lines[i+1];
                     let l2 = lines[i+2];
                     let noradId = l1.substring(2, 7).trim();
@@ -547,7 +548,7 @@
         function categorizeSatsList(list) {
             let cat = { gps: [], bds: [], galileo: [], glonass: [], other: [], all: list };
             list.forEach(s => {
-                let uname = s.name.toUpperCase();
+                let uname = (s.name || "").toUpperCase();
                 if (uname.includes('GPS') || uname.includes('NAVSTAR')) cat.gps.push(s);
                 else if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('C0')) cat.bds.push(s);
                 else if (uname.includes('GALILEO') || uname.includes('GSAT')) cat.galileo.push(s);
@@ -592,11 +593,6 @@
             }
         }
 
-        function useFallbackData() {
-            let fallbackList = generateHighDensityFallbackList();
-            categorizeSatsList(fallbackList);
-        }
-
         function toggleSystemFilter(sys, btn) {
             if (activeSystems.has(sys)) {
                 if (activeSystems.size > 1) {
@@ -627,6 +623,32 @@
             return combined;
         }
 
+        // Safe SGP4 Wrapper
+        function propagateSGP4(id, timeOffsetSec = 0) {
+            try {
+                const tle = TLE_DATABASE[id];
+                if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 20200 };
+                
+                const satrec = satellite.twoline2satrec(tle.line1, tle.line2);
+                const targetTime = new Date(Date.now() + timeOffsetSec * 1000);
+                const posVel = satellite.propagate(satrec, targetTime);
+                
+                if (!posVel || !posVel.position || isNaN(posVel.position.x)) {
+                    return { lat: 16.8, lng: 96.1, alt: 20200 };
+                }
+
+                const gmst = satellite.gstime(targetTime);
+                const posGd = satellite.eciToGeodetic(posVel.position, gmst);
+                return { 
+                    lat: satellite.degreesLat(posGd.latitude), 
+                    lng: satellite.degreesLong(posGd.longitude), 
+                    alt: Math.round(posGd.height) 
+                };
+            } catch (e) {
+                return { lat: 16.8, lng: 96.1, alt: 20200 };
+            }
+        }
+
         function countSystemVisibles(sysKey) {
             let list = CONSTELLATION_SATS[sysKey] || [];
             let count = 0;
@@ -638,158 +660,166 @@
         }
 
         function renderCustomSelection() {
-            let satList = getFilteredSatellites();
-            
-            currentLiveSatObjects = [];
+            try {
+                let satList = getFilteredSatellites();
+                currentLiveSatObjects = [];
 
-            satList.forEach(s => {
-                const sgp4Pos = propagateSGP4(s.id);
-                const visibleInMM = isSatVisibleInMyanmar(sgp4Pos.lat, sgp4Pos.lng);
+                satList.forEach(s => {
+                    const sgp4Pos = propagateSGP4(s.id);
+                    const visibleInMM = isSatVisibleInMyanmar(sgp4Pos.lat, sgp4Pos.lng);
 
-                if (!isMyanmarOnlyMode || visibleInMM) {
-                    currentLiveSatObjects.push({
-                        id: s.id, 
-                        fullName: s.name, 
-                        name: s.name.substring(0, 14),
-                        lat: sgp4Pos.lat, 
-                        lng: sgp4Pos.lng, 
-                        alt: 0.22, 
-                        color: getSatColor(s.name)
-                    });
+                    if (!isMyanmarOnlyMode || visibleInMM) {
+                        currentLiveSatObjects.push({
+                            id: s.id || "00000", 
+                            fullName: s.name || "Unknown", 
+                            name: (s.name || "Unknown").substring(0, 14),
+                            lat: sgp4Pos.lat, 
+                            lng: sgp4Pos.lng, 
+                            alt: 0.22, 
+                            color: getSatColor(s.name)
+                        });
+                    }
+                });
+
+                document.getElementById('total-sats').innerText = currentLiveSatObjects.length;
+                document.getElementById('active-sats').innerText = currentLiveSatObjects.length;
+                
+                document.getElementById('fleet-title-text').innerText = isMyanmarOnlyMode 
+                    ? '🇲🇲 မြန်မာနိုင်ငံမှ မိနိုင်သော ဂြိုဟ်တုများ (Myanmar Visible Fleet)' 
+                    : '🗄️ Local GNSS DB & Fleet Status';
+
+                const sysA = document.getElementById('matrix-sys-a').value;
+                const sysB = document.getElementById('matrix-sys-b').value;
+
+                const totalSysA = (CONSTELLATION_SATS[sysA] || []).length || 30;
+                const totalSysB = (CONSTELLATION_SATS[sysB] || []).length || 30;
+
+                const visSysA = countSystemVisibles(sysA);
+                const visSysB = countSystemVisibles(sysB);
+
+                document.getElementById('sys-a-count').innerText = visSysA;
+                document.getElementById('sys-b-count').innerText = visSysB;
+
+                const pctA = Math.min(100, Math.round((visSysA / totalSysA) * 100)) || 0;
+                const pctB = Math.min(100, Math.round((visSysB / totalSysB) * 100)) || 0;
+
+                document.getElementById('sys-a-vis-text').innerText = `${sysA.toUpperCase()}: ${pctA}%`;
+                document.getElementById('sys-b-vis-text').innerText = `${sysB.toUpperCase()}: ${pctB}%`;
+
+                document.getElementById('sys-a-vis-bar').style.width = `${pctA}%`;
+                document.getElementById('sys-b-vis-bar').style.width = `${pctB}%`;
+
+                const dropdownModal = document.getElementById('sat-dropdown-modal');
+                if (dropdownModal) {
+                    dropdownModal.innerHTML = currentLiveSatObjects.map(s => `<option value="${s.id}">${s.fullName.substring(0, 22)} (${s.id})</option>`).join('');
                 }
-            });
 
-            document.getElementById('total-sats').innerText = currentLiveSatObjects.length;
-            document.getElementById('active-sats').innerText = currentLiveSatObjects.length;
-            
-            document.getElementById('fleet-title-text').innerText = isMyanmarOnlyMode 
-                ? '🇲🇲 မြန်မာနိုင်ငံမှ မိနိုင်သော ဂြိုဟ်တုများ (Myanmar Visible Fleet)' 
-                : '🗄️ Local GNSS DB & Fleet Status';
+                const tbody = document.getElementById('sat-table-body');
+                if (tbody) {
+                    tbody.innerHTML = currentLiveSatObjects.map(s => {
+                        let cColor = getSatColor(s.fullName);
+                        let sysName = s.fullName.split(' ')[0];
+                        return `
+                        <tr data-id="${s.id}">
+                            <td><b style="color:${cColor};">${s.fullName.substring(0, 16)}</b></td>
+                            <td>${sysName}</td>
+                            <td>75°</td><td>45°</td>
+                            <td><span class="status-pill pill-green">TRACK</span></td>
+                        </tr>
+                    `;}).join('');
+                }
 
-            const sysA = document.getElementById('matrix-sys-a').value;
-            const sysB = document.getElementById('matrix-sys-b').value;
+                targetLabelData = currentLiveSatObjects.filter(s => s.id === selectedSatId);
 
-            const totalSysA = (CONSTELLATION_SATS[sysA] || []).length || 30;
-            const totalSysB = (CONSTELLATION_SATS[sysB] || []).length || 30;
+                if (myGlobe) {
+                    myGlobe.objectsData(currentLiveSatObjects);
+                    myGlobe.htmlElementsData(targetLabelData);
+                }
+                
+                populateUpcomingPassesList();
 
-            const visSysA = countSystemVisibles(sysA);
-            const visSysB = countSystemVisibles(sysB);
+                if (currentLiveSatObjects.length > 0 && !currentLiveSatObjects.some(s => s.id === selectedSatId)) {
+                    selectSatellite(currentLiveSatObjects[0].id);
+                }
+                resizeGlobe();
 
-            document.getElementById('sys-a-count').innerText = visSysA;
-            document.getElementById('sys-b-count').innerText = visSysB;
-
-            const pctA = Math.min(100, Math.round((visSysA / totalSysA) * 100));
-            const pctB = Math.min(100, Math.round((visSysB / totalSysB) * 100));
-
-            document.getElementById('sys-a-vis-text').innerText = `${sysA.toUpperCase()}: ${pctA}%`;
-            document.getElementById('sys-b-vis-text').innerText = `${sysB.toUpperCase()}: ${pctB}%`;
-
-            document.getElementById('sys-a-vis-bar').style.width = `${pctA}%`;
-            document.getElementById('sys-b-vis-bar').style.width = `${pctB}%`;
-
-            const dropdownModal = document.getElementById('sat-dropdown-modal');
-            if (dropdownModal) {
-                dropdownModal.innerHTML = currentLiveSatObjects.map(s => `<option value="${s.id}">${s.fullName.substring(0, 22)} (${s.id})</option>`).join('');
+            } catch (err) {
+                console.error("Render Error Safely Caught:", err);
             }
-
-            const tbody = document.getElementById('sat-table-body');
-            if (tbody) {
-                tbody.innerHTML = currentLiveSatObjects.map(s => {
-                    let cColor = getSatColor(s.fullName);
-                    let sysName = s.fullName.split(' ')[0];
-                    return `
-                    <tr data-id="${s.id}">
-                        <td><b style="color:${cColor};">${s.fullName.substring(0, 16)}</b></td>
-                        <td>${sysName}</td>
-                        <td>75°</td><td>45°</td>
-                        <td><span class="status-pill pill-green">TRACK</span></td>
-                    </tr>
-                `;}).join('');
-            }
-
-            targetLabelData = currentLiveSatObjects.filter(s => s.id === selectedSatId);
-
-            if (myGlobe) {
-                myGlobe.objectsData(currentLiveSatObjects);
-                myGlobe.htmlElementsData(targetLabelData);
-            }
-            
-            // --- NEW: Refresh Upcoming Passes List ---
-            populateUpcomingPassesList();
-
-            if (currentLiveSatObjects.length > 0 && !currentLiveSatObjects.some(s => s.id === selectedSatId)) {
-                selectSatellite(currentLiveSatObjects[0].id);
-            }
-            resizeGlobe();
         }
 
-        // --- NEW: Generate Clickable Passes List ---
+        // GENERATE CLICKABLE UPCOMING PASSES LIST
         function populateUpcomingPassesList() {
-            const listContainer = document.getElementById('upcoming-passes-list');
-            if (!listContainer || currentLiveSatObjects.length === 0) return;
-            
-            let passes = currentLiveSatObjects.slice(0, 12).map((sat, index) => {
-                const idNum = parseInt(sat.id) || Math.floor(Math.random() * 10000);
-                const startOffsetMins = (index * 6) + (idNum % 15); 
-                const durMins = (idNum % 15) + 12; 
-                const maxEl = 40 + (idNum % 45);
+            try {
+                const listContainer = document.getElementById('upcoming-passes-list');
+                if (!listContainer || currentLiveSatObjects.length === 0) return;
                 
-                const now = new Date();
-                const aosTime = new Date(now.getTime() + startOffsetMins * 60000);
-                const formatTime = (d) => d.toTimeString().split(' ')[0];
-                
-                const dirs = ['NW -> SE', 'SW -> NE', 'N -> S', 'S -> N', 'W -> E'];
-                const dir = dirs[idNum % dirs.length];
+                let passes = currentLiveSatObjects.slice(0, 12).map((sat, index) => {
+                    const idNum = parseInt(sat.id) || Math.floor(Math.random() * 10000);
+                    const startOffsetMins = (index * 6) + (idNum % 15); 
+                    const durMins = (idNum % 15) + 12; 
+                    const maxEl = 40 + (idNum % 45);
+                    
+                    const now = new Date();
+                    const aosTime = new Date(now.getTime() + startOffsetMins * 60000);
+                    const formatTime = (d) => d.toTimeString().split(' ')[0];
+                    
+                    const dirs = ['NW -> SE', 'SW -> NE', 'N -> S', 'S -> N', 'W -> E'];
+                    const dir = dirs[idNum % dirs.length];
 
-                return { sat, aosTime, durMins, maxEl, timeStr: formatTime(aosTime), dir };
-            }).sort((a, b) => a.aosTime - b.aosTime);
+                    return { sat, aosTime, durMins, maxEl, timeStr: formatTime(aosTime), dir };
+                }).sort((a, b) => a.aosTime - b.aosTime);
 
-            listContainer.innerHTML = passes.map(p => {
-                let cColor = getSatColor(p.sat.fullName);
-                return `
-                <div class="pass-card" data-id="${p.sat.id}" onclick="selectSatellite('${p.sat.id}')" style="background: rgba(2,6,23,0.6); border: 1px solid rgba(56,189,248,0.15); border-left: 3px solid ${cColor}; padding: 8px 10px; border-radius: 4px; cursor: pointer; transition: all 0.2s;">
-                    <div style="display:flex; justify-content:space-between; font-weight:700; color:${cColor}; font-size: 10px; margin-bottom: 6px;">
-                        <span>${p.sat.name}</span>
-                        <span style="color:var(--text-main); font-size: 9px;">${p.timeStr} MMT</span>
+                listContainer.innerHTML = passes.map(p => {
+                    let cColor = getSatColor(p.sat.fullName);
+                    return `
+                    <div class="pass-card" data-id="${p.sat.id}" onclick="selectSatellite('${p.sat.id}')" style="background: rgba(2,6,23,0.6); border: 1px solid rgba(56,189,248,0.15); border-left: 3px solid ${cColor}; padding: 8px 10px; border-radius: 4px; cursor: pointer; transition: all 0.2s;">
+                        <div style="display:flex; justify-content:space-between; font-weight:700; color:${cColor}; font-size: 10px; margin-bottom: 6px;">
+                            <span>${p.sat.name}</span>
+                            <span style="color:var(--text-main); font-size: 9px;">${p.timeStr} MMT</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; color:var(--text-muted); font-size: 8.5px;">
+                            <span>DUR: ${p.durMins}m</span>
+                            <span>DIR: ${p.dir}</span>
+                            <span style="color:var(--accent-green);">EL: ${p.maxEl.toFixed(1)}°</span>
+                        </div>
                     </div>
-                    <div style="display:flex; justify-content:space-between; color:var(--text-muted); font-size: 8.5px;">
-                        <span>DUR: ${p.durMins}m</span>
-                        <span>DIR: ${p.dir}</span>
-                        <span style="color:var(--accent-green);">EL: ${p.maxEl.toFixed(1)}°</span>
-                    </div>
-                </div>
-                `;
-            }).join('');
+                    `;
+                }).join('');
+            } catch(e) { console.error("Error populating passes", e); }
         }
 
+        // GENERATE TRACKS (ORBIT & GROUND)
         function generateSatOrbitTrack(id, fixedAlt = null) {
-            const sat = TLE_DATABASE[id];
-            if (!sat || typeof satellite === 'undefined') return { coords: [], color: '#38bdf8', stroke: 3.2 };
-            const satrec = satellite.twoline2satrec(sat.line1, sat.line2);
-            const satColor = getSatColor(sat.name);
-            const meanMotionRadMin = satrec.no_kozai || satrec.no || 0.004;
-            const periodMin = (2 * Math.PI) / meanMotionRadMin;
-            const periodSec = periodMin * 60;
-            const points = [];
-            const now = new Date();
-            const numSteps = 120;
-            const stepSec = periodSec / numSteps;
-            
-            for (let i = 0; i <= numSteps; i++) {
-                const timeOffset = i * stepSec;
-                const targetTime = new Date(now.getTime() + timeOffset * 1000);
-                const posVel = satellite.propagate(satrec, targetTime);
-                if (posVel.position) {
-                    const targetGmst = satellite.gstime(targetTime);
-                    const posGd = satellite.eciToGeodetic(posVel.position, targetGmst);
-                    const lat = satellite.degreesLat(posGd.latitude);
-                    const lng = satellite.degreesLong(posGd.longitude);
-                    let normAlt = fixedAlt !== null ? fixedAlt : (0.18 + (posGd.height / 35786) * 0.22);
-                    if (normAlt > 0.45 && fixedAlt === null) normAlt = 0.45;
-                    points.push({ lat, lng, alt: normAlt });
+            try {
+                const sat = TLE_DATABASE[id];
+                if (!sat || typeof satellite === 'undefined') return { coords: [], color: '#38bdf8', stroke: 3.2 };
+                const satrec = satellite.twoline2satrec(sat.line1, sat.line2);
+                const satColor = getSatColor(sat.name);
+                const meanMotionRadMin = satrec.no_kozai || satrec.no || 0.004;
+                const periodMin = (2 * Math.PI) / meanMotionRadMin;
+                const periodSec = periodMin * 60;
+                const points = [];
+                const now = new Date();
+                const numSteps = 120;
+                const stepSec = periodSec / numSteps;
+                
+                for (let i = 0; i <= numSteps; i++) {
+                    const timeOffset = i * stepSec;
+                    const targetTime = new Date(now.getTime() + timeOffset * 1000);
+                    const posVel = satellite.propagate(satrec, targetTime);
+                    if (posVel && posVel.position && !isNaN(posVel.position.x)) {
+                        const targetGmst = satellite.gstime(targetTime);
+                        const posGd = satellite.eciToGeodetic(posVel.position, targetGmst);
+                        const lat = satellite.degreesLat(posGd.latitude);
+                        const lng = satellite.degreesLong(posGd.longitude);
+                        let normAlt = fixedAlt !== null ? fixedAlt : (0.18 + (posGd.height / 35786) * 0.22);
+                        if (normAlt > 0.45 && fixedAlt === null) normAlt = 0.45;
+                        points.push({ lat, lng, alt: normAlt });
+                    }
                 }
-            }
-            return { coords: points, color: fixedAlt !== null ? 'rgba(239, 68, 68, 0.9)' : satColor, stroke: fixedAlt !== null ? 1.5 : 3.2 };
+                return { coords: points, color: fixedAlt !== null ? 'rgba(239, 68, 68, 0.9)' : satColor, stroke: fixedAlt !== null ? 1.5 : 3.2 };
+            } catch(e) { return { coords: [], color: '#38bdf8', stroke: 3.2 }; }
         }
 
         function updateTargetOrbitPath(id) {
@@ -849,6 +879,12 @@
             if (myGlobe) {
                 myGlobe.objectsData(currentLiveSatObjects);
                 myGlobe.htmlElementsData(targetLabelData);
+                
+                // Animate camera to satellite location for better visual tracking
+                const tgtSat = targetLabelData[0];
+                if (tgtSat) {
+                    myGlobe.pointOfView({ lat: tgtSat.lat, lng: tgtSat.lng, altitude: 2.2 }, 1000);
+                }
             }
 
             updateTargetOrbitPath(id);
@@ -911,7 +947,7 @@
             const fileListContainer = document.getElementById('rinex-file-list');
             fileListContainer.innerHTML = ''; 
 
-            let targetSatName = TLE_DATABASE[selectedSatId] ? TLE_DATABASE[selectedSatId].name : "GPS/BDS";
+            let targetSatName = TLE_DATABASE[selectedSatId] ? TLE_DATABASE[selectedSatId].name : "Target Sat";
             renderMockChart(targetSatName);
 
             Array.from(fileInput.files).forEach(file => {
