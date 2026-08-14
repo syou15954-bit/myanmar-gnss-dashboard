@@ -189,33 +189,32 @@
         .dop-card { background: rgba(2, 6, 23, 0.6); padding: 8px; border-radius: 4px; text-align: center; border: 1px solid var(--panel-border); }
         .dop-val { font-size: 16px; font-weight: 700; color: var(--accent-cyan); margin-top: 4px; }
 
-        .upload-box { display: flex; gap: 6px; align-items: center; background: rgba(2, 6, 23, 0.6); padding: 6px; border-radius: 4px; border: 1px dashed var(--panel-border); margin-bottom: 8px; }
+        .upload-box { display: flex; gap: 6px; align-items: center; background: rgba(2, 6, 23, 0.6); padding: 6px; border-radius: 4px; border: 1px dashed var(--panel-border); margin-bottom: 8px; flex-shrink: 0; }
         .upload-btn { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 4px 10px; border-radius: 3px; font-size: 9.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
         .upload-btn:hover { background: rgba(56, 189, 248, 0.35); }
 
         /* ====== ပြင်ဆင်ထားသော Uploaded File Cards CSS ====== */
         .rinex-file-list {
-            display: flex; flex-direction: column; gap: 8px; max-height: 180px; 
-            overflow-y: auto; margin-bottom: 16px; /* Chart နဲ့ ကွာဟရန် Margin တိုးပေးသည် */
-            padding-right: 6px;
+            display: flex; flex-direction: column; gap: 8px; 
+            max-height: 105px; /* Chart ကို မဖုံးစေရန် အမြင့်ကို ပြန်လည် ထိန်းချုပ်ထားသည် */
+            overflow-y: auto; margin-bottom: 8px; padding-right: 6px; flex-shrink: 0;
         }
         .rinex-card {
             background: rgba(2, 6, 23, 0.8); border: 1px solid rgba(56, 189, 248, 0.2); border-left: 3px solid var(--accent-cyan);
-            border-radius: 4px; padding: 10px; display: flex; flex-direction: column; gap: 6px; font-size: 10px;
+            border-radius: 4px; padding: 8px 10px; display: flex; flex-direction: column; gap: 5px; font-size: 9.5px;
         }
         .rinex-card .c-title { 
-            color: var(--accent-cyan); font-weight: 700; font-size: 10.5px; 
-            border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; margin-bottom: 4px;
+            color: var(--accent-cyan); font-weight: 700; font-size: 10px; 
+            border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; margin-bottom: 2px;
+            display: flex; justify-content: space-between; align-items: center;
         }
         .rinex-card .c-meta { 
-            /* Label နဲ့ Value ကို ဘေးတိုက်သပ်ရပ်စွာဖော်ပြရန် Fixed Width (60px) သတ်မှတ်သည် */
-            display: grid; grid-template-columns: 60px 1fr; gap: 8px; 
+            /* Label (ဘယ်) နဲ့ Value (ညာ) ကို သပ်သပ်ရပ်ရပ် ခွဲထုတ်ရန် 75px Width သတ်မှတ်သည် */
+            display: grid; grid-template-columns: 75px 1fr; gap: 8px; 
             color: var(--text-muted); align-items: start; 
         }
         .rinex-card .c-meta b { 
-            color: #f8fafc; text-align: left; /* ညာဘက်အစွန်မကပ်တော့ဘဲ ဘယ်ဘက်ကို ကပ်ထားသည် */
-            font-weight: 500; line-height: 1.4; 
-            word-break: break-word; 
+            color: #f8fafc; text-align: left; font-weight: 500; line-height: 1.4; word-break: break-word; 
         }
 
         #tleModal {
@@ -329,7 +328,7 @@
                 </div>
             </div>
 
-            <!-- MIDDLE PANEL: Myanmar Local Metrics (DOP Removed) -->
+            <!-- MIDDLE PANEL: Myanmar Local Metrics -->
             <div class="glass-panel mono">
                 <div class="panel-title" style="justify-content: center; border-bottom: none; padding-bottom: 0;">
                     <select id="matrix-sys-a" class="matrix-select" onchange="renderCustomSelection()">
@@ -393,10 +392,12 @@
 
                 <!-- Container to display parsed RINEX metadata -->
                 <div id="rinex-file-list" class="rinex-file-list mono">
-                    <div style="text-align: center; color: var(--text-muted); font-size: 9px; padding: 10px;">ဖိုင်များ ထည့်သွင်းရန် စောင့်ဆိုင်းနေပါသည်...</div>
+                    <div style="text-align: center; color: var(--text-muted); font-size: 9px; padding: 10px; border: 1px dashed rgba(56, 189, 248, 0.2); border-radius: 4px;">
+                        ဖိုင်များ ထည့်သွင်းရန် စောင့်ဆိုင်းနေပါသည်...
+                    </div>
                 </div>
 
-                <div class="chart-box" style="margin-top:4px;"><canvas id="waveformChart"></canvas></div>
+                <div class="chart-box"><canvas id="waveformChart"></canvas></div>
             </div>
         </section>
 
@@ -773,19 +774,35 @@
             updateTargetOrbitPath(id);
         }
 
-        // --- RINEX PARSING LOGIC ---
+        // --- RINEX PARSING LOGIC (Updated to extract more details) ---
         function parseRinexHeader(text) {
-            let markerName = "Unknown Marker";
-            let obsDate = "Unknown Date";
-            let agency = "Unknown Agency";
+            let markerName = "Unknown";
+            let obsDate = "Unknown";
+            let agency = "Unknown";
+            let recType = "Unknown";
+            let antType = "Unknown";
+            let interval = "Unknown";
+            let version = "Unknown";
 
             const lines = text.split('\n');
             for (let line of lines) {
+                if (line.includes('RINEX VERSION / TYPE')) {
+                    version = line.substring(0, 9).trim();
+                }
                 if (line.includes('MARKER NAME')) {
-                    markerName = line.substring(0, 60).trim();
+                    markerName = line.substring(0, 60).trim() || "Unknown";
                 }
                 if (line.includes('OBSERVER / AGENCY')) {
-                    agency = line.substring(0, 60).trim();
+                    agency = line.substring(0, 60).trim() || "Unknown";
+                }
+                if (line.includes('REC # / TYPE / VERS')) {
+                    recType = line.substring(20, 40).trim() || "Unknown";
+                }
+                if (line.includes('ANT # / TYPE')) {
+                    antType = line.substring(20, 40).trim() || "Unknown";
+                }
+                if (line.includes('INTERVAL')) {
+                    interval = line.substring(0, 10).trim() + " Sec";
                 }
                 if (line.includes('TIME OF FIRST OBS')) {
                     let timeStr = line.substring(0, 60).trim();
@@ -796,7 +813,7 @@
                 }
                 if (line.includes('END OF HEADER')) break;
             }
-            return { markerName, obsDate, agency };
+            return { markerName, obsDate, agency, recType, antType, interval, version };
         }
 
         function uploadAndCompare() {
@@ -820,12 +837,17 @@
                     const card = document.createElement('div');
                     card.className = 'rinex-card';
                     
-                    // Fixed Layout for Metadata
+                    // Compact and comprehensive layout using CSS Grid
                     card.innerHTML = `
-                        <div class="c-title">📄 ${file.name}</div>
+                        <div class="c-title">
+                            <span>📄 ${file.name}</span>
+                            <span style="color:var(--text-muted); font-size:8.5px; font-weight:normal;">v${metadata.version}</span>
+                        </div>
                         <div class="c-meta"><span>📍 နေရာ:</span> <b>${metadata.markerName}</b></div>
                         <div class="c-meta"><span>📅 ရက်စွဲ:</span> <b>${metadata.obsDate}</b></div>
                         <div class="c-meta"><span>🏢 အဖွဲ့:</span> <b>${metadata.agency}</b></div>
+                        <div class="c-meta"><span>📡 စက်အမျိုးအစား:</span> <b>${metadata.recType} (Ant: ${metadata.antType})</b></div>
+                        <div class="c-meta"><span>⏱️ ကြားဖြတ်ချိန်:</span> <b>${metadata.interval}</b></div>
                     `;
                     fileListContainer.appendChild(card);
                 };
