@@ -234,11 +234,14 @@
 </head>
 <body>
 
-    <!-- 1. Global Constellation & Regional Filters -->
     <header class="top-nav">
         <div style="display: flex; gap: 8px; align-items: center;">
             <button class="view-switch-btn mono" onclick="openTLEModal()">📋 VIEW TLE DATA</button>
             <button class="myanmar-filter-btn mono" id="mm-only-btn" onclick="toggleMyanmarVisibleOnly(this)">🇲🇲 MYANMAR VISIBLE ONLY</button>
+            <!-- TLE Status Badge ထည့်သွင်းခြင်း -->
+            <div id="tle-status-badge" class="mono" style="font-size: 9px; color: var(--accent-green); background: rgba(16, 185, 129, 0.15); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center;">
+                ● CHECKING...
+            </div>
             
             <div class="nav-tabs mono" id="constellation-tabs">
                 <span style="font-size: 9px; color: var(--text-muted); margin-right: 2px;">COMPARE:</span>
