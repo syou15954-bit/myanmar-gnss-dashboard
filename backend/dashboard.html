@@ -206,7 +206,7 @@
 
         .pass-card:hover { background: rgba(56, 189, 248, 0.15) !important; }
 
-        /* Fixed to top-left corner cleanly without centering */
+        /* TLE Modal fixed cleanly at top-left */
         #tleModal {
             display: none; 
             position: fixed; 
@@ -234,7 +234,6 @@
 </head>
 <body>
 
-    <!-- 1. Global Constellation & Regional Filters -->
     <header class="top-nav">
         <div style="display: flex; gap: 8px; align-items: center;">
             <button class="view-switch-btn mono" onclick="openTLEModal()">📋 VIEW TLE DATA</button>
@@ -267,7 +266,6 @@
 
     <main class="viewport-main">
         
-        <!-- 2. Real-Time 3D Global Satellite Tactical Map -->
         <section class="globe-stage">
             <div id="globeViz"></div>
 
@@ -292,7 +290,6 @@
                 <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit Ring & Ground Track</button>
             </div>
 
-            <!-- 3. Upcoming Satellite Passes & Timings -->
             <div class="hud-card hud-right-passes mono">
                 <div class="hud-card-title">
                     <span id="pass-title">⏱️ UPCOMING SATELLITE PASSES (MMT)</span>
@@ -303,7 +300,6 @@
         </section>
 
         <section class="bottom-dock">
-            <!-- 4. Local GNSS Database & Fleet Status -->
             <div class="glass-panel" style="padding-bottom: 0;">
                 <div class="panel-title">
                     <span id="fleet-title-text">📊 LOCAL GNSS DATABASE & FLEET STATUS</span>
@@ -325,7 +321,6 @@
                 </div>
             </div>
 
-            <!-- 5. Constellation Comparison & Local Metrics -->
             <div class="glass-panel mono">
                 <div class="panel-title">
                     <span id="matrix-card-title">📈 CONSTELLATION COMPARISON & METRICS</span>
@@ -377,7 +372,6 @@
                 </div>
             </div>
 
-            <!-- 6. RINEX Observation Data & Signal Analysis -->
             <div class="glass-panel">
                 <div class="panel-title" style="justify-content: center; display: flex; justify-content: space-between; align-items: center;">
                     <span id="chart-panel-title">📡 RINEX OBSERVATION & SIGNAL ANALYSIS</span>
