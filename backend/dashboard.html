@@ -206,10 +206,21 @@
 
         .pass-card:hover { background: rgba(56, 189, 248, 0.15) !important; }
 
+        /* Fixed to top-left corner cleanly without centering */
         #tleModal {
-            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 200;
-            width: 480px; background: rgba(15, 23, 42, 0.98); border: 1px solid var(--accent-cyan); border-radius: 6px;
-            padding: 16px; backdrop-filter: blur(16px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            display: none; 
+            position: fixed; 
+            top: 65px; 
+            left: 15px; 
+            transform: none; 
+            z-index: 200;
+            width: 460px; 
+            background: rgba(15, 23, 42, 0.98); 
+            border: 1px solid var(--accent-cyan); 
+            border-radius: 6px;
+            padding: 16px; 
+            backdrop-filter: blur(16px); 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
         }
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--panel-border); padding-bottom: 8px; margin-bottom: 10px; font-size: 12px; font-weight: 700; color: var(--accent-cyan); }
         .modal-close { cursor: pointer; color: var(--text-muted); font-size: 18px; font-weight: 700; transition: color 0.2s; }
@@ -223,6 +234,7 @@
 </head>
 <body>
 
+    <!-- 1. Global Constellation & Regional Filters -->
     <header class="top-nav">
         <div style="display: flex; gap: 8px; align-items: center;">
             <button class="view-switch-btn mono" onclick="openTLEModal()">📋 VIEW TLE DATA</button>
@@ -255,6 +267,7 @@
 
     <main class="viewport-main">
         
+        <!-- 2. Real-Time 3D Global Satellite Tactical Map -->
         <section class="globe-stage">
             <div id="globeViz"></div>
 
@@ -279,6 +292,7 @@
                 <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit Ring & Ground Track</button>
             </div>
 
+            <!-- 3. Upcoming Satellite Passes & Timings -->
             <div class="hud-card hud-right-passes mono">
                 <div class="hud-card-title">
                     <span id="pass-title">⏱️ UPCOMING SATELLITE PASSES (MMT)</span>
@@ -289,6 +303,7 @@
         </section>
 
         <section class="bottom-dock">
+            <!-- 4. Local GNSS Database & Fleet Status -->
             <div class="glass-panel" style="padding-bottom: 0;">
                 <div class="panel-title">
                     <span id="fleet-title-text">📊 LOCAL GNSS DATABASE & FLEET STATUS</span>
@@ -310,6 +325,7 @@
                 </div>
             </div>
 
+            <!-- 5. Constellation Comparison & Local Metrics -->
             <div class="glass-panel mono">
                 <div class="panel-title">
                     <span id="matrix-card-title">📈 CONSTELLATION COMPARISON & METRICS</span>
@@ -361,6 +377,7 @@
                 </div>
             </div>
 
+            <!-- 6. RINEX Observation Data & Signal Analysis -->
             <div class="glass-panel">
                 <div class="panel-title" style="justify-content: center; display: flex; justify-content: space-between; align-items: center;">
                     <span id="chart-panel-title">📡 RINEX OBSERVATION & SIGNAL ANALYSIS</span>
@@ -984,7 +1001,6 @@
                     `;
                     fileListContainer.appendChild(card);
 
-                    // Populate Sample Code & Phase Table with parsed or simulated observation records
                     const obsTableBody = document.getElementById('rinex-obs-table-body');
                     obsTableBody.innerHTML = `
                         <tr><td>G01</td><td>21023456.123</td><td>21023459.876</td><td>110234567.890</td><td>48.2 dB</td></tr>
