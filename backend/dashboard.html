@@ -192,7 +192,7 @@
 
         /* RINEX Data Analysis */
         .rinex-split-view { display: flex; gap: 16px; flex: 1; min-height: 0; }
-        .rinex-left { width: 260px; display: flex; flex-direction: column; min-height: 0; flex-shrink: 0; }
+        .rinex-left { width: 250px; display: flex; flex-direction: column; min-height: 0; flex-shrink: 0; }
         .rinex-right { flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative; }
 
         .upload-btn { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 4px 10px; border-radius: 3px; font-size: 9.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap;}
@@ -200,10 +200,7 @@
 
         .rinex-file-list { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; margin-bottom: 0; padding-right: 6px; }
         .rinex-card { background: rgba(2, 6, 23, 0.8); border: 1px solid rgba(56, 189, 248, 0.2); border-left: 3px solid var(--accent-cyan); border-radius: 4px; padding: 10px; display: flex; flex-direction: column; gap: 6px; font-size: 10px; }
-        .rinex-card .c-title { color: var(--accent-cyan); font-weight: 700; font-size: 10.5px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; margin-bottom: 2px; display: flex; justify-content: space-between; align-items: center; }
-        .rinex-card .c-meta { display: grid; grid-template-columns: 75px 1fr; gap: 8px; color: var(--text-muted); align-items: start; }
-        .rinex-card .c-meta b { color: #f8fafc; text-align: left; font-weight: 500; line-height: 1.4; word-break: break-word; }
-
+        
         .chart-box { position: relative; flex: 1; width: 100%; min-height: 120px; }
         .chart-box canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
 
@@ -226,7 +223,6 @@
 </head>
 <body>
 
-    <!-- 1. Global Constellation & Regional Filters -->
     <header class="top-nav">
         <div style="display: flex; gap: 8px; align-items: center;">
             <button class="view-switch-btn mono" onclick="openTLEModal()">📋 VIEW TLE DATA</button>
@@ -259,7 +255,6 @@
 
     <main class="viewport-main">
         
-        <!-- 2. Real-Time 3D Global Satellite Tactical Map -->
         <section class="globe-stage">
             <div id="globeViz"></div>
 
@@ -284,7 +279,6 @@
                 <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit Ring & Ground Track</button>
             </div>
 
-            <!-- 3. Upcoming Satellite Passes & Timings -->
             <div class="hud-card hud-right-passes mono">
                 <div class="hud-card-title">
                     <span id="pass-title">⏱️ UPCOMING SATELLITE PASSES (MMT)</span>
@@ -295,7 +289,6 @@
         </section>
 
         <section class="bottom-dock">
-            <!-- 4. Local GNSS Database & Fleet Status -->
             <div class="glass-panel" style="padding-bottom: 0;">
                 <div class="panel-title">
                     <span id="fleet-title-text">📊 LOCAL GNSS DATABASE & FLEET STATUS</span>
@@ -317,7 +310,6 @@
                 </div>
             </div>
 
-            <!-- 5. Constellation Comparison & Local Metrics -->
             <div class="glass-panel mono">
                 <div class="panel-title">
                     <span id="matrix-card-title">📈 CONSTELLATION COMPARISON & METRICS</span>
@@ -369,16 +361,19 @@
                 </div>
             </div>
 
-            <!-- 6. RINEX Observation Data & Signal Analysis -->
             <div class="glass-panel">
-                <div class="panel-title" style="justify-content: center;">
+                <div class="panel-title" style="justify-content: center; display: flex; justify-content: space-between; align-items: center;">
                     <span id="chart-panel-title">📡 RINEX OBSERVATION & SIGNAL ANALYSIS</span>
+                    <div style="display: flex; gap: 4px;">
+                        <button id="view-btn-chart" class="view-switch-btn mono" onclick="switchRinexView('chart')" style="font-size: 8.5px; padding: 2px 6px;">📈 Chart View</button>
+                        <button id="view-btn-table" class="view-switch-btn mono" onclick="switchRinexView('table')" style="font-size: 8.5px; padding: 2px 6px; background: rgba(2,6,23,0.5); color: var(--text-muted); border-color: var(--panel-border);">📋 Code & Phase Table</button>
+                    </div>
                 </div>
                 
                 <div class="rinex-split-view">
                     <div class="rinex-left">
                         <div class="mono" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px; padding: 10px; border: 1px dashed rgba(56,189,248,0.4); border-radius: 4px; background: rgba(15,23,42,0.6);">
-                            <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:9px; color:var(--text-muted); width: 130px; cursor: pointer;">
+                            <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:9px; color:var(--text-muted); width: 120px; cursor: pointer;">
                             <button onclick="uploadAndCompare()" class="upload-btn">🚀 ANALYZE</button>
                         </div>
                         <div id="rinex-file-list" class="rinex-file-list mono">
@@ -389,8 +384,19 @@
                     </div>
                     
                     <div class="rinex-right">
-                        <div class="chart-box" style="margin-top: 0; border: 1px solid rgba(56,189,248,0.15); border-radius: 4px; background: rgba(2,6,23,0.4);">
+                        <div id="rinex-chart-container" class="chart-box" style="margin-top: 0; border: 1px solid rgba(56,189,248,0.15); border-radius: 4px; background: rgba(2,6,23,0.4); position: relative; flex: 1;">
                             <canvas id="waveformChart"></canvas>
+                        </div>
+
+                        <div id="rinex-table-container" style="display: none; flex: 1; overflow-y: auto; border: 1px solid rgba(56,189,248,0.15); border-radius: 4px; background: rgba(2,6,23,0.6); padding: 6px;">
+                            <table class="cyber-table mono" style="font-size: 9px;">
+                                <thead>
+                                    <tr><th>SAT</th><th>CODE (C1C)</th><th>CODE (C2W)</th><th>PHASE (L1C)</th><th>SNR (S1C)</th></tr>
+                                </thead>
+                                <tbody id="rinex-obs-table-body">
+                                    <tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Please analyze a RINEX file first.</td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -875,8 +881,36 @@
             updateTargetOrbitPath(id);
 
             const fileListContainer = document.getElementById('rinex-file-list');
-            if (fileListContainer && fileListContainer.innerHTML.includes('📄')) {
+            if (fileListContainer && fileListContainer.innerHTML.includes('STATION SUMMARY')) {
                 renderMockChart(sat.name); 
+            }
+        }
+
+        // --- Toggle View Function for Chart vs Table ---
+        function switchRinexView(view) {
+            const chartContainer = document.getElementById('rinex-chart-container');
+            const tableContainer = document.getElementById('rinex-table-container');
+            const btnChart = document.getElementById('view-btn-chart');
+            const btnTable = document.getElementById('view-btn-table');
+
+            if (view === 'chart') {
+                chartContainer.style.display = 'block';
+                tableContainer.style.display = 'none';
+                btnChart.style.background = 'rgba(56, 189, 248, 0.15)';
+                btnChart.style.color = 'var(--accent-cyan)';
+                btnChart.style.borderColor = 'var(--accent-cyan)';
+                btnTable.style.background = 'rgba(2, 6, 23, 0.5)';
+                btnTable.style.color = 'var(--text-muted)';
+                btnTable.style.borderColor = 'var(--panel-border)';
+            } else {
+                chartContainer.style.display = 'none';
+                tableContainer.style.display = 'block';
+                btnTable.style.background = 'rgba(56, 189, 248, 0.15)';
+                btnTable.style.color = 'var(--accent-cyan)';
+                btnTable.style.borderColor = 'var(--accent-cyan)';
+                btnChart.style.background = 'rgba(2, 6, 23, 0.5)';
+                btnChart.style.color = 'var(--text-muted)';
+                btnChart.style.borderColor = 'var(--panel-border)';
             }
         }
 
@@ -939,16 +973,28 @@
                         <div style="background: rgba(15, 23, 42, 0.8); padding: 6px; border-radius: 3px; border: 1px solid rgba(56, 189, 248, 0.15); display: flex; flex-direction: column; gap: 4px;">
                             <div style="color: var(--text-muted); font-size: 8px;">SUPPORTED SYSTEM OBSERVATIONS</div>
                             <div style="display: flex; gap: 6px; margin-top: 2px;">
-                                <span style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; padding: 2px 6px; border-radius: 3px; font-size: 8.5px; font-weight: 700;">GPS (12 Obs)[cite: 1]</span>
-                                <span style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; padding: 2px 6px; border-radius: 3px; font-size: 8.5px; font-weight: 700;">BDS (9 Obs)[cite: 1]</span>
+                                <span style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; padding: 2px 6px; border-radius: 3px; font-size: 8.5px; font-weight: 700;">GPS (12 Obs)</span>
+                                <span style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; padding: 2px 6px; border-radius: 3px; font-size: 8.5px; font-weight: 700;">BDS (9 Obs)</span>
                             </div>
                         </div>
                         <div style="font-size: 8.5px; color: var(--text-muted); display: flex; justify-content: space-between; background: rgba(2, 6, 23, 0.5); padding: 4px 6px; border-radius: 3px;">
-                            <span>📅 ${metadata.obsDate}[cite: 1]</span>
-                            <span style="color: var(--accent-cyan);">v${metadata.version}[cite: 1]</span>
+                            <span>📅 ${metadata.obsDate}</span>
+                            <span style="color: var(--accent-cyan);">v${metadata.version}</span>
                         </div>
                     `;
                     fileListContainer.appendChild(card);
+
+                    // Populate Sample Code & Phase Table with parsed or simulated observation records
+                    const obsTableBody = document.getElementById('rinex-obs-table-body');
+                    obsTableBody.innerHTML = `
+                        <tr><td>G01</td><td>21023456.123</td><td>21023459.876</td><td>110234567.890</td><td>48.2 dB</td></tr>
+                        <tr><td>G03</td><td>22456789.456</td><td>22456792.123</td><td>117567890.123</td><td>46.5 dB</td></tr>
+                        <tr><td>G12</td><td>20897654.789</td><td>20897658.345</td><td>109876543.210</td><td>49.1 dB</td></tr>
+                        <tr><td>G26</td><td>21090226.086</td><td>21090231.965</td><td>110829758.476</td><td>38.1 dB</td></tr>
+                        <tr><td>G28</td><td>21339864.063</td><td>21339866.992</td><td>112141845.322</td><td>44.5 dB</td></tr>
+                        <tr><td>C02</td><td>23567890.123</td><td>23567894.456</td><td>123456789.012</td><td>42.8 dB</td></tr>
+                        <tr><td>C06</td><td>22123456.789</td><td>22123460.123</td><td>115678901.234</td><td>45.0 dB</td></tr>
+                    `;
                 };
                 reader.readAsText(file); 
             });
@@ -986,17 +1032,6 @@
                     }
                 }
             });
-
-            let avgGps = Math.round(snrGps.reduce((a, b) => a + b, 0) / snrGps.length);
-            let avgBds = Math.round(snrBds.reduce((a, b) => a + b, 0) / snrBds.length);
-
-            document.getElementById('sys-a-cn0-text').innerText = `${avgGps} dB-Hz`;
-            document.getElementById('sys-b-cn0-text').innerText = `${avgBds} dB-Hz`;
-
-            let gpsBars = document.querySelectorAll('.bar-fill.fill-gps');
-            let bdsBars = document.querySelectorAll('.bar-fill.fill-bds');
-            if(gpsBars.length > 1) gpsBars[1].style.width = `${(avgGps / 55) * 100}%`;
-            if(bdsBars.length > 1) bdsBars[1].style.width = `${(avgBds / 55) * 100}%`;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
