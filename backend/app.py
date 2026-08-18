@@ -76,18 +76,27 @@ def get_live_tles():
     if TLE_CACHE and (now - LAST_FETCH_TIME < CACHE_DURATION):
         return jsonify({'status': 'cached', 'data': TLE_CACHE})
 
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+    urls = [
+        'https://celestrak.org/NORAD/elements/gp.php?GROUP=gnss&FORMAT=tle',
+        'https://celestrak.com/NORAD/elements/gp.php?GROUP=active&FORMAT=tle'
+    ]
 
-    try:
-        res = requests.get(GNSS_CELESTRAK_URL, headers=headers, timeout=15)
-        if res.status_code == 200 and len(res.text) > 200:
-            parsed = parse_gnss_tle(res.text)
-            if parsed['all']:
-                TLE_CACHE = parsed
-                LAST_FETCH_TIME = now
-                return jsonify({'status': 'live', 'data': TLE_CACHE})
-    except Exception as e:
-        print(f"Failed to fetch GNSS TLE: {e}")
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'text/plain'
+    }
+
+    for url in urls:
+        try:
+            res = requests.get(url, headers=headers, timeout=20)
+            if res.status_code == 200 and len(res.text) > 200:
+                parsed = parse_gnss_tle(res.text)
+                if parsed['all']:
+                    TLE_CACHE = parsed
+                    LAST_FETCH_TIME = now
+                    return jsonify({'status': 'live', 'data': TLE_CACHE})
+        except Exception as e:
+            print(f"URL {url} failed: {e}")
 
     return jsonify({'status': 'fallback', 'data': TLE_CACHE})
 
