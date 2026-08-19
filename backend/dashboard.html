@@ -47,7 +47,6 @@
 
         .mono { font-family: 'JetBrains Mono', monospace; }
 
-        /* Top Navigation & Filters */
         .top-nav {
             display: grid;
             grid-template-columns: auto 1fr auto;
@@ -108,7 +107,6 @@
             flex: 1; display: flex; flex-direction: column; gap: 8px; min-height: 0; position: relative;
         }
 
-        /* 3D Globe View */
         .globe-stage {
             flex: 1.8; position: relative; background: var(--panel-bg); border: 1px solid var(--panel-border);
             border-radius: 6px; overflow: hidden; min-height: 0;
@@ -140,7 +138,6 @@
             border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding-bottom: 5px;
         }
 
-        /* Upcoming Passes Panel */
         .hud-right-passes { top: 12px; right: 12px; width: 310px; display: flex; flex-direction: column; max-height: 290px; }
 
         .matrix-select {
@@ -168,14 +165,12 @@
             border-radius: 6px; padding: 12px; display: flex; flex-direction: column; min-height: 0; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
-        /* Centered Clear Panel Titles */
         .panel-title {
             font-size: 12px; font-weight: 700; color: var(--accent-cyan); margin-bottom: 8px; display: flex;
             justify-content: center; align-items: center; border-bottom: 1px solid rgba(56, 189, 248, 0.25);
             padding-bottom: 6px; flex-shrink: 0; letter-spacing: 0.5px; text-transform: uppercase; text-align: center; width: 100%;
         }
 
-        /* Local GNSS DB & Fleet Status */
         .cyber-table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 0; }
         .cyber-table th { text-align: left; color: var(--text-muted); padding: 5px 4px; border-bottom: 1px solid var(--panel-border); font-size: 9px; position: sticky; top: 0; background: rgba(2, 6, 23, 0.95); z-index: 5; }
         .cyber-table td { padding: 5px 4px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #cbd5e1; }
@@ -190,7 +185,6 @@
         .dop-card { background: rgba(2, 6, 23, 0.6); padding: 8px; border-radius: 4px; text-align: center; border: 1px solid var(--panel-border); }
         .dop-val { font-size: 16px; font-weight: 700; color: var(--accent-cyan); margin-top: 4px; }
 
-        /* RINEX Data Analysis */
         .rinex-split-view { display: flex; gap: 12px; flex: 1; min-height: 0; }
         .rinex-left { width: 280px; display: flex; flex-direction: column; min-height: 0; flex-shrink: 0; justify-content: space-between; }
         .rinex-right { flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative; gap: 6px; }
@@ -206,7 +200,6 @@
 
         .pass-card:hover { background: rgba(56, 189, 248, 0.15) !important; }
 
-        /* TLE Modal fixed cleanly at top-left */
         #tleModal {
             display: none; 
             position: fixed; 
@@ -404,7 +397,7 @@
                 </div>
             </div>
 
-            <!-- RINEX Observation & Signal Analysis with Constellation-like Comparison -->
+            <!-- RINEX Observation & Signal Analysis -->
             <div class="glass-panel">
                 <div class="panel-title" style="justify-content: center; display: flex; justify-content: space-between; align-items: center;">
                     <span id="chart-panel-title">📡 RINEX OBSERVATION & SIGNAL ANALYSIS</span>
@@ -415,7 +408,6 @@
                 </div>
                 
                 <div class="rinex-split-view">
-                    <!-- Left panel with uploaded stations & system observation counts -->
                     <div class="rinex-left">
                         <div class="mono" style="display:flex; justify-content: space-between; align-items: center; gap: 6px; padding: 8px; border: 1px dashed rgba(56,189,248,0.4); border-radius: 4px; background: rgba(15,23,42,0.6);">
                             <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:9px; color:var(--text-muted); width: 115px; cursor: pointer;">
@@ -428,12 +420,11 @@
                         </div>
                     </div>
                     
-                    <!-- Right panel with constellation comparison style for RINEX systems -->
                     <div class="rinex-right">
-                        <!-- System vs System comparison dropdowns for RINEX chart -->
+                        <!-- Constellation Style Comparison Selectors for RINEX Systems -->
                         <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(2, 6, 23, 0.7); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--panel-border);">
                             <div style="display: flex; align-items: center; gap: 6px;">
-                                <span style="font-size: 9px; color: var(--text-muted); font-weight: 700;">COMPARE SYS:</span>
+                                <span style="font-size: 9px; color: var(--text-muted); font-weight: 700;">COMPARE:</span>
                                 <select id="rinex-sys-a" class="matrix-select" onchange="updateRinexComparisonChart()" style="font-size: 9.5px; padding: 2px 6px; color: #10b981; border-color: #10b981;">
                                     <option value="GPS" selected>🇺🇸 GPS</option>
                                     <option value="BDS">🇨🇳 BDS</option>
@@ -491,7 +482,8 @@
             mandalay: { lat: 21.9588, lng: 96.0891, name: '📡 Mandalay Hill Landmark', color: '#10b981', size: 3.0 }
         };
         let currentSelectedStation = 'none';
-        let rinexSystemCounts = { GPS: 12, BDS: 9, GAL: 8, GLO: 6 };
+        let rinexSystemCounts = { GPS: 0, BDS: 0, GAL: 0, GLO: 0 };
+        let hasAnalyzedRinex = false; // 🛑 ဖိုင်မတင်ရသေးရင် Chart မှာ ဘာမှမပြရန် အလံ (Flag)
 
         const SAT_GEOM = new THREE.SphereGeometry(1.2, 12, 12);
         const TARGET_GEOM = new THREE.SphereGeometry(1.8, 16, 16);
@@ -1056,17 +1048,18 @@
                 }
             }
 
-            // Fallback counts if header block doesn't explicitly list observation types
-            if (counts.GPS === 0 && counts.BDS === 0) {
+            if (counts.GPS === 0 && counts.BDS === 0 && counts.GAL === 0 && counts.GLO === 0) {
                 rinexSystemCounts = { GPS: 12, BDS: 9, GAL: 8, GLO: 6 };
             } else {
                 rinexSystemCounts = counts;
             }
 
+            hasAnalyzedRinex = true; // 🚀 ဖိုင် အောင်မြင်စွာ တင်ပြီးစီးကြောင်း သတ်မှတ်သည်
             return { markerName, obsDate, agency, recType, antType, interval, version };
         }
 
         function updateRinexComparisonChart() {
+            if (!hasAnalyzedRinex) return; // 🛑 ဖိုင် မတင်ရသေးရင် Chart မှာ ဘာမှမဆွဲပါ
             let sysA = document.getElementById('rinex-sys-a').value;
             let sysB = document.getElementById('rinex-sys-b').value;
             renderRinexComparisonChart(sysA, sysB);
@@ -1186,7 +1179,6 @@
                     if (row && row.getAttribute('data-id')) selectSatellite(row.getAttribute('data-id'));
                 });
             }
-            renderRinexComparisonChart("GPS", "BDS");
         });
 
         function resizeGlobe() {
