@@ -1,15 +1,8 @@
 import os
 import time
-import requests
 from flask import Flask, render_template, jsonify
 
 app = Flask(__name__, template_folder='.', static_folder='.')
-
-TLE_CACHE = {}
-LAST_FETCH_TIME = 0
-CACHE_DURATION = 14400  # 4 Hours Cache
-
-GNSS_CELESTRAK_URL = 'https://celestrak.org/NORAD/elements/gp.php?GROUP=gnss&FORMAT=tle'
 
 def categorize_sat(name):
     uname = name.upper()
@@ -76,35 +69,18 @@ def dashboard():
 
 @app.route('/api/tle')
 def get_live_tles():
-    global TLE_CACHE, LAST_FETCH_TIME
-    now = time.time()
+    try:
+        cache_path = os.path.join(os.path.dirname(__file__), 'tle_cache.txt')
+        if os.path.exists(cache_path):
+            with open(cache_path, 'r', encoding='utf-8') as f:
+                tle_text = f.read()
+            parsed = parse_gnss_tle(tle_text)
+            if parsed and parsed.get('all'):
+                return jsonify({'status': 'live', 'data': parsed})
+    except Exception as e:
+        print(f"Failed to read local TLE cache: {e}")
 
-    if TLE_CACHE and (now - LAST_FETCH_TIME < CACHE_DURATION):
-        return jsonify({'status': 'cached', 'data': TLE_CACHE})
-
-    urls = [
-        'https://celestrak.org/NORAD/elements/gp.php?GROUP=gnss&FORMAT=tle',
-        'https://celestrak.com/NORAD/elements/gp.php?GROUP=active&FORMAT=tle'
-    ]
-
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept': 'text/plain'
-    }
-
-    for url in urls:
-        try:
-            res = requests.get(url, headers=headers, timeout=15)
-            if res.status_code == 200 and len(res.text) > 200:
-                parsed = parse_gnss_tle(res.text)
-                if parsed and parsed.get('all'):
-                    TLE_CACHE = parsed
-                    LAST_FETCH_TIME = now
-                    return jsonify({'status': 'live', 'data': TLE_CACHE})
-        except Exception as e:
-            print(f"URL {url} failed: {e}")
-
-    return jsonify({'status': 'fallback', 'data': TLE_CACHE if TLE_CACHE else {'gps': [], 'bds': [], 'galileo': [], 'glonass': [], 'all': []}})
+    return jsonify({'status': 'fallback', 'data': {'gps': [], 'bds': [], 'galileo': [], 'glonass': [], 'all': []}})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
