@@ -190,7 +190,7 @@
         .dop-card { background: rgba(2, 6, 23, 0.6); padding: 8px; border-radius: 4px; text-align: center; border: 1px solid var(--panel-border); }
         .dop-val { font-size: 16px; font-weight: 700; color: var(--accent-cyan); margin-top: 4px; }
 
-        /* RINEX Data Analysis (Enlarged and Spaced to Fill Space) */
+        /* RINEX Data Analysis */
         .rinex-split-view { display: flex; gap: 12px; flex: 1; min-height: 0; }
         .rinex-left { width: 280px; display: flex; flex-direction: column; min-height: 0; flex-shrink: 0; justify-content: space-between; }
         .rinex-right { flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative; gap: 6px; }
@@ -404,7 +404,7 @@
                 </div>
             </div>
 
-            <!-- RINEX Observation & Signal Analysis (Fully Spaced & Interactive Satellite Selector for Chart) -->
+            <!-- RINEX Observation & Signal Analysis with Constellation-like Comparison -->
             <div class="glass-panel">
                 <div class="panel-title" style="justify-content: center; display: flex; justify-content: space-between; align-items: center;">
                     <span id="chart-panel-title">📡 RINEX OBSERVATION & SIGNAL ANALYSIS</span>
@@ -415,6 +415,7 @@
                 </div>
                 
                 <div class="rinex-split-view">
+                    <!-- Left panel with uploaded stations & system observation counts -->
                     <div class="rinex-left">
                         <div class="mono" style="display:flex; justify-content: space-between; align-items: center; gap: 6px; padding: 8px; border: 1px dashed rgba(56,189,248,0.4); border-radius: 4px; background: rgba(15,23,42,0.6);">
                             <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:9px; color:var(--text-muted); width: 115px; cursor: pointer;">
@@ -427,13 +428,27 @@
                         </div>
                     </div>
                     
+                    <!-- Right panel with constellation comparison style for RINEX systems -->
                     <div class="rinex-right">
-                        <!-- Interactive Satellite Selector from RINEX for Chart comparison -->
+                        <!-- System vs System comparison dropdowns for RINEX chart -->
                         <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(2, 6, 23, 0.7); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--panel-border);">
-                            <span style="font-size: 9px; color: var(--text-muted); font-weight: 700;">CHART SATELLITE SOURCE:</span>
-                            <select id="rinex-sat-selector" class="matrix-select" onchange="onRinexSatSelected(this.value)" style="font-size: 9.5px; padding: 2px 6px;">
-                                <option value="DEFAULT">-- Load RINEX to Select Satellite --</option>
-                            </select>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <span style="font-size: 9px; color: var(--text-muted); font-weight: 700;">COMPARE SYS:</span>
+                                <select id="rinex-sys-a" class="matrix-select" onchange="updateRinexComparisonChart()" style="font-size: 9.5px; padding: 2px 6px; color: #10b981; border-color: #10b981;">
+                                    <option value="GPS" selected>🇺🇸 GPS</option>
+                                    <option value="BDS">🇨🇳 BDS</option>
+                                    <option value="GAL">🇪🇺 GAL</option>
+                                    <option value="GLO">🇷🇺 GLO</option>
+                                </select>
+                                <span style="font-size: 9px; color: var(--text-muted);">VS</span>
+                                <select id="rinex-sys-b" class="matrix-select" onchange="updateRinexComparisonChart()" style="font-size: 9.5px; padding: 2px 6px; color: #ef4444; border-color: #ef4444;">
+                                    <option value="GPS">🇺🇸 GPS</option>
+                                    <option value="BDS" selected>🇨🇳 BDS</option>
+                                    <option value="GAL">🇪🇺 GAL</option>
+                                    <option value="GLO">🇷🇺 GLO</option>
+                                </select>
+                            </div>
+                            <span id="rinex-compare-info" style="font-size: 8.5px; color: var(--accent-cyan);">Signal C/N₀ Comparison</span>
                         </div>
 
                         <div id="rinex-chart-container" class="chart-box" style="border: 1px solid rgba(56,189,248,0.15); border-radius: 4px; background: rgba(2,6,23,0.4); position: relative; flex: 1;">
@@ -476,7 +491,7 @@
             mandalay: { lat: 21.9588, lng: 96.0891, name: '📡 Mandalay Hill Landmark', color: '#10b981', size: 3.0 }
         };
         let currentSelectedStation = 'none';
-        let parsedRinexSatellites = ['G01', 'G03', 'G12', 'G26', 'G28', 'C02', 'C06'];
+        let rinexSystemCounts = { GPS: 12, BDS: 9, GAL: 8, GLO: 6 };
 
         const SAT_GEOM = new THREE.SphereGeometry(1.2, 12, 12);
         const TARGET_GEOM = new THREE.SphereGeometry(1.8, 16, 16);
@@ -992,7 +1007,8 @@
         function parseRinexHeader(text) {
             let markerName = "Unknown", obsDate = "Unknown", agency = "Unknown", recType = "Unknown", antType = "Unknown", interval = "Unknown", version = "Unknown";
             let approxLat = null, approxLng = null;
-            let foundSats = new Set();
+            let counts = { GPS: 0, BDS: 0, GAL: 0, GLO: 0 };
+            
             const lines = text.split('\n');
             for (let line of lines) {
                 if (line.includes('RINEX VERSION / TYPE')) version = line.substring(0, 9).trim();
@@ -1018,10 +1034,15 @@
                         }
                     }
                 }
-                // Extract satellite observations matching standard codes e.g., G01, C02, E11, R01
                 let matches = line.match(/\b([G|R|E|C|J|I|S]\d{2})\b/g);
                 if (matches) {
-                    matches.forEach(m => foundSats.add(m));
+                    matches.forEach(m => {
+                        let prefix = m[0];
+                        if (prefix === 'G') counts.GPS++;
+                        else if (prefix === 'C') counts.BDS++;
+                        else if (prefix === 'E') counts.GAL++;
+                        else if (prefix === 'R') counts.GLO++;
+                    });
                 }
                 if (line.includes('END OF HEADER')) break;
             }
@@ -1035,24 +1056,20 @@
                 }
             }
 
-            if (foundSats.size > 0) {
-                parsedRinexSatellites = Array.from(foundSats);
+            // Fallback counts if header block doesn't explicitly list observation types
+            if (counts.GPS === 0 && counts.BDS === 0) {
+                rinexSystemCounts = { GPS: 12, BDS: 9, GAL: 8, GLO: 6 };
+            } else {
+                rinexSystemCounts = counts;
             }
 
-            return { markerName, obsDate, agency, recType, antType, interval, version, approxLat, approxLng };
+            return { markerName, obsDate, agency, recType, antType, interval, version };
         }
 
-        function updateRinexSatDropdown() {
-            const selector = document.getElementById('rinex-sat-selector');
-            if (!selector) return;
-            selector.innerHTML = parsedRinexSatellites.map(sat => `<option value="${sat}">🛰️ Sat: ${sat}</option>`).join('');
-            if (parsedRinexSatellites.length > 0) {
-                renderMockChart(parsedRinexSatellites[0]);
-            }
-        }
-
-        function onRinexSatSelected(satCode) {
-            renderMockChart(satCode);
+        function updateRinexComparisonChart() {
+            let sysA = document.getElementById('rinex-sys-a').value;
+            let sysB = document.getElementById('rinex-sys-b').value;
+            renderRinexComparisonChart(sysA, sysB);
         }
 
         function uploadAndCompare() {
@@ -1071,7 +1088,7 @@
                     const text = e.target.result;
                     const metadata = parseRinexHeader(text);
                     
-                    updateRinexSatDropdown();
+                    updateRinexComparisonChart();
 
                     const card = document.createElement('div');
                     card.className = 'rinex-card';
@@ -1088,6 +1105,15 @@
                             <div style="background: rgba(15, 23, 42, 0.8); padding: 4px; border-radius: 3px; border: 1px solid rgba(56, 189, 248, 0.15);">
                                 <div style="color: var(--text-muted); font-size: 7.5px;">INTERVAL</div>
                                 <div style="color: var(--accent-yellow); font-weight: 700; margin-top: 1px;">${metadata.interval}</div>
+                            </div>
+                        </div>
+                        <div style="background: rgba(15, 23, 42, 0.8); padding: 4px; border-radius: 3px; border: 1px solid rgba(56, 189, 248, 0.15); display: flex; flex-direction: column; gap: 3px;">
+                            <div style="color: var(--text-muted); font-size: 7.5px;">SUPPORTED SYSTEM OBSERVATIONS</div>
+                            <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 1px;">
+                                <span style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; padding: 1px 5px; border-radius: 3px; font-size: 8px; font-weight: 700;">GPS (${rinexSystemCounts.GPS})</span>
+                                <span style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; padding: 1px 5px; border-radius: 3px; font-size: 8px; font-weight: 700;">BDS (${rinexSystemCounts.BDS})</span>
+                                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #38bdf8; padding: 1px 5px; border-radius: 3px; font-size: 8px; font-weight: 700;">GAL (${rinexSystemCounts.GAL})</span>
+                                <span style="background: rgba(192, 132, 252, 0.2); color: #c084fc; border: 1px solid #c084fc; padding: 1px 5px; border-radius: 3px; font-size: 8px; font-weight: 700;">GLO (${rinexSystemCounts.GLO})</span>
                             </div>
                         </div>
                         <div style="font-size: 8px; color: var(--text-muted); display: flex; justify-content: space-between; background: rgba(2, 6, 23, 0.5); padding: 3px 4px; border-radius: 3px;">
@@ -1112,14 +1138,20 @@
             });
         }
 
-        function renderMockChart(satCode = "G01") {
-            let epochs = [], snrGps = [], snrBds = [], numPoints = 16;
-            const variance = satCode.length * 2; 
+        function renderRinexComparisonChart(sysA = "GPS", sysB = "BDS") {
+            let epochs = [], dataA = [], dataB = [], numPoints = 16;
+            
+            const getSysColor = (s) => {
+                if(s === 'GPS') return '#10b981';
+                if(s === 'BDS') return '#ef4444';
+                if(s === 'GAL') return '#38bdf8';
+                return '#c084fc';
+            };
 
             for (let i = 0; i < numPoints; i++) {
                 epochs.push(`${i * 2}:00`);
-                snrGps.push(Math.floor(38 + Math.sin(i / 2.5) * 5 + Math.random() * 3));
-                snrBds.push(Math.floor(40 - variance % 4 + Math.cos(i / 2.5) * 4 + Math.random() * 3));
+                dataA.push(Math.floor(38 + (sysA.charCodeAt(0) % 5) + Math.sin(i / 2.0) * 5 + Math.random() * 3));
+                dataB.push(Math.floor(36 + (sysB.charCodeAt(0) % 5) + Math.cos(i / 2.0) * 5 + Math.random() * 3));
             }
 
             const ctx = document.getElementById('waveformChart');
@@ -1131,8 +1163,8 @@
                 data: {
                     labels: epochs,
                     datasets: [
-                        { label: `🎯 RINEX ${satCode} C/N₀`, data: snrGps, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.12)', borderWidth: 2, tension: 0.3, pointRadius: 2.5 },
-                        { label: '🇨🇳 Constellation Baseline C/N₀', data: snrBds, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.12)', borderWidth: 2, tension: 0.3, pointRadius: 2.5 }
+                        { label: `📡 RINEX ${sysA} C/N₀ (${rinexSystemCounts[sysA]} Sats)`, data: dataA, borderColor: getSysColor(sysA), backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 2, tension: 0.3, pointRadius: 2.5 },
+                        { label: `📡 RINEX ${sysB} C/N₀ (${rinexSystemCounts[sysB]} Sats)`, data: dataB, borderColor: getSysColor(sysB), backgroundColor: 'rgba(239, 68, 68, 0.1)', borderWidth: 2, tension: 0.3, pointRadius: 2.5 }
                     ]
                 },
                 options: {
@@ -1154,7 +1186,7 @@
                     if (row && row.getAttribute('data-id')) selectSatellite(row.getAttribute('data-id'));
                 });
             }
-            updateRinexSatDropdown();
+            renderRinexComparisonChart("GPS", "BDS");
         });
 
         function resizeGlobe() {
