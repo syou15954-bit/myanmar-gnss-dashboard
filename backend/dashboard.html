@@ -238,7 +238,6 @@
         <div style="display: flex; gap: 8px; align-items: center;">
             <button class="view-switch-btn mono" onclick="openTLEModal()">📋 VIEW TLE DATA</button>
             <button class="myanmar-filter-btn mono" id="mm-only-btn" onclick="toggleMyanmarVisibleOnly(this)">🇲🇲 MYANMAR VISIBLE ONLY</button>
-            <!-- TLE Status Badge ထည့်သွင်းခြင်း -->
             <div id="tle-status-badge" class="mono" style="font-size: 9px; color: var(--accent-green); background: rgba(16, 185, 129, 0.15); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center;">
                 ● CHECKING...
             </div>
@@ -270,7 +269,6 @@
 
     <main class="viewport-main">
         
-        <!-- 2. Real-Time 3D Global Satellite Tactical Map -->
         <section class="globe-stage">
             <div id="globeViz"></div>
 
@@ -295,7 +293,6 @@
                 <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit Ring & Ground Track</button>
             </div>
 
-            <!-- 3. Upcoming Satellite Passes & Timings -->
             <div class="hud-card hud-right-passes mono">
                 <div class="hud-card-title">
                     <span id="pass-title">⏱️ UPCOMING SATELLITE PASSES (MMT)</span>
@@ -306,7 +303,6 @@
         </section>
 
         <section class="bottom-dock">
-            <!-- 4. Local GNSS Database & Fleet Status -->
             <div class="glass-panel" style="padding-bottom: 0;">
                 <div class="panel-title">
                     <span id="fleet-title-text">📊 LOCAL GNSS DATABASE & FLEET STATUS</span>
@@ -328,7 +324,6 @@
                 </div>
             </div>
 
-            <!-- 5. Constellation Comparison & HDOP/Accuracy Metrics -->
             <div class="glass-panel mono">
                 <div class="panel-title">
                     <span id="matrix-card-title">📈 CONSTELLATION COMPARISON & METRICS</span>
@@ -367,7 +362,6 @@
                     </div>
                 </div>
 
-                <!-- HDOP & Accuracy Metrics Box -->
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto;">
                     <div style="background: rgba(2, 6, 23, 0.6); padding: 6px 8px; border-radius: 4px; border: 1px solid var(--panel-border); text-align: center;">
                         <div style="font-size: 8px; color: var(--text-muted);">HDOP (PRECISION)</div>
@@ -388,7 +382,6 @@
                 </div>
             </div>
 
-            <!-- 6. RINEX Observation Data & Signal Analysis -->
             <div class="glass-panel">
                 <div class="panel-title" style="justify-content: center; display: flex; justify-content: space-between; align-items: center;">
                     <span id="chart-panel-title">📡 RINEX OBSERVATION & SIGNAL ANALYSIS</span>
@@ -507,10 +500,10 @@
         function generateHighDensityFallbackList() {
             let list = [];
             const baseTLEs = [
-                { sys: "GPS SVN", line1: "1 28474U 04045A   24001.00000000 -.00000000  00000-0  00000-0 0  9999", line2: "2 28474  55.0000 150.0000 0100000   0.0000 359.0000  2.00560000100000" },
-                { sys: "BDS MEO", line1: "1 43539U 18062A   24001.00000000 -.00000000  00000-0  00000-0 0  9999", line2: "2 43539  55.0000 120.0000 0050000  10.0000 350.0000  1.86230000100000" },
-                { sys: "GALILEO GSAT", line1: "1 41859U 16069A   24001.00000000 -.00000000  00000-0  00000-0 0  9999", line2: "2 41859  56.0000 110.0000 0005000  20.0000 340.0000  1.70480000100000" },
-                { sys: "GLONASS-M", line1: "1 39572U 14015A   24001.00000000 -.00000000  00000-0  00000-0 0  9999", line2: "2 39572  64.8000 100.0000 0010000  30.0000 330.0000  2.13100000100000" }
+                { sys: "GPS SVN", line1: "1 28474U 04045A   24001.00000000 -.00000000  00000-0  00000-0 0   9999", line2: "2 28474  55.0000 150.0000 0100000   0.0000 359.0000  2.00560000100000" },
+                { sys: "BDS MEO", line1: "1 43539U 18062A   24001.00000000 -.00000000  00000-0  00000-0 0   9999", line2: "2 43539  55.0000 120.0000 0050000  10.0000 350.0000  1.86230000100000" },
+                { sys: "GALILEO GSAT", line1: "1 41859U 16069A   24001.00000000 -.00000000  00000-0  00000-0 0   9999", line2: "2 41859  56.0000 110.0000 0005000  20.0000 340.0000  1.70480000100000" },
+                { sys: "GLONASS-M", line1: "1 39572U 14015A   24001.00000000 -.00000000  00000-0  00000-0 0   9999", line2: "2 39572  64.8000 100.0000 0010000  30.0000 330.0000  2.13100000100000" }
             ];
 
             baseTLEs.forEach((base) => {
@@ -527,29 +520,6 @@
                 }
             });
             return list;
-        }
-
-        function parseRawTLEString(text) {
-            let parsedSats = [];
-            let lines = text.split('\n').map(l => l.replace(/\r/g, '')).filter(l => l.trim().length > 0);
-            let i = 0;
-            while (i < lines.length) {
-                if (i + 2 < lines.length && lines[i+1].startsWith('1 ') && lines[i+2].startsWith('2 ')) {
-                    let satName = lines[i].trim();
-                    let l1 = lines[i+1];
-                    let l2 = lines[i+2];
-                    let noradId = l1.substring(2, 7).trim();
-                    parsedSats.push({ id: noradId, name: `${satName} (${noradId})`, line1: l1, line2: l2 });
-                    i += 3;
-                } else if (lines[i].startsWith('1 ') && i + 1 < lines.length && lines[i+1].startsWith('2 ')) {
-                    let l1 = lines[i];
-                    let l2 = lines[i+1];
-                    let noradId = l1.substring(2, 7).trim();
-                    parsedSats.push({ id: noradId, name: `SAT-${noradId}`, line1: l1, line2: l2 });
-                    i += 2;
-                } else { i++; }
-            }
-            return parsedSats;
         }
 
         function categorizeSatsList(list) {
@@ -705,7 +675,6 @@
                 if(gpsBars.length > 0) gpsBars[0].style.width = `${pctA}%`;
                 if(bdsBars.length > 0) bdsBars[0].style.width = `${pctB}%`;
 
-                // Dynamic HDOP & Accuracy calculation based on visibility count
                 let hdopA = visSysA > 0 ? (0.9 + 2.5 / visSysA).toFixed(2) : "2.50";
                 let hdopB = visSysB > 0 ? (1.0 + 2.8 / visSysB).toFixed(2) : "2.80";
                 let accA = visSysA > 0 ? (0.8 + 1.5 / visSysA).toFixed(1) : "3.0";
@@ -804,7 +773,6 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
-        // --- RELIABLE 3D ORBIT RING & GROUND TRACK GENERATOR ---
         function generateSatOrbitTrack(id, isGroundTrack = false) {
             try {
                 const sat = TLE_DATABASE[id];
@@ -858,7 +826,7 @@
                 return; 
             }
             const orbitTrack = generateSatOrbitTrack(id, false); 
-            const groundTrack = generateSatOrbitTrack(id, true);   
+            const groundTrack = generateSatOrbitTrack(id, true);    
             
             let pathsArray = [];
             if (orbitTrack) pathsArray.push(orbitTrack);
@@ -915,17 +883,23 @@
             if (myGlobe) {
                 myGlobe.objectsData(currentLiveSatObjects);
                 myGlobe.htmlElementsData(targetLabelData);
+
+                // 🎯 Upcoming Pass သို့မဟုတ် Sat တစ်ခုခုကို နှိပ်လိုက်ပါက ကင်မရာကို ချက်ချင်း ဇူးမ်ဝင်ရောက်စေခြင်း
+                const currentPos = propagateSGP4(id);
+                if (currentPos) {
+                    myGlobe.pointOfView({ lat: currentPos.lat, lng: currentPos.lng, altitude: 0.9 }, 1000);
+                }
             }
 
             updateTargetOrbitPath(id);
 
+            // RINEX ဖိုင် အစစ် တင်ထားပြီးမှသာ Chart ကို အပြောင်းအလဲလုပ်မည် (လွတ်လပ်စွာ သီးသန့်ရပ်တည်စေရန်)
             const fileListContainer = document.getElementById('rinex-file-list');
             if (fileListContainer && fileListContainer.innerHTML.includes('STATION SUMMARY')) {
                 renderMockChart(sat.name); 
             }
         }
 
-        // --- Toggle View Function for Chart vs Table ---
         function switchRinexView(view) {
             const chartContainer = document.getElementById('rinex-chart-container');
             const tableContainer = document.getElementById('rinex-table-container');
