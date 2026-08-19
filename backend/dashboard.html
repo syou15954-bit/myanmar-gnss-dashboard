@@ -1108,7 +1108,6 @@
             });
         }
 
-        // 🚀 Click handler: updates Chart and Table specifically for the clicked station/file
         function selectFileCard(index) {
             activeSelectedFileIndex = index;
             let st = uploadedStationsList[index];
@@ -1128,7 +1127,6 @@
             let sysB = document.getElementById('rinex-sys-b').value;
             renderSystemComparisonChart(st, sysA, sysB);
 
-            // Populate Table with data corresponding to this active file
             const obsTableBody = document.getElementById('rinex-obs-table-body');
             obsTableBody.innerHTML = `
                 <tr><td>G01 (${st.name})</td><td>21023456.123</td><td>21023459.876</td><td>110234567.890</td><td>48.2 dB</td></tr>
