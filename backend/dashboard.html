@@ -891,13 +891,7 @@
                 }
             }
 
-            updateTargetOrbitPath(id);
-
-            // RINEX ဖိုင် အစစ် တင်ထားပြီးမှသာ Chart ကို အပြောင်းအလဲလုပ်မည် (လွတ်လပ်စွာ သီးသန့်ရပ်တည်စေရန်)
-            const fileListContainer = document.getElementById('rinex-file-list');
-            if (fileListContainer && fileListContainer.innerHTML.includes('STATION SUMMARY')) {
-                renderMockChart(sat.name); 
-            }
+            
         }
 
         function switchRinexView(view) {
