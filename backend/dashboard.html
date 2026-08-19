@@ -488,7 +488,7 @@
             mandalay: { lat: 21.9588, lng: 96.0891, name: '📡 Mandalay Hill Landmark', color: '#10b981', size: 3.0 }
         };
         let currentSelectedStation = 'none';
-        let uploadedStationsList = []; // 🚀 Multiple stations data storage
+        let uploadedStationsList = [];
         let hasAnalyzedRinex = false;
 
         const SAT_GEOM = new THREE.SphereGeometry(1.2, 12, 12);
@@ -1063,7 +1063,7 @@
             if (!hasAnalyzedRinex || uploadedStationsList.length === 0) return;
             let sysA = document.getElementById('rinex-sys-a').value;
             let sysB = document.getElementById('rinex-sys-b').value;
-            renderMultiStationComparisonChart(sysA, sysB);
+            renderSystemComparisonChart(sysA, sysB);
         }
 
         function uploadAndCompare() {
@@ -1093,7 +1093,6 @@
                         counts: metadata.counts
                     });
 
-                    // Re-render all uploaded cards stacked vertically
                     renderStationCards();
                     updateRinexComparisonChart();
                 };
@@ -1152,32 +1151,48 @@
             `;
         }
 
-        // 🚀 Multi-station independent signal line comparison chart
-        function renderMultiStationComparisonChart(sysA = "GPS", sysB = "BDS") {
+        // 🚀 Corrected: Render system vs system comparison (e.g., BDS vs GAL) accurately in legend and chart
+        function renderSystemComparisonChart(sysA = "GPS", sysB = "BDS") {
             let epochs = [], numPoints = 16;
             for (let i = 0; i < numPoints; i++) {
                 epochs.push(`${i * 2}:00`);
             }
 
-            let datasets = [];
-            let palette = ['#10b981', '#38bdf8', '#ef4444', '#c084fc', '#ffb700'];
+            const getSysColor = (s) => {
+                if(s === 'GPS') return '#10b981';
+                if(s === 'BDS') return '#ef4444';
+                if(s === 'GAL') return '#38bdf8';
+                return '#c084fc';
+            };
 
-            uploadedStationsList.forEach((st, idx) => {
-                let color = palette[idx % palette.length];
-                let dataSeries = [];
-                for (let i = 0; i < numPoints; i++) {
-                    dataSeries.push(Math.floor(35 + (idx * 3) + Math.sin(i / 2.0 + idx) * 5 + Math.random() * 3));
-                }
-                datasets.push({
+            let st = uploadedStationsList.length > 0 ? uploadedStationsList[0] : { name: "MWZA", counts: { GPS: 32, BDS: 22, GAL: 24, GLO: 48 } };
+
+            let dataA = [], dataB = [];
+            for (let i = 0; i < numPoints; i++) {
+                dataA.push(Math.floor(38 + (sysA.charCodeAt(0) % 5) + Math.sin(i / 2.0) * 5 + Math.random() * 3));
+                dataB.push(Math.floor(36 + (sysB.charCodeAt(0) % 5) + Math.cos(i / 2.0) * 5 + Math.random() * 3));
+            }
+
+            let datasets = [
+                {
                     label: `📡 ${st.name} (${sysA}: ${st.counts[sysA]} Sats)`,
-                    data: dataSeries,
-                    borderColor: color,
-                    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                    data: dataA,
+                    borderColor: getSysColor(sysA),
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
                     borderWidth: 2,
                     tension: 0.3,
                     pointRadius: 2.5
-                });
-            });
+                },
+                {
+                    label: `📡 ${st.name} (${sysB}: ${st.counts[sysB]} Sats)`,
+                    data: dataB,
+                    borderColor: getSysColor(sysB),
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointRadius: 2.5
+                }
+            ];
 
             const ctx = document.getElementById('waveformChart');
             if (!ctx) return;
