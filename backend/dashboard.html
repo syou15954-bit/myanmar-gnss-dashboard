@@ -199,7 +199,9 @@
         .upload-btn:hover { background: rgba(56, 189, 248, 0.35); }
 
         .rinex-file-list { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; margin-bottom: 0; padding-right: 2px; }
-        .rinex-card { background: rgba(2, 6, 23, 0.9); border: 1px solid rgba(56, 189, 248, 0.3); border-left: 3px solid var(--accent-cyan); border-radius: 5px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; font-size: 11px; flex-shrink: 0; }
+        .rinex-card { background: rgba(2, 6, 23, 0.9); border: 1px solid rgba(56, 189, 248, 0.3); border-left: 3px solid var(--accent-cyan); border-radius: 5px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; font-size: 11px; flex-shrink: 0; cursor: pointer; transition: all 0.2s; }
+        .rinex-card:hover { border-color: var(--accent-cyan); background: rgba(15, 23, 42, 0.95); }
+        .rinex-card-selected { border-color: var(--accent-cyan) !important; background: rgba(56, 189, 248, 0.15) !important; box-shadow: 0 0 12px rgba(56, 189, 248, 0.3); }
         
         .chart-box { position: relative; flex: 1; width: 100%; min-height: 120px; }
         .chart-box canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
@@ -428,25 +430,26 @@
                     </div>
                     
                     <div class="rinex-right">
-                        <!-- Restored: System vs System Comparison for RINEX chart -->
                         <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(2, 6, 23, 0.7); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--panel-border);">
                             <div style="display: flex; align-items: center; gap: 6px;">
-                                <span style="font-size: 9px; color: var(--text-muted); font-weight: 700;">COMPARE:</span>
-                                <select id="rinex-sys-a" class="matrix-select" onchange="updateRinexComparisonChart()" style="font-size: 9.5px; padding: 2px 6px; color: #10b981; border-color: #10b981;">
+                                <span style="font-size: 9px; color: var(--text-muted); font-weight: 700;">ACTIVE FILE SOURCE:</span>
+                                <span id="active-file-indicator" style="font-size: 9.5px; color: var(--accent-yellow); font-weight: 700;">-- No File Selected --</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <select id="rinex-sys-a" class="matrix-select" onchange="updateActiveFileChart()" style="font-size: 9.5px; padding: 2px 6px; color: #10b981; border-color: #10b981;">
                                     <option value="GPS" selected>🇺🇸 GPS</option>
                                     <option value="BDS">🇨🇳 BDS</option>
                                     <option value="GAL">🇪🇺 GAL</option>
                                     <option value="GLO">🇷🇺 GLO</option>
                                 </select>
                                 <span style="font-size: 9px; color: var(--text-muted);">VS</span>
-                                <select id="rinex-sys-b" class="matrix-select" onchange="updateRinexComparisonChart()" style="font-size: 9.5px; padding: 2px 6px; color: #ef4444; border-color: #ef4444;">
+                                <select id="rinex-sys-b" class="matrix-select" onchange="updateActiveFileChart()" style="font-size: 9.5px; padding: 2px 6px; color: #ef4444; border-color: #ef4444;">
                                     <option value="GPS">🇺🇸 GPS</option>
                                     <option value="BDS" selected>🇨🇳 BDS</option>
                                     <option value="GAL">🇪🇺 GAL</option>
                                     <option value="GLO">🇷🇺 GLO</option>
                                 </select>
                             </div>
-                            <span id="rinex-compare-info" style="font-size: 8.5px; color: var(--accent-cyan);">Signal C/N₀ Comparison</span>
                         </div>
 
                         <div id="rinex-chart-container" class="chart-box" style="border: 1px solid rgba(56,189,248,0.15); border-radius: 4px; background: rgba(2,6,23,0.4); position: relative; flex: 1;">
@@ -490,7 +493,7 @@
         };
         let currentSelectedStation = 'none';
         let uploadedStationsList = [];
-        let hasAnalyzedRinex = false;
+        let activeSelectedFileIndex = 0; // 🚀 Currently clicked/selected file index for chart display
 
         const SAT_GEOM = new THREE.SphereGeometry(1.2, 12, 12);
         const TARGET_GEOM = new THREE.SphereGeometry(1.8, 16, 16);
@@ -1060,11 +1063,10 @@
             return { markerName, obsDate, agency, recType, antType, interval, version, counts: finalCounts };
         }
 
-        function updateRinexComparisonChart() {
-            if (!hasAnalyzedRinex || uploadedStationsList.length === 0) return;
-            let sysA = document.getElementById('rinex-sys-a').value;
-            let sysB = document.getElementById('rinex-sys-b').value;
-            renderSystemComparisonChart(sysA, sysB);
+        function updateActiveFileChart() {
+            if (activeSelectedFileIndex >= 0 && uploadedStationsList[activeSelectedFileIndex]) {
+                selectFileCard(activeSelectedFileIndex);
+            }
         }
 
         function uploadAndCompare() {
@@ -1084,9 +1086,12 @@
                     const text = e.target.result;
                     const metadata = parseRinexHeader(text);
                     
+                    let fileName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension for clean name
+
                     uploadedStationsList.push({
                         id: index,
-                        name: metadata.markerName,
+                        fileName: fileName,
+                        name: metadata.markerName !== "Unknown" ? metadata.markerName : fileName,
                         recType: metadata.recType,
                         interval: metadata.interval,
                         obsDate: metadata.obsDate,
@@ -1095,22 +1100,51 @@
                     });
 
                     renderStationCards();
-                    updateRinexComparisonChart();
+
+                    // Automatically select the first file by default
+                    if (uploadedStationsList.length === 1) {
+                        selectFileCard(0);
+                    }
                 };
                 reader.readAsText(file); 
             });
+        }
+
+        // 🚀 Click handler to activate a specific file card and update chart/tables
+        function selectFileCard(index) {
+            activeSelectedFileIndex = index;
+            let st = uploadedStationsList[index];
+            if (!st) return;
+
+            // Update UI card active border highlight
+            document.querySelectorAll('.rinex-card').forEach((card, idx) => {
+                if (idx === index) {
+                    card.classList.add('rinex-card-selected');
+                } else {
+                    card.classList.remove('rinex-card-selected');
+                }
+            });
+
+            // Update active file indicator
+            document.getElementById('active-file-indicator').innerText = `📡 Active: ${st.name}`;
+
+            // Render Chart for this selected file
+            let sysA = document.getElementById('rinex-sys-a').value;
+            let sysB = document.getElementById('rinex-sys-b').value;
+            renderSingleFileComparisonChart(st, sysA, sysB);
         }
 
         function renderStationCards() {
             const fileListContainer = document.getElementById('rinex-file-list');
             fileListContainer.innerHTML = '';
 
-            uploadedStationsList.forEach((st) => {
+            uploadedStationsList.forEach((st, idx) => {
                 const card = document.createElement('div');
-                card.className = 'rinex-card';
+                card.className = 'rinex-card' + (idx === activeSelectedFileIndex ? ' rinex-card-selected' : '');
+                card.setAttribute('onclick', `selectFileCard(${idx})`);
                 card.innerHTML = `
                     <div style="color: var(--accent-cyan); font-weight: 700; font-size: 11px; border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding-bottom: 4px; display: flex; justify-content: space-between;">
-                        <span>📡 ${st.name}</span>
+                        <span>📡 ${st.name} <small style="color: var(--text-muted);">(${st.fileName})</small></span>
                         <span style="color: var(--accent-green); font-size: 9.5px;">ACTIVE</span>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 10px;">
@@ -1141,7 +1175,7 @@
             });
         }
 
-        function renderSystemComparisonChart(sysA = "GPS", sysB = "BDS") {
+        function renderSingleFileComparisonChart(st, sysA = "GPS", sysB = "BDS") {
             let epochs = [], numPoints = 16;
             for (let i = 0; i < numPoints; i++) {
                 epochs.push(`${i * 2}:00`);
@@ -1153,8 +1187,6 @@
                 if(s === 'GAL') return '#38bdf8';
                 return '#c084fc';
             };
-
-            let st = uploadedStationsList.length > 0 ? uploadedStationsList[0] : { name: "MWZA", counts: { GPS: 32, BDS: 22, GAL: 24, GLO: 48 } };
 
             let dataA = [], dataB = [];
             for (let i = 0; i < numPoints; i++) {
