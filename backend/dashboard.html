@@ -47,6 +47,7 @@
 
         .mono { font-family: 'JetBrains Mono', monospace; }
 
+        /* Top Navigation & Filters */
         .top-nav {
             display: grid;
             grid-template-columns: auto 1fr auto;
@@ -107,6 +108,7 @@
             flex: 1; display: flex; flex-direction: column; gap: 8px; min-height: 0; position: relative;
         }
 
+        /* 3D Globe View */
         .globe-stage {
             flex: 1.8; position: relative; background: var(--panel-bg); border: 1px solid var(--panel-border);
             border-radius: 6px; overflow: hidden; min-height: 0;
@@ -138,6 +140,7 @@
             border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding-bottom: 5px;
         }
 
+        /* Upcoming Passes Panel */
         .hud-right-passes { top: 12px; right: 12px; width: 310px; display: flex; flex-direction: column; max-height: 290px; }
 
         .matrix-select {
@@ -165,12 +168,14 @@
             border-radius: 6px; padding: 12px; display: flex; flex-direction: column; min-height: 0; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
+        /* Centered Clear Panel Titles */
         .panel-title {
             font-size: 12px; font-weight: 700; color: var(--accent-cyan); margin-bottom: 8px; display: flex;
             justify-content: center; align-items: center; border-bottom: 1px solid rgba(56, 189, 248, 0.25);
             padding-bottom: 6px; flex-shrink: 0; letter-spacing: 0.5px; text-transform: uppercase; text-align: center; width: 100%;
         }
 
+        /* Local GNSS DB & Fleet Status */
         .cyber-table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 0; }
         .cyber-table th { text-align: left; color: var(--text-muted); padding: 5px 4px; border-bottom: 1px solid var(--panel-border); font-size: 9px; position: sticky; top: 0; background: rgba(2, 6, 23, 0.95); z-index: 5; }
         .cyber-table td { padding: 5px 4px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #cbd5e1; }
@@ -185,21 +190,23 @@
         .dop-card { background: rgba(2, 6, 23, 0.6); padding: 8px; border-radius: 4px; text-align: center; border: 1px solid var(--panel-border); }
         .dop-val { font-size: 16px; font-weight: 700; color: var(--accent-cyan); margin-top: 4px; }
 
+        /* RINEX Data Analysis (Fully Spaced to Fill Left Panel Vertical Space) */
         .rinex-split-view { display: flex; gap: 12px; flex: 1; min-height: 0; }
-        .rinex-left { width: 280px; display: flex; flex-direction: column; min-height: 0; flex-shrink: 0; justify-content: space-between; }
+        .rinex-left { width: 280px; display: flex; flex-direction: column; min-height: 0; flex-shrink: 0; gap: 8px; }
         .rinex-right { flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative; gap: 6px; }
 
         .upload-btn { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 4px 10px; border-radius: 3px; font-size: 9.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap;}
         .upload-btn:hover { background: rgba(56, 189, 248, 0.35); }
 
-        .rinex-file-list { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; margin-bottom: 0; padding-right: 4px; }
-        .rinex-card { background: rgba(2, 6, 23, 0.9); border: 1px solid rgba(56, 189, 248, 0.3); border-left: 3px solid var(--accent-cyan); border-radius: 4px; padding: 10px; display: flex; flex-direction: column; gap: 8px; font-size: 10px; flex: 1; justify-content: space-between; }
+        .rinex-file-list { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; margin-bottom: 0; padding-right: 2px; }
+        .rinex-card { background: rgba(2, 6, 23, 0.9); border: 1px solid rgba(56, 189, 248, 0.3); border-left: 3px solid var(--accent-cyan); border-radius: 4px; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; font-size: 10px; flex: 1; min-height: 180px; }
         
         .chart-box { position: relative; flex: 1; width: 100%; min-height: 120px; }
         .chart-box canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
 
         .pass-card:hover { background: rgba(56, 189, 248, 0.15) !important; }
 
+        /* TLE Modal fixed cleanly at top-left */
         #tleModal {
             display: none; 
             position: fixed; 
@@ -421,7 +428,6 @@
                     </div>
                     
                     <div class="rinex-right">
-                        <!-- Constellation Style Comparison Selectors for RINEX Systems -->
                         <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(2, 6, 23, 0.7); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--panel-border);">
                             <div style="display: flex; align-items: center; gap: 6px;">
                                 <span style="font-size: 9px; color: var(--text-muted); font-weight: 700;">COMPARE:</span>
@@ -483,7 +489,7 @@
         };
         let currentSelectedStation = 'none';
         let rinexSystemCounts = { GPS: 0, BDS: 0, GAL: 0, GLO: 0 };
-        let hasAnalyzedRinex = false; // 🛑 ဖိုင်မတင်ရသေးရင် Chart မှာ ဘာမှမပြရန် အလံ (Flag)
+        let hasAnalyzedRinex = false;
 
         const SAT_GEOM = new THREE.SphereGeometry(1.2, 12, 12);
         const TARGET_GEOM = new THREE.SphereGeometry(1.8, 16, 16);
@@ -1049,17 +1055,17 @@
             }
 
             if (counts.GPS === 0 && counts.BDS === 0 && counts.GAL === 0 && counts.GLO === 0) {
-                rinexSystemCounts = { GPS: 12, BDS: 9, GAL: 8, GLO: 6 };
+                rinexSystemCounts = { GPS: 32, BDS: 22, GAL: 23, GLO: 48 };
             } else {
                 rinexSystemCounts = counts;
             }
 
-            hasAnalyzedRinex = true; // 🚀 ဖိုင် အောင်မြင်စွာ တင်ပြီးစီးကြောင်း သတ်မှတ်သည်
+            hasAnalyzedRinex = true;
             return { markerName, obsDate, agency, recType, antType, interval, version };
         }
 
         function updateRinexComparisonChart() {
-            if (!hasAnalyzedRinex) return; // 🛑 ဖိုင် မတင်ရသေးရင် Chart မှာ ဘာမှမဆွဲပါ
+            if (!hasAnalyzedRinex) return;
             let sysA = document.getElementById('rinex-sys-a').value;
             let sysB = document.getElementById('rinex-sys-b').value;
             renderRinexComparisonChart(sysA, sysB);
@@ -1100,13 +1106,13 @@
                                 <div style="color: var(--accent-yellow); font-weight: 700; margin-top: 1px;">${metadata.interval}</div>
                             </div>
                         </div>
-                        <div style="background: rgba(15, 23, 42, 0.8); padding: 4px; border-radius: 3px; border: 1px solid rgba(56, 189, 248, 0.15); display: flex; flex-direction: column; gap: 3px;">
+                        <div style="background: rgba(15, 23, 42, 0.8); padding: 4px; border-radius: 3px; border: 1px solid rgba(56, 189, 248, 0.15); display: flex; flex-direction: column; gap: 4px;">
                             <div style="color: var(--text-muted); font-size: 7.5px;">SUPPORTED SYSTEM OBSERVATIONS</div>
-                            <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 1px;">
-                                <span style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; padding: 1px 5px; border-radius: 3px; font-size: 8px; font-weight: 700;">GPS (${rinexSystemCounts.GPS})</span>
-                                <span style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; padding: 1px 5px; border-radius: 3px; font-size: 8px; font-weight: 700;">BDS (${rinexSystemCounts.BDS})</span>
-                                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #38bdf8; padding: 1px 5px; border-radius: 3px; font-size: 8px; font-weight: 700;">GAL (${rinexSystemCounts.GAL})</span>
-                                <span style="background: rgba(192, 132, 252, 0.2); color: #c084fc; border: 1px solid #c084fc; padding: 1px 5px; border-radius: 3px; font-size: 8px; font-weight: 700;">GLO (${rinexSystemCounts.GLO})</span>
+                            <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px;">
+                                <span style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; padding: 2px 6px; border-radius: 3px; font-size: 8.5px; font-weight: 700;">GPS (${rinexSystemCounts.GPS})</span>
+                                <span style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; padding: 2px 6px; border-radius: 3px; font-size: 8.5px; font-weight: 700;">BDS (${rinexSystemCounts.BDS})</span>
+                                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #38bdf8; padding: 2px 6px; border-radius: 3px; font-size: 8.5px; font-weight: 700;">GAL (${rinexSystemCounts.GAL})</span>
+                                <span style="background: rgba(192, 132, 252, 0.2); color: #c084fc; border: 1px solid #c084fc; padding: 2px 6px; border-radius: 3px; font-size: 8.5px; font-weight: 700;">GLO (${rinexSystemCounts.GLO})</span>
                             </div>
                         </div>
                         <div style="font-size: 8px; color: var(--text-muted); display: flex; justify-content: space-between; background: rgba(2, 6, 23, 0.5); padding: 3px 4px; border-radius: 3px;">
