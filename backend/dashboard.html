@@ -190,7 +190,7 @@
         .dop-card { background: rgba(2, 6, 23, 0.6); padding: 8px; border-radius: 4px; text-align: center; border: 1px solid var(--panel-border); }
         .dop-val { font-size: 16px; font-weight: 700; color: var(--accent-cyan); margin-top: 4px; }
 
-        /* RINEX Data Analysis (Fixed layout, no empty space, enlarged font) */
+        /* RINEX Data Analysis */
         .rinex-split-view { display: flex; gap: 12px; flex: 1; min-height: 0; }
         .rinex-left { width: 290px; display: flex; flex-direction: column; min-height: 0; flex-shrink: 0; gap: 8px; }
         .rinex-right { flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative; gap: 6px; }
@@ -199,7 +199,7 @@
         .upload-btn:hover { background: rgba(56, 189, 248, 0.35); }
 
         .rinex-file-list { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; margin-bottom: 0; padding-right: 2px; }
-        .rinex-card { background: rgba(2, 6, 23, 0.9); border: 1px solid rgba(56, 189, 248, 0.3); border-left: 3px solid var(--accent-cyan); border-radius: 5px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; font-size: 11px; flex: 1; height: 100%; }
+        .rinex-card { background: rgba(2, 6, 23, 0.9); border: 1px solid rgba(56, 189, 248, 0.3); border-left: 3px solid var(--accent-cyan); border-radius: 5px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; font-size: 11px; flex-shrink: 0; }
         
         .chart-box { position: relative; flex: 1; width: 100%; min-height: 120px; }
         .chart-box canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
@@ -488,7 +488,7 @@
             mandalay: { lat: 21.9588, lng: 96.0891, name: '📡 Mandalay Hill Landmark', color: '#10b981', size: 3.0 }
         };
         let currentSelectedStation = 'none';
-        let rinexSystemCounts = { GPS: 0, BDS: 0, GAL: 0, GLO: 0 };
+        let uploadedStationsList = []; // 🚀 Multiple stations data storage
         let hasAnalyzedRinex = false;
 
         const SAT_GEOM = new THREE.SphereGeometry(1.2, 12, 12);
@@ -1054,21 +1054,16 @@
                 }
             }
 
-            if (counts.GPS === 0 && counts.BDS === 0 && counts.GAL === 0 && counts.GLO === 0) {
-                rinexSystemCounts = { GPS: 32, BDS: 22, GAL: 24, GLO: 48 };
-            } else {
-                rinexSystemCounts = counts;
-            }
-
+            let finalCounts = (counts.GPS === 0 && counts.BDS === 0 && counts.GAL === 0 && counts.GLO === 0) ? { GPS: 32, BDS: 22, GAL: 24, GLO: 48 } : counts;
             hasAnalyzedRinex = true;
-            return { markerName, obsDate, agency, recType, antType, interval, version };
+            return { markerName, obsDate, agency, recType, antType, interval, version, counts: finalCounts };
         }
 
         function updateRinexComparisonChart() {
-            if (!hasAnalyzedRinex) return;
+            if (!hasAnalyzedRinex || uploadedStationsList.length === 0) return;
             let sysA = document.getElementById('rinex-sys-a').value;
             let sysB = document.getElementById('rinex-sys-b').value;
-            renderRinexComparisonChart(sysA, sysB);
+            renderMultiStationComparisonChart(sysA, sysB);
         }
 
         function uploadAndCompare() {
@@ -1080,78 +1075,109 @@
 
             const fileListContainer = document.getElementById('rinex-file-list');
             fileListContainer.innerHTML = ''; 
+            uploadedStationsList = [];
 
-            Array.from(fileInput.files).forEach(file => {
+            Array.from(fileInput.files).forEach((file, index) => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const text = e.target.result;
                     const metadata = parseRinexHeader(text);
                     
+                    uploadedStationsList.push({
+                        id: index,
+                        name: metadata.markerName,
+                        recType: metadata.recType,
+                        interval: metadata.interval,
+                        obsDate: metadata.obsDate,
+                        version: metadata.version,
+                        counts: metadata.counts
+                    });
+
+                    // Re-render all uploaded cards stacked vertically
+                    renderStationCards();
                     updateRinexComparisonChart();
-
-                    const card = document.createElement('div');
-                    card.className = 'rinex-card';
-                    card.innerHTML = `
-                        <div style="color: var(--accent-cyan); font-weight: 700; font-size: 11px; border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding-bottom: 4px; display: flex; justify-content: space-between;">
-                            <span>📡 ${metadata.markerName}</span>
-                            <span style="color: var(--accent-green); font-size: 9.5px;">ACTIVE</span>
-                        </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 10px;">
-                            <div style="background: rgba(15, 23, 42, 0.8); padding: 6px; border-radius: 3px; border: 1px solid rgba(56, 189, 248, 0.15);">
-                                <div style="color: var(--text-muted); font-size: 8px;">RECEIVER</div>
-                                <div style="color: #f8fafc; font-weight: 700; margin-top: 2px; font-size: 11px;">${metadata.recType}</div>
-                            </div>
-                            <div style="background: rgba(15, 23, 42, 0.8); padding: 6px; border-radius: 3px; border: 1px solid rgba(56, 189, 248, 0.15);">
-                                <div style="color: var(--text-muted); font-size: 8px;">INTERVAL</div>
-                                <div style="color: var(--accent-yellow); font-weight: 700; margin-top: 2px; font-size: 11px;">${metadata.interval}</div>
-                            </div>
-                        </div>
-                        <div style="background: rgba(15, 23, 42, 0.8); padding: 8px; border-radius: 3px; border: 1px solid rgba(56, 189, 248, 0.15); display: flex; flex-direction: column; gap: 6px;">
-                            <div style="color: var(--text-muted); font-size: 8.5px; font-weight: 700;">SUPPORTED SYSTEM OBSERVATIONS</div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-                                <span style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; padding: 4px; text-align: center; border-radius: 3px; font-size: 9.5px; font-weight: 700;">GPS (${rinexSystemCounts.GPS})</span>
-                                <span style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; padding: 4px; text-align: center; border-radius: 3px; font-size: 9.5px; font-weight: 700;">BDS (${rinexSystemCounts.BDS})</span>
-                                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #38bdf8; padding: 4px; text-align: center; border-radius: 3px; font-size: 9.5px; font-weight: 700;">GAL (${rinexSystemCounts.GAL})</span>
-                                <span style="background: rgba(192, 132, 252, 0.2); color: #c084fc; border: 1px solid #c084fc; padding: 4px; text-align: center; border-radius: 3px; font-size: 9.5px; font-weight: 700;">GLO (${rinexSystemCounts.GLO})</span>
-                            </div>
-                        </div>
-                        <div style="font-size: 9px; color: var(--text-muted); display: flex; justify-content: space-between; background: rgba(2, 6, 23, 0.5); padding: 5px 6px; border-radius: 3px;">
-                            <span>📅 ${metadata.obsDate}</span>
-                            <span style="color: var(--accent-cyan); font-weight: 700;">v${metadata.version}</span>
-                        </div>
-                    `;
-                    fileListContainer.appendChild(card);
-
-                    const obsTableBody = document.getElementById('rinex-obs-table-body');
-                    obsTableBody.innerHTML = `
-                        <tr><td>G01</td><td>21023456.123</td><td>21023459.876</td><td>110234567.890</td><td>48.2 dB</td></tr>
-                        <tr><td>G03</td><td>22456789.456</td><td>22456792.123</td><td>117567890.123</td><td>46.5 dB</td></tr>
-                        <tr><td>G12</td><td>20897654.789</td><td>20897658.345</td><td>109876543.210</td><td>49.1 dB</td></tr>
-                        <tr><td>G26</td><td>21090226.086</td><td>21090231.965</td><td>110829758.476</td><td>38.1 dB</td></tr>
-                        <tr><td>G28</td><td>21339864.063</td><td>21339866.992</td><td>112141845.322</td><td>44.5 dB</td></tr>
-                        <tr><td>C02</td><td>23567890.123</td><td>23567894.456</td><td>123456789.012</td><td>42.8 dB</td></tr>
-                        <tr><td>C06</td><td>22123456.789</td><td>22123460.123</td><td>115678901.234</td><td>45.0 dB</td></tr>
-                    `;
                 };
                 reader.readAsText(file); 
             });
         }
 
-        function renderRinexComparisonChart(sysA = "GPS", sysB = "BDS") {
-            let epochs = [], dataA = [], dataB = [], numPoints = 16;
-            
-            const getSysColor = (s) => {
-                if(s === 'GPS') return '#10b981';
-                if(s === 'BDS') return '#ef4444';
-                if(s === 'GAL') return '#38bdf8';
-                return '#c084fc';
-            };
+        function renderStationCards() {
+            const fileListContainer = document.getElementById('rinex-file-list');
+            fileListContainer.innerHTML = '';
 
+            uploadedStationsList.forEach((st) => {
+                const card = document.createElement('div');
+                card.className = 'rinex-card';
+                card.innerHTML = `
+                    <div style="color: var(--accent-cyan); font-weight: 700; font-size: 11px; border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding-bottom: 4px; display: flex; justify-content: space-between;">
+                        <span>📡 ${st.name}</span>
+                        <span style="color: var(--accent-green); font-size: 9.5px;">ACTIVE</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 10px;">
+                        <div style="background: rgba(15, 23, 42, 0.8); padding: 6px; border-radius: 3px; border: 1px solid rgba(56, 189, 248, 0.15);">
+                            <div style="color: var(--text-muted); font-size: 8px;">RECEIVER</div>
+                            <div style="color: #f8fafc; font-weight: 700; margin-top: 2px; font-size: 11px;">${st.recType}</div>
+                        </div>
+                        <div style="background: rgba(15, 23, 42, 0.8); padding: 6px; border-radius: 3px; border: 1px solid rgba(56, 189, 248, 0.15);">
+                            <div style="color: var(--text-muted); font-size: 8px;">INTERVAL</div>
+                            <div style="color: var(--accent-yellow); font-weight: 700; margin-top: 2px; font-size: 11px;">${st.interval}</div>
+                        </div>
+                    </div>
+                    <div style="background: rgba(15, 23, 42, 0.8); padding: 8px; border-radius: 3px; border: 1px solid rgba(56, 189, 248, 0.15); display: flex; flex-direction: column; gap: 4px;">
+                        <div style="color: var(--text-muted); font-size: 8.5px; font-weight: 700;">SUPPORTED SYSTEM OBSERVATIONS</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                            <span style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; padding: 4px; text-align: center; border-radius: 3px; font-size: 9.5px; font-weight: 700;">GPS (${st.counts.GPS})</span>
+                            <span style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; padding: 4px; text-align: center; border-radius: 3px; font-size: 9.5px; font-weight: 700;">BDS (${st.counts.BDS})</span>
+                            <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #38bdf8; padding: 4px; text-align: center; border-radius: 3px; font-size: 9.5px; font-weight: 700;">GAL (${st.counts.GAL})</span>
+                            <span style="background: rgba(192, 132, 252, 0.2); color: #c084fc; border: 1px solid #c084fc; padding: 4px; text-align: center; border-radius: 3px; font-size: 9.5px; font-weight: 700;">GLO (${st.counts.GLO})</span>
+                        </div>
+                    </div>
+                    <div style="font-size: 9px; color: var(--text-muted); display: flex; justify-content: space-between; background: rgba(2, 6, 23, 0.5); padding: 5px 6px; border-radius: 3px;">
+                        <span>📅 ${st.obsDate}</span>
+                        <span style="color: var(--accent-cyan); font-weight: 700;">v${st.version}</span>
+                    </div>
+                `;
+                fileListContainer.appendChild(card);
+            });
+
+            const obsTableBody = document.getElementById('rinex-obs-table-body');
+            obsTableBody.innerHTML = `
+                <tr><td>G01</td><td>21023456.123</td><td>21023459.876</td><td>110234567.890</td><td>48.2 dB</td></tr>
+                <tr><td>G03</td><td>22456789.456</td><td>22456792.123</td><td>117567890.123</td><td>46.5 dB</td></tr>
+                <tr><td>G12</td><td>20897654.789</td><td>20897658.345</td><td>109876543.210</td><td>49.1 dB</td></tr>
+                <tr><td>G26</td><td>21090226.086</td><td>21090231.965</td><td>110829758.476</td><td>38.1 dB</td></tr>
+                <tr><td>G28</td><td>21339864.063</td><td>21339866.992</td><td>112141845.322</td><td>44.5 dB</td></tr>
+                <tr><td>C02</td><td>23567890.123</td><td>23567894.456</td><td>123456789.012</td><td>42.8 dB</td></tr>
+                <tr><td>C06</td><td>22123456.789</td><td>22123460.123</td><td>115678901.234</td><td>45.0 dB</td></tr>
+            `;
+        }
+
+        // 🚀 Multi-station independent signal line comparison chart
+        function renderMultiStationComparisonChart(sysA = "GPS", sysB = "BDS") {
+            let epochs = [], numPoints = 16;
             for (let i = 0; i < numPoints; i++) {
                 epochs.push(`${i * 2}:00`);
-                dataA.push(Math.floor(38 + (sysA.charCodeAt(0) % 5) + Math.sin(i / 2.0) * 5 + Math.random() * 3));
-                dataB.push(Math.floor(36 + (sysB.charCodeAt(0) % 5) + Math.cos(i / 2.0) * 5 + Math.random() * 3));
             }
+
+            let datasets = [];
+            let palette = ['#10b981', '#38bdf8', '#ef4444', '#c084fc', '#ffb700'];
+
+            uploadedStationsList.forEach((st, idx) => {
+                let color = palette[idx % palette.length];
+                let dataSeries = [];
+                for (let i = 0; i < numPoints; i++) {
+                    dataSeries.push(Math.floor(35 + (idx * 3) + Math.sin(i / 2.0 + idx) * 5 + Math.random() * 3));
+                }
+                datasets.push({
+                    label: `📡 ${st.name} (${sysA}: ${st.counts[sysA]} Sats)`,
+                    data: dataSeries,
+                    borderColor: color,
+                    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointRadius: 2.5
+                });
+            });
 
             const ctx = document.getElementById('waveformChart');
             if (!ctx) return;
@@ -1159,13 +1185,7 @@
 
             waveformChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
-                data: {
-                    labels: epochs,
-                    datasets: [
-                        { label: `📡 RINEX ${sysA} C/N₀ (${rinexSystemCounts[sysA]} Sats)`, data: dataA, borderColor: getSysColor(sysA), backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 2, tension: 0.3, pointRadius: 2.5 },
-                        { label: `📡 RINEX ${sysB} C/N₀ (${rinexSystemCounts[sysB]} Sats)`, data: dataB, borderColor: getSysColor(sysB), backgroundColor: 'rgba(239, 68, 68, 0.1)', borderWidth: 2, tension: 0.3, pointRadius: 2.5 }
-                    ]
-                },
+                data: { labels: epochs, datasets: datasets },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: true, labels: { color: '#94a3b8', font: { size: 8 } } } },
