@@ -324,12 +324,12 @@
                 </div>
             </div>
 
-            <!-- Constellation Comparison & Metrics (Enlarged and Spaced to Fill Space) -->
-            <div class="glass-panel mono">
+            <!-- Constellation Comparison & Metrics (Using space-between to fill vertical space perfectly) -->
+            <div class="glass-panel mono" style="justify-content: space-between;">
                 <div class="panel-title">
                     <span id="matrix-card-title">📈 CONSTELLATION COMPARISON & METRICS</span>
                 </div>
-                <div style="display:flex; justify-content:center; align-items:center; gap:12px; margin-top:8px; margin-bottom:12px;">
+                <div style="display:flex; justify-content:center; align-items:center; gap:12px;">
                     <select id="matrix-sys-a" class="matrix-select" onchange="renderCustomSelection()" style="font-size: 11px; padding: 5px 10px;">
                         <option value="gps" selected>🇺🇸 GPS</option>
                         <option value="bds">🇨🇳 BEIDOU</option>
@@ -345,13 +345,13 @@
                     </select>
                 </div>
 
-                <div style="display:grid; grid-template-columns:1fr 110px 1fr; align-items:center; text-align:center; margin-bottom:14px;">
-                    <b style="color:#10b981; font-size:26px;" id="sys-a-count">0</b>
+                <div style="display:grid; grid-template-columns:1fr 110px 1fr; align-items:center; text-align:center;">
+                    <b style="color:#10b981; font-size:28px;" id="sys-a-count">0</b>
                     <span style="font-size:10px; color:var(--text-muted); letter-spacing: 0.8px; font-weight: 700;" id="fleet-type-label">SATS IN VIEW</span>
-                    <b style="color:#ef4444; font-size:26px;" id="sys-b-count">0</b>
+                    <b style="color:#ef4444; font-size:28px;" id="sys-b-count">0</b>
                 </div>
 
-                <div style="margin-bottom:14px;">
+                <div>
                     <div style="display:flex; justify-content:space-between; font-size:10px; font-weight:700; margin-bottom:8px;">
                         <span style="color:#10b981;" id="sys-a-vis-text">SYS-A: 0%</span>
                         <span style="color:var(--text-muted); letter-spacing: 0.5px;">FLEET VISIBILITY</span>
@@ -363,9 +363,9 @@
                     </div>
                 </div>
 
-                <!-- Enlarged Metrics Grid to Fill Empty Space Nicely -->
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto;">
-                    <div style="background: rgba(2, 6, 23, 0.7); padding: 9px 10px; border-radius: 5px; border: 1px solid var(--panel-border); text-align: center;">
+                <!-- Fully Stretched Metrics Grid to Fill Entire Panel Height -->
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div style="background: rgba(2, 6, 23, 0.7); padding: 10px; border-radius: 5px; border: 1px solid var(--panel-border); text-align: center;">
                         <div style="font-size: 9px; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px;">HDOP (HORIZONTAL)</div>
                         <div style="display: flex; justify-content: space-around; margin-top: 6px; font-size: 14px; font-weight: 700;">
                             <span style="color: #10b981;" id="sys-a-hdop">1.12</span>
@@ -373,7 +373,7 @@
                             <span style="color: #ef4444;" id="sys-b-hdop">1.25</span>
                         </div>
                     </div>
-                    <div style="background: rgba(2, 6, 23, 0.7); padding: 9px 10px; border-radius: 5px; border: 1px solid var(--panel-border); text-align: center;">
+                    <div style="background: rgba(2, 6, 23, 0.7); padding: 10px; border-radius: 5px; border: 1px solid var(--panel-border); text-align: center;">
                         <div style="font-size: 9px; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px;">PDOP (3D POSITION)</div>
                         <div style="display: flex; justify-content: space-around; margin-top: 6px; font-size: 14px; font-weight: 700;">
                             <span style="color: #10b981;" id="sys-a-pdop">2.10</span>
@@ -381,7 +381,7 @@
                             <span style="color: #ef4444;" id="sys-b-pdop">2.35</span>
                         </div>
                     </div>
-                    <div style="background: rgba(2, 6, 23, 0.7); padding: 9px 10px; border-radius: 5px; border: 1px solid var(--panel-border); text-align: center;">
+                    <div style="background: rgba(2, 6, 23, 0.7); padding: 10px; border-radius: 5px; border: 1px solid var(--panel-border); text-align: center;">
                         <div style="font-size: 9px; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px;">VDOP (VERTICAL)</div>
                         <div style="display: flex; justify-content: space-around; margin-top: 6px; font-size: 14px; font-weight: 700;">
                             <span style="color: #10b981;" id="sys-a-vdop">1.80</span>
@@ -389,7 +389,7 @@
                             <span style="color: #ef4444;" id="sys-b-vdop">1.95</span>
                         </div>
                     </div>
-                    <div style="background: rgba(2, 6, 23, 0.7); padding: 9px 10px; border-radius: 5px; border: 1px solid var(--panel-border); text-align: center;">
+                    <div style="background: rgba(2, 6, 23, 0.7); padding: 10px; border-radius: 5px; border: 1px solid var(--panel-border); text-align: center;">
                         <div style="font-size: 9px; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px;">EST. ACCURACY (95%)</div>
                         <div style="display: flex; justify-content: space-around; margin-top: 6px; font-size: 14px; font-weight: 700;">
                             <span style="color: #10b981;" id="sys-a-acc">±1.4m</span>
