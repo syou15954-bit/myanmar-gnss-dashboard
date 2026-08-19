@@ -119,7 +119,7 @@
         .center-feature-bar {
             position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 15;
             display: flex; gap: 10px; background: rgba(15, 23, 42, 0.92); padding: 5px 14px;
-            border-radius: 6px; border: 1px solid var(--panel-border); backdrop-filter: blur(12px);
+            border-radius: 6px; border: 1px solid var(--panel-border); backdrop-filter: blur(12px); align-items: center;
         }
 
         .feature-btn {
@@ -289,7 +289,13 @@
             </div>
 
             <div class="center-feature-bar mono" id="globe-controls-bar">
-                <button class="feature-btn" id="btn-stations" onclick="toggleFeatureMode('stations', this)">📡 CORS Stations</button>
+                <!-- 📡 Station Selector Dropdown (Individual Selection instead of showing all) -->
+                <select id="station-select" class="matrix-select" onchange="selectStationMode(this.value)" style="background: rgba(2, 6, 23, 0.9); color: var(--accent-yellow); border: 1px solid var(--accent-yellow); padding: 5px 10px; border-radius: 3px; font-size: 11px; font-weight: 700; cursor: pointer;">
+                    <option value="none">📡 Select Station (Off)</option>
+                    <option value="yangon">📍 Yangon (RINEX Measured / Base)</option>
+                    <option value="naypyidaw">📍 Naypyidaw (Uppatasanti Landmark)</option>
+                    <option value="mandalay">📍 Mandalay Hill Landmark</option>
+                </select>
                 <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit Ring & Ground Track</button>
             </div>
 
@@ -324,7 +330,7 @@
                 </div>
             </div>
 
-            <!-- Constellation Comparison & Metrics (Using space-between to fill vertical space perfectly) -->
+            <!-- Constellation Comparison & Metrics -->
             <div class="glass-panel mono" style="justify-content: space-between;">
                 <div class="panel-title">
                     <span id="matrix-card-title">📈 CONSTELLATION COMPARISON & METRICS</span>
@@ -363,7 +369,6 @@
                     </div>
                 </div>
 
-                <!-- Fully Stretched Metrics Grid to Fill Entire Panel Height -->
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                     <div style="background: rgba(2, 6, 23, 0.7); padding: 10px; border-radius: 5px; border: 1px solid var(--panel-border); text-align: center;">
                         <div style="font-size: 9px; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px;">HDOP (HORIZONTAL)</div>
@@ -449,13 +454,21 @@
         let selectedSatId = '';
         let waveformChart = null;
         let myGlobe = null;
-        let modes = { stations: false, tracks: true };
+        let modes = { tracks: true };
 
         let TLE_DATABASE = {};
         let CONSTELLATION_SATS = { gps: [], bds: [], galileo: [], glonass: [], other: [], all: [] };
         let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass', 'other']);
         let currentLiveSatObjects = [];
         let targetLabelData = [];
+
+        // Specific Stations Data (Individual Selection)
+        let STATIONS_DATA = {
+            yangon: { lat: 16.8661, lng: 96.1951, name: '📡 Yangon (RINEX / Base Station)', color: '#ffb700', size: 3.5 },
+            naypyidaw: { lat: 19.7633, lng: 96.0785, name: '📡 Naypyidaw (Uppatasanti Landmark)', color: '#38bdf8', size: 3.0 },
+            mandalay: { lat: 21.9588, lng: 96.0891, name: '📡 Mandalay Hill Landmark', color: '#10b981', size: 3.0 }
+        };
+        let currentSelectedStation = 'none';
 
         const SAT_GEOM = new THREE.SphereGeometry(1.2, 12, 12);
         const TARGET_GEOM = new THREE.SphereGeometry(1.8, 16, 16);
@@ -476,14 +489,6 @@
             if (uname.includes('GLONASS') || uname.includes('COSMOS')) return SAT_MATS['glonass'];
             return SAT_MATS['other'];
         }
-
-        const CORS_STATIONS_DATA = [
-            { lat: 16.8661, lng: 96.1951, name: '📡 CORS Yangon Base Station', color: '#ffb700', size: 3.5 },
-            { lat: 19.7633, lng: 96.0785, name: '📡 CORS Naypyidaw Central Station', color: '#ffb700', size: 3.0 },
-            { lat: 21.9588, lng: 96.0891, name: '📡 CORS Mandalay North Station', color: '#ffb700', size: 3.0 },
-            { lat: 20.7831, lng: 97.0381, name: '📡 CORS Taunggyi East Station', color: '#ffb700', size: 3.0 },
-            { lat: 12.4707, lng: 98.6003, name: '📡 CORS Myeik South Station', color: '#ffb700', size: 3.0 }
-        ];
 
         function openTLEModal() { document.getElementById('tleModal').style.display = 'block'; }
         function closeTLEModal() { document.getElementById('tleModal').style.display = 'none'; }
@@ -693,7 +698,6 @@
                 if(gpsBars.length > 0) gpsBars[0].style.width = `${pctA}%`;
                 if(bdsBars.length > 0) bdsBars[0].style.width = `${pctB}%`;
 
-                // Dynamic calculations for HDOP, PDOP, VDOP, and Accuracy
                 let hdopA = visSysA > 0 ? (0.9 + 2.5 / visSysA).toFixed(2) : "2.50";
                 let hdopB = visSysB > 0 ? (1.0 + 2.8 / visSysB).toFixed(2) : "2.80";
                 let pdopA = visSysA > 0 ? (1.5 + 3.2 / visSysA).toFixed(2) : "3.20";
@@ -748,6 +752,23 @@
 
             } catch (err) {
                 console.error("Render Error:", err);
+            }
+        }
+
+        // --- Station Selection Mode (Instead of showing all at once) ---
+        function selectStationMode(val) {
+            currentSelectedStation = val;
+            if (!myGlobe) return;
+            if (val === 'none' || !STATIONS_DATA[val]) {
+                myGlobe.ringsData([]);
+            } else {
+                const st = STATIONS_DATA[val];
+                myGlobe.ringsData([st])
+                    .ringColor(d => d.color)
+                    .ringMaxRadius(d => d.size)
+                    .ringPropagationSpeed(2.5)
+                    .ringRepeatPeriod(800);
+                myGlobe.pointOfView({ lat: st.lat, lng: st.lng, altitude: 0.8 }, 1200);
             }
         }
 
@@ -866,13 +887,6 @@
             if (!myGlobe) return;
             modes[feature] = !modes[feature];
             btn.classList.toggle('active-mode', modes[feature]);
-
-            if (feature === 'stations') {
-                if (modes.stations) {
-                    myGlobe.ringsData(CORS_STATIONS_DATA).ringColor(d => d.color).ringMaxRadius(d => d.size).ringPropagationSpeed(2.5).ringRepeatPeriod(800);
-                } else { myGlobe.ringsData([]); }
-            }
-
             if (feature === 'tracks') updateTargetOrbitPath(selectedSatId);
         }
 
@@ -947,8 +961,31 @@
             }
         }
 
+        // --- ECEF to Geodetic conversion for RINEX approximate position ---
+        function ecefToGeodetic(X, Y, Z) {
+            let a = 6378137.0;
+            let e2 = 0.00669437999014;
+            let lon = Math.atan2(Y, X);
+            let p = Math.sqrt(X*X + Y*Y);
+            let lat = Math.atan2(Z, p * (1.0 - e2));
+            let latPrev;
+            let iterations = 0;
+            do {
+                latPrev = lat;
+                let N = a / Math.sqrt(1.0 - e2 * Math.sin(lat) * Math.sin(lat));
+                let alt = p / Math.cos(lat) - N;
+                lat = Math.atan2(Z, p * (1.0 - e2 * (N / (N + alt))));
+                iterations++;
+            } while (Math.abs(lat - latPrev) > 1e-12 && iterations < 5);
+            return {
+                lat: lat * (180 / Math.PI),
+                lng: lon * (180 / Math.PI)
+            };
+        }
+
         function parseRinexHeader(text) {
             let markerName = "Unknown", obsDate = "Unknown", agency = "Unknown", recType = "Unknown", antType = "Unknown", interval = "Unknown", version = "Unknown";
+            let approxLat = null, approxLng = null;
             const lines = text.split('\n');
             for (let line of lines) {
                 if (line.includes('RINEX VERSION / TYPE')) version = line.substring(0, 9).trim();
@@ -961,9 +998,34 @@
                     let parts = line.substring(0, 60).trim().split(/\s+/).filter(p => p !== "");
                     if (parts.length >= 3) obsDate = `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
                 }
+                if (line.includes('APPROX POSITION XYZ')) {
+                    let parts = line.substring(0, 60).trim().split(/\s+/).filter(p => p !== "");
+                    if (parts.length >= 3) {
+                        let X = parseFloat(parts[0]);
+                        let Y = parseFloat(parts[1]);
+                        let Z = parseFloat(parts[2]);
+                        if (!isNaN(X) && !isNaN(Y) && !isNaN(Z)) {
+                            let pos = ecefToGeodetic(X, Y, Z);
+                            approxLat = pos.lat;
+                            approxLng = pos.lng;
+                        }
+                    }
+                }
                 if (line.includes('END OF HEADER')) break;
             }
-            return { markerName, obsDate, agency, recType, antType, interval, version };
+
+            // Update Yangon station position if RINEX has measured approximate position
+            if (approxLat !== null && approxLng !== null) {
+                STATIONS_DATA.yangon.lat = approxLat;
+                STATIONS_DATA.yangon.lng = approxLng;
+                STATIONS_DATA.yangon.name = `📡 Yangon (${markerName} - Measured Position)`;
+                // If Yangon is currently selected, refresh the globe view
+                if (currentSelectedStation === 'yangon') {
+                    selectStationMode('yangon');
+                }
+            }
+
+            return { markerName, obsDate, agency, recType, antType, interval, version, approxLat, approxLng };
         }
 
         function uploadAndCompare() {
