@@ -324,6 +324,7 @@
                 </div>
             </div>
 
+            <!-- Constellation Comparison & Metrics (Expanded with PDOP & VDOP) -->
             <div class="glass-panel mono">
                 <div class="panel-title">
                     <span id="matrix-card-title">📈 CONSTELLATION COMPARISON & METRICS</span>
@@ -362,13 +363,30 @@
                     </div>
                 </div>
 
+                <!-- Expanded Metrics Grid (HDOP, PDOP, VDOP, Accuracy) -->
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto;">
                     <div style="background: rgba(2, 6, 23, 0.6); padding: 6px 8px; border-radius: 4px; border: 1px solid var(--panel-border); text-align: center;">
-                        <div style="font-size: 8px; color: var(--text-muted);">HDOP (PRECISION)</div>
+                        <div style="font-size: 8px; color: var(--text-muted);">HDOP (HORIZONTAL)</div>
                         <div style="display: flex; justify-content: space-around; margin-top: 4px; font-size: 11px; font-weight: 700;">
                             <span style="color: #10b981;" id="sys-a-hdop">1.12</span>
                             <span style="color: var(--text-muted);">/</span>
                             <span style="color: #ef4444;" id="sys-b-hdop">1.25</span>
+                        </div>
+                    </div>
+                    <div style="background: rgba(2, 6, 23, 0.6); padding: 6px 8px; border-radius: 4px; border: 1px solid var(--panel-border); text-align: center;">
+                        <div style="font-size: 8px; color: var(--text-muted);">PDOP (3D POSITION)</div>
+                        <div style="display: flex; justify-content: space-around; margin-top: 4px; font-size: 11px; font-weight: 700;">
+                            <span style="color: #10b981;" id="sys-a-pdop">2.10</span>
+                            <span style="color: var(--text-muted);">/</span>
+                            <span style="color: #ef4444;" id="sys-b-pdop">2.35</span>
+                        </div>
+                    </div>
+                    <div style="background: rgba(2, 6, 23, 0.6); padding: 6px 8px; border-radius: 4px; border: 1px solid var(--panel-border); text-align: center;">
+                        <div style="font-size: 8px; color: var(--text-muted);">VDOP (VERTICAL)</div>
+                        <div style="display: flex; justify-content: space-around; margin-top: 4px; font-size: 11px; font-weight: 700;">
+                            <span style="color: #10b981;" id="sys-a-vdop">1.80</span>
+                            <span style="color: var(--text-muted);">/</span>
+                            <span style="color: #ef4444;" id="sys-b-vdop">1.95</span>
                         </div>
                     </div>
                     <div style="background: rgba(2, 6, 23, 0.6); padding: 6px 8px; border-radius: 4px; border: 1px solid var(--panel-border); text-align: center;">
@@ -675,13 +693,22 @@
                 if(gpsBars.length > 0) gpsBars[0].style.width = `${pctA}%`;
                 if(bdsBars.length > 0) bdsBars[0].style.width = `${pctB}%`;
 
+                // Dynamic calculations for HDOP, PDOP, VDOP, and Accuracy
                 let hdopA = visSysA > 0 ? (0.9 + 2.5 / visSysA).toFixed(2) : "2.50";
                 let hdopB = visSysB > 0 ? (1.0 + 2.8 / visSysB).toFixed(2) : "2.80";
+                let pdopA = visSysA > 0 ? (1.5 + 3.2 / visSysA).toFixed(2) : "3.20";
+                let pdopB = visSysB > 0 ? (1.7 + 3.5 / visSysB).toFixed(2) : "3.50";
+                let vdopA = visSysA > 0 ? (1.2 + 2.8 / visSysA).toFixed(2) : "2.90";
+                let vdopB = visSysB > 0 ? (1.3 + 3.0 / visSysB).toFixed(2) : "3.10";
                 let accA = visSysA > 0 ? (0.8 + 1.5 / visSysA).toFixed(1) : "3.0";
                 let accB = visSysB > 0 ? (0.9 + 1.7 / visSysB).toFixed(1) : "3.5";
 
                 document.getElementById('sys-a-hdop').innerText = hdopA;
                 document.getElementById('sys-b-hdop').innerText = hdopB;
+                document.getElementById('sys-a-pdop').innerText = pdopA;
+                document.getElementById('sys-b-pdop').innerText = pdopB;
+                document.getElementById('sys-a-vdop').innerText = vdopA;
+                document.getElementById('sys-b-vdop').innerText = vdopB;
                 document.getElementById('sys-a-acc').innerText = `±${accA}m`;
                 document.getElementById('sys-b-acc').innerText = `±${accB}m`;
 
@@ -884,14 +911,13 @@
                 myGlobe.objectsData(currentLiveSatObjects);
                 myGlobe.htmlElementsData(targetLabelData);
 
-                // 🎯 Upcoming Pass သို့မဟုတ် Sat တစ်ခုခုကို နှိပ်လိုက်ပါက ကင်မရာကို ချက်ချင်း ဇူးမ်ဝင်ရောက်စေခြင်း
                 const currentPos = propagateSGP4(id);
                 if (currentPos) {
                     myGlobe.pointOfView({ lat: currentPos.lat, lng: currentPos.lng, altitude: 0.9 }, 1000);
                 }
             }
 
-            
+            updateTargetOrbitPath(id);
         }
 
         function switchRinexView(view) {
