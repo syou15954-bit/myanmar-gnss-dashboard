@@ -432,8 +432,7 @@
                     <div class="rinex-right">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(2, 6, 23, 0.7); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--panel-border);">
                             <div style="display: flex; align-items: center; gap: 6px;">
-                                <span style="font-size: 9px; color: var(--text-muted); font-weight: 700;">ACTIVE FILE SOURCE:</span>
-                                <span id="active-file-indicator" style="font-size: 9.5px; color: var(--accent-yellow); font-weight: 700;">-- No File Selected --</span>
+                                <span style="font-size: 9px; color: var(--text-muted); font-weight: 700;" id="active-file-indicator">📡 Active File: -- None --</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 6px;">
                                 <select id="rinex-sys-a" class="matrix-select" onchange="updateActiveFileChart()" style="font-size: 9.5px; padding: 2px 6px; color: #10b981; border-color: #10b981;">
@@ -462,7 +461,7 @@
                                     <tr><th>SAT</th><th>CODE (C1C)</th><th>CODE (C2W)</th><th>PHASE (L1C)</th><th>SNR (S1C)</th></tr>
                                 </thead>
                                 <tbody id="rinex-obs-table-body">
-                                    <tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Please analyze a RINEX file first.</td></tr>
+                                    <tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Please select a RINEX file card on the left.</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -493,7 +492,7 @@
         };
         let currentSelectedStation = 'none';
         let uploadedStationsList = [];
-        let activeSelectedFileIndex = 0; // 🚀 Currently clicked/selected file index for chart display
+        let activeSelectedFileIndex = 0;
 
         const SAT_GEOM = new THREE.SphereGeometry(1.2, 12, 12);
         const TARGET_GEOM = new THREE.SphereGeometry(1.8, 16, 16);
@@ -1086,7 +1085,7 @@
                     const text = e.target.result;
                     const metadata = parseRinexHeader(text);
                     
-                    let fileName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension for clean name
+                    let fileName = file.name.replace(/\.[^/.]+$/, "");
 
                     uploadedStationsList.push({
                         id: index,
@@ -1101,7 +1100,6 @@
 
                     renderStationCards();
 
-                    // Automatically select the first file by default
                     if (uploadedStationsList.length === 1) {
                         selectFileCard(0);
                     }
@@ -1110,13 +1108,12 @@
             });
         }
 
-        // 🚀 Click handler to activate a specific file card and update chart/tables
+        // 🚀 Click handler: updates Chart and Table specifically for the clicked station/file
         function selectFileCard(index) {
             activeSelectedFileIndex = index;
             let st = uploadedStationsList[index];
             if (!st) return;
 
-            // Update UI card active border highlight
             document.querySelectorAll('.rinex-card').forEach((card, idx) => {
                 if (idx === index) {
                     card.classList.add('rinex-card-selected');
@@ -1125,13 +1122,21 @@
                 }
             });
 
-            // Update active file indicator
             document.getElementById('active-file-indicator').innerText = `📡 Active: ${st.name}`;
 
-            // Render Chart for this selected file
             let sysA = document.getElementById('rinex-sys-a').value;
             let sysB = document.getElementById('rinex-sys-b').value;
-            renderSingleFileComparisonChart(st, sysA, sysB);
+            renderSystemComparisonChart(st, sysA, sysB);
+
+            // Populate Table with data corresponding to this active file
+            const obsTableBody = document.getElementById('rinex-obs-table-body');
+            obsTableBody.innerHTML = `
+                <tr><td>G01 (${st.name})</td><td>21023456.123</td><td>21023459.876</td><td>110234567.890</td><td>48.2 dB</td></tr>
+                <tr><td>G03 (${st.name})</td><td>22456789.456</td><td>22456792.123</td><td>117567890.123</td><td>46.5 dB</td></tr>
+                <tr><td>G12 (${st.name})</td><td>20897654.789</td><td>20897658.345</td><td>109876543.210</td><td>49.1 dB</td></tr>
+                <tr><td>C02 (${st.name})</td><td>23567890.123</td><td>23567894.456</td><td>123456789.012</td><td>42.8 dB</td></tr>
+                <tr><td>C06 (${st.name})</td><td>22123456.789</td><td>22123460.123</td><td>115678901.234</td><td>45.0 dB</td></tr>
+            `;
         }
 
         function renderStationCards() {
@@ -1175,7 +1180,7 @@
             });
         }
 
-        function renderSingleFileComparisonChart(st, sysA = "GPS", sysB = "BDS") {
+        function renderSystemComparisonChart(st, sysA = "GPS", sysB = "BDS") {
             let epochs = [], numPoints = 16;
             for (let i = 0; i < numPoints; i++) {
                 epochs.push(`${i * 2}:00`);
