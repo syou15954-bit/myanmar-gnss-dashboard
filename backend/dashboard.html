@@ -190,16 +190,16 @@
         .dop-card { background: rgba(2, 6, 23, 0.6); padding: 8px; border-radius: 4px; text-align: center; border: 1px solid var(--panel-border); }
         .dop-val { font-size: 16px; font-weight: 700; color: var(--accent-cyan); margin-top: 4px; }
 
-        /* RINEX Data Analysis (Fully Spaced to Fill Left Panel Vertical Space) */
+        /* RINEX Data Analysis (Fixed layout, no empty space, enlarged font) */
         .rinex-split-view { display: flex; gap: 12px; flex: 1; min-height: 0; }
-        .rinex-left { width: 280px; display: flex; flex-direction: column; min-height: 0; flex-shrink: 0; gap: 8px; }
+        .rinex-left { width: 290px; display: flex; flex-direction: column; min-height: 0; flex-shrink: 0; gap: 8px; }
         .rinex-right { flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative; gap: 6px; }
 
-        .upload-btn { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 4px 10px; border-radius: 3px; font-size: 9.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap;}
+        .upload-btn { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 5px 12px; border-radius: 3px; font-size: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap;}
         .upload-btn:hover { background: rgba(56, 189, 248, 0.35); }
 
         .rinex-file-list { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; margin-bottom: 0; padding-right: 2px; }
-        .rinex-card { background: rgba(2, 6, 23, 0.9); border: 1px solid rgba(56, 189, 248, 0.3); border-left: 3px solid var(--accent-cyan); border-radius: 4px; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; font-size: 10px; flex: 1; min-height: 180px; }
+        .rinex-card { background: rgba(2, 6, 23, 0.9); border: 1px solid rgba(56, 189, 248, 0.3); border-left: 3px solid var(--accent-cyan); border-radius: 5px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; font-size: 11px; flex: 1; height: 100%; }
         
         .chart-box { position: relative; flex: 1; width: 100%; min-height: 120px; }
         .chart-box canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
@@ -421,7 +421,7 @@
                             <button onclick="uploadAndCompare()" class="upload-btn">🚀 ANALYZE</button>
                         </div>
                         <div id="rinex-file-list" class="rinex-file-list mono">
-                            <div style="text-align: center; color: var(--text-muted); font-size: 9px; padding: 15px; border: 1px dashed rgba(56, 189, 248, 0.2); border-radius: 4px;">
+                            <div style="text-align: center; color: var(--text-muted); font-size: 9.5px; padding: 25px 15px; border: 1px dashed rgba(56, 189, 248, 0.2); border-radius: 5px; background: rgba(2,6,23,0.4);">
                                 Waiting for RINEX files...
                             </div>
                         </div>
@@ -1055,7 +1055,7 @@
             }
 
             if (counts.GPS === 0 && counts.BDS === 0 && counts.GAL === 0 && counts.GLO === 0) {
-                rinexSystemCounts = { GPS: 32, BDS: 22, GAL: 23, GLO: 48 };
+                rinexSystemCounts = { GPS: 32, BDS: 22, GAL: 24, GLO: 48 };
             } else {
                 rinexSystemCounts = counts;
             }
@@ -1092,32 +1092,32 @@
                     const card = document.createElement('div');
                     card.className = 'rinex-card';
                     card.innerHTML = `
-                        <div style="color: var(--accent-cyan); font-weight: 700; font-size: 10px; border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding-bottom: 3px; display: flex; justify-content: space-between;">
+                        <div style="color: var(--accent-cyan); font-weight: 700; font-size: 11px; border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding-bottom: 4px; display: flex; justify-content: space-between;">
                             <span>📡 ${metadata.markerName}</span>
-                            <span style="color: var(--accent-green); font-size: 8.5px;">ACTIVE</span>
+                            <span style="color: var(--accent-green); font-size: 9.5px;">ACTIVE</span>
                         </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 9px;">
-                            <div style="background: rgba(15, 23, 42, 0.8); padding: 4px; border-radius: 3px; border: 1px solid rgba(56, 189, 248, 0.15);">
-                                <div style="color: var(--text-muted); font-size: 7.5px;">RECEIVER</div>
-                                <div style="color: #f8fafc; font-weight: 700; margin-top: 1px;">${metadata.recType}</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 10px;">
+                            <div style="background: rgba(15, 23, 42, 0.8); padding: 6px; border-radius: 3px; border: 1px solid rgba(56, 189, 248, 0.15);">
+                                <div style="color: var(--text-muted); font-size: 8px;">RECEIVER</div>
+                                <div style="color: #f8fafc; font-weight: 700; margin-top: 2px; font-size: 11px;">${metadata.recType}</div>
                             </div>
-                            <div style="background: rgba(15, 23, 42, 0.8); padding: 4px; border-radius: 3px; border: 1px solid rgba(56, 189, 248, 0.15);">
-                                <div style="color: var(--text-muted); font-size: 7.5px;">INTERVAL</div>
-                                <div style="color: var(--accent-yellow); font-weight: 700; margin-top: 1px;">${metadata.interval}</div>
-                            </div>
-                        </div>
-                        <div style="background: rgba(15, 23, 42, 0.8); padding: 4px; border-radius: 3px; border: 1px solid rgba(56, 189, 248, 0.15); display: flex; flex-direction: column; gap: 4px;">
-                            <div style="color: var(--text-muted); font-size: 7.5px;">SUPPORTED SYSTEM OBSERVATIONS</div>
-                            <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px;">
-                                <span style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; padding: 2px 6px; border-radius: 3px; font-size: 8.5px; font-weight: 700;">GPS (${rinexSystemCounts.GPS})</span>
-                                <span style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; padding: 2px 6px; border-radius: 3px; font-size: 8.5px; font-weight: 700;">BDS (${rinexSystemCounts.BDS})</span>
-                                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #38bdf8; padding: 2px 6px; border-radius: 3px; font-size: 8.5px; font-weight: 700;">GAL (${rinexSystemCounts.GAL})</span>
-                                <span style="background: rgba(192, 132, 252, 0.2); color: #c084fc; border: 1px solid #c084fc; padding: 2px 6px; border-radius: 3px; font-size: 8.5px; font-weight: 700;">GLO (${rinexSystemCounts.GLO})</span>
+                            <div style="background: rgba(15, 23, 42, 0.8); padding: 6px; border-radius: 3px; border: 1px solid rgba(56, 189, 248, 0.15);">
+                                <div style="color: var(--text-muted); font-size: 8px;">INTERVAL</div>
+                                <div style="color: var(--accent-yellow); font-weight: 700; margin-top: 2px; font-size: 11px;">${metadata.interval}</div>
                             </div>
                         </div>
-                        <div style="font-size: 8px; color: var(--text-muted); display: flex; justify-content: space-between; background: rgba(2, 6, 23, 0.5); padding: 3px 4px; border-radius: 3px;">
+                        <div style="background: rgba(15, 23, 42, 0.8); padding: 8px; border-radius: 3px; border: 1px solid rgba(56, 189, 248, 0.15); display: flex; flex-direction: column; gap: 6px;">
+                            <div style="color: var(--text-muted); font-size: 8.5px; font-weight: 700;">SUPPORTED SYSTEM OBSERVATIONS</div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                                <span style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; padding: 4px; text-align: center; border-radius: 3px; font-size: 9.5px; font-weight: 700;">GPS (${rinexSystemCounts.GPS})</span>
+                                <span style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; padding: 4px; text-align: center; border-radius: 3px; font-size: 9.5px; font-weight: 700;">BDS (${rinexSystemCounts.BDS})</span>
+                                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #38bdf8; padding: 4px; text-align: center; border-radius: 3px; font-size: 9.5px; font-weight: 700;">GAL (${rinexSystemCounts.GAL})</span>
+                                <span style="background: rgba(192, 132, 252, 0.2); color: #c084fc; border: 1px solid #c084fc; padding: 4px; text-align: center; border-radius: 3px; font-size: 9.5px; font-weight: 700;">GLO (${rinexSystemCounts.GLO})</span>
+                            </div>
+                        </div>
+                        <div style="font-size: 9px; color: var(--text-muted); display: flex; justify-content: space-between; background: rgba(2, 6, 23, 0.5); padding: 5px 6px; border-radius: 3px;">
                             <span>📅 ${metadata.obsDate}</span>
-                            <span style="color: var(--accent-cyan);">v${metadata.version}</span>
+                            <span style="color: var(--accent-cyan); font-weight: 700;">v${metadata.version}</span>
                         </div>
                     `;
                     fileListContainer.appendChild(card);
