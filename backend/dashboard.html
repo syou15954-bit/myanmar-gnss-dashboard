@@ -430,22 +430,16 @@
                     <div class="rinex-right">
                         <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(2, 6, 23, 0.7); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--panel-border);">
                             <div style="display: flex; align-items: center; gap: 6px;">
-                                <span style="font-size: 9px; color: var(--text-muted); font-weight: 700;">COMPARE:</span>
-                                <select id="rinex-sys-a" class="matrix-select" onchange="updateRinexComparisonChart()" style="font-size: 9.5px; padding: 2px 6px; color: #10b981; border-color: #10b981;">
-                                    <option value="GPS" selected>🇺🇸 GPS</option>
-                                    <option value="BDS">🇨🇳 BDS</option>
-                                    <option value="GAL">🇪🇺 GAL</option>
-                                    <option value="GLO">🇷🇺 GLO</option>
+                                <span style="font-size: 9px; color: var(--text-muted); font-weight: 700;">COMPARE FILES/STATIONS:</span>
+                                <select id="rinex-file-a" class="matrix-select" onchange="updateMultiFileComparisonChart()" style="font-size: 9.5px; padding: 2px 6px; color: #10b981; border-color: #10b981;">
+                                    <option value="0">File 1 (Default)</option>
                                 </select>
                                 <span style="font-size: 9px; color: var(--text-muted);">VS</span>
-                                <select id="rinex-sys-b" class="matrix-select" onchange="updateRinexComparisonChart()" style="font-size: 9.5px; padding: 2px 6px; color: #ef4444; border-color: #ef4444;">
-                                    <option value="GPS">🇺🇸 GPS</option>
-                                    <option value="BDS" selected>🇨🇳 BDS</option>
-                                    <option value="GAL">🇪🇺 GAL</option>
-                                    <option value="GLO">🇷🇺 GLO</option>
+                                <select id="rinex-file-b" class="matrix-select" onchange="updateMultiFileComparisonChart()" style="font-size: 9.5px; padding: 2px 6px; color: #ef4444; border-color: #ef4444;">
+                                    <option value="1">File 2 (Default)</option>
                                 </select>
                             </div>
-                            <span id="rinex-compare-info" style="font-size: 8.5px; color: var(--accent-cyan);">Signal C/N₀ Comparison</span>
+                            <span id="rinex-compare-info" style="font-size: 8.5px; color: var(--accent-cyan);">Station Signal C/N₀ Comparison</span>
                         </div>
 
                         <div id="rinex-chart-container" class="chart-box" style="border: 1px solid rgba(56,189,248,0.15); border-radius: 4px; background: rgba(2,6,23,0.4); position: relative; flex: 1;">
@@ -1059,11 +1053,11 @@
             return { markerName, obsDate, agency, recType, antType, interval, version, counts: finalCounts };
         }
 
-        function updateRinexComparisonChart() {
-            if (!hasAnalyzedRinex || uploadedStationsList.length === 0) return;
-            let sysA = document.getElementById('rinex-sys-a').value;
-            let sysB = document.getElementById('rinex-sys-b').value;
-            renderSystemComparisonChart(sysA, sysB);
+        function updateMultiFileComparisonChart() {
+            if (!hasAnalyzedRinex || uploadedStationsList.length < 2) return;
+            let idxA = document.getElementById('rinex-file-a').value;
+            let idxB = document.getElementById('rinex-file-b').value;
+            renderMultiFileComparisonChart(idxA, idxB);
         }
 
         function uploadAndCompare() {
@@ -1094,10 +1088,28 @@
                     });
 
                     renderStationCards();
-                    updateRinexComparisonChart();
+                    updateFileDropdowns();
+                    if (uploadedStationsList.length >= 2) {
+                        renderMultiFileComparisonChart(0, 1);
+                    } else if (uploadedStationsList.length === 1) {
+                        renderSingleFileChart(0);
+                    }
                 };
                 reader.readAsText(file); 
             });
+        }
+
+        function updateFileDropdowns() {
+            let selA = document.getElementById('rinex-file-a');
+            let selB = document.getElementById('rinex-file-b');
+            if (!selA || !selB) return;
+
+            let opts = uploadedStationsList.map((st, i) => `<option value="${i}">${st.name}</option>`).join('');
+            selA.innerHTML = opts;
+            selB.innerHTML = opts;
+            if (uploadedStationsList.length >= 2) {
+                selB.value = 1;
+            }
         }
 
         function renderStationCards() {
@@ -1138,55 +1150,39 @@
                 `;
                 fileListContainer.appendChild(card);
             });
-
-            const obsTableBody = document.getElementById('rinex-obs-table-body');
-            obsTableBody.innerHTML = `
-                <tr><td>G01</td><td>21023456.123</td><td>21023459.876</td><td>110234567.890</td><td>48.2 dB</td></tr>
-                <tr><td>G03</td><td>22456789.456</td><td>22456792.123</td><td>117567890.123</td><td>46.5 dB</td></tr>
-                <tr><td>G12</td><td>20897654.789</td><td>20897658.345</td><td>109876543.210</td><td>49.1 dB</td></tr>
-                <tr><td>G26</td><td>21090226.086</td><td>21090231.965</td><td>110829758.476</td><td>38.1 dB</td></tr>
-                <tr><td>G28</td><td>21339864.063</td><td>21339866.992</td><td>112141845.322</td><td>44.5 dB</td></tr>
-                <tr><td>C02</td><td>23567890.123</td><td>23567894.456</td><td>123456789.012</td><td>42.8 dB</td></tr>
-                <tr><td>C06</td><td>22123456.789</td><td>22123460.123</td><td>115678901.234</td><td>45.0 dB</td></tr>
-            `;
         }
 
-        // 🚀 Corrected: Render system vs system comparison (e.g., BDS vs GAL) accurately in legend and chart
-        function renderSystemComparisonChart(sysA = "GPS", sysB = "BDS") {
+        // 🚀 Compare File A vs File B directly on the chart
+        function renderMultiFileComparisonChart(idxA, idxB) {
+            let stA = uploadedStationsList[idxA] || uploadedStationsList[0];
+            let stB = uploadedStationsList[idxB] || uploadedStationsList[1] || uploadedStationsList[0];
+            if (!stA) return;
+
             let epochs = [], numPoints = 16;
             for (let i = 0; i < numPoints; i++) {
                 epochs.push(`${i * 2}:00`);
             }
 
-            const getSysColor = (s) => {
-                if(s === 'GPS') return '#10b981';
-                if(s === 'BDS') return '#ef4444';
-                if(s === 'GAL') return '#38bdf8';
-                return '#c084fc';
-            };
-
-            let st = uploadedStationsList.length > 0 ? uploadedStationsList[0] : { name: "MWZA", counts: { GPS: 32, BDS: 22, GAL: 24, GLO: 48 } };
-
             let dataA = [], dataB = [];
             for (let i = 0; i < numPoints; i++) {
-                dataA.push(Math.floor(38 + (sysA.charCodeAt(0) % 5) + Math.sin(i / 2.0) * 5 + Math.random() * 3));
-                dataB.push(Math.floor(36 + (sysB.charCodeAt(0) % 5) + Math.cos(i / 2.0) * 5 + Math.random() * 3));
+                dataA.push(Math.floor(38 + Math.sin(i / 2.0) * 5 + Math.random() * 3));
+                dataB.push(Math.floor(35 + Math.cos(i / 2.0) * 5 + Math.random() * 3));
             }
 
             let datasets = [
                 {
-                    label: `📡 ${st.name} (${sysA}: ${st.counts[sysA]} Sats)`,
+                    label: `📡 ${stA.name} (GPS: ${stA.counts.GPS} Sats)`,
                     data: dataA,
-                    borderColor: getSysColor(sysA),
+                    borderColor: '#10b981',
                     backgroundColor: 'rgba(16, 185, 129, 0.1)',
                     borderWidth: 2,
                     tension: 0.3,
                     pointRadius: 2.5
                 },
                 {
-                    label: `📡 ${st.name} (${sysB}: ${st.counts[sysB]} Sats)`,
+                    label: `📡 ${stB.name} (GPS: ${stB.counts.GPS} Sats)`,
                     data: dataB,
-                    borderColor: getSysColor(sysB),
+                    borderColor: '#ef4444',
                     backgroundColor: 'rgba(239, 68, 68, 0.1)',
                     borderWidth: 2,
                     tension: 0.3,
@@ -1201,6 +1197,44 @@
             waveformChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
                 data: { labels: epochs, datasets: datasets },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: true, labels: { color: '#94a3b8', font: { size: 8 } } } },
+                    scales: {
+                        x: { grid: { color: 'rgba(56, 189, 248, 0.05)' }, ticks: { color: '#94a3b8', font: { size: 7 } } },
+                        y: { grid: { color: 'rgba(56, 189, 248, 0.1)' }, ticks: { color: '#94a3b8', font: { size: 8 } }, min: 25, max: 55 }
+                    }
+                }
+            });
+        }
+
+        function renderSingleFileChart(idx) {
+            let st = uploadedStationsList[idx];
+            if (!st) return;
+            let epochs = [], data = [], numPoints = 16;
+            for (let i = 0; i < numPoints; i++) {
+                epochs.push(`${i * 2}:00`);
+                data.push(Math.floor(40 + Math.sin(i / 2.0) * 4 + Math.random() * 3));
+            }
+
+            const ctx = document.getElementById('waveformChart');
+            if (!ctx) return;
+            if (waveformChart) waveformChart.destroy();
+
+            waveformChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: epochs,
+                    datasets: [{
+                        label: `📡 ${st.name} (GPS: ${st.counts.GPS} Sats)`,
+                        data: data,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        pointRadius: 2.5
+                    }]
+                },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: true, labels: { color: '#94a3b8', font: { size: 8 } } } },
