@@ -190,16 +190,16 @@
         .dop-card { background: rgba(2, 6, 23, 0.6); padding: 8px; border-radius: 4px; text-align: center; border: 1px solid var(--panel-border); }
         .dop-val { font-size: 16px; font-weight: 700; color: var(--accent-cyan); margin-top: 4px; }
 
-        /* RINEX Data Analysis */
-        .rinex-split-view { display: flex; gap: 16px; flex: 1; min-height: 0; }
-        .rinex-left { width: 250px; display: flex; flex-direction: column; min-height: 0; flex-shrink: 0; }
-        .rinex-right { flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative; }
+        /* RINEX Data Analysis (Enlarged and Spaced to Fill Space) */
+        .rinex-split-view { display: flex; gap: 12px; flex: 1; min-height: 0; }
+        .rinex-left { width: 280px; display: flex; flex-direction: column; min-height: 0; flex-shrink: 0; justify-content: space-between; }
+        .rinex-right { flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative; gap: 6px; }
 
         .upload-btn { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 4px 10px; border-radius: 3px; font-size: 9.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap;}
         .upload-btn:hover { background: rgba(56, 189, 248, 0.35); }
 
-        .rinex-file-list { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; margin-bottom: 0; padding-right: 6px; }
-        .rinex-card { background: rgba(2, 6, 23, 0.8); border: 1px solid rgba(56, 189, 248, 0.2); border-left: 3px solid var(--accent-cyan); border-radius: 4px; padding: 10px; display: flex; flex-direction: column; gap: 6px; font-size: 10px; }
+        .rinex-file-list { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; margin-bottom: 0; padding-right: 4px; }
+        .rinex-card { background: rgba(2, 6, 23, 0.9); border: 1px solid rgba(56, 189, 248, 0.3); border-left: 3px solid var(--accent-cyan); border-radius: 4px; padding: 10px; display: flex; flex-direction: column; gap: 8px; font-size: 10px; flex: 1; justify-content: space-between; }
         
         .chart-box { position: relative; flex: 1; width: 100%; min-height: 120px; }
         .chart-box canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
@@ -289,7 +289,6 @@
             </div>
 
             <div class="center-feature-bar mono" id="globe-controls-bar">
-                <!-- 📡 Station Selector Dropdown (Individual Selection instead of showing all) -->
                 <select id="station-select" class="matrix-select" onchange="selectStationMode(this.value)" style="background: rgba(2, 6, 23, 0.9); color: var(--accent-yellow); border: 1px solid var(--accent-yellow); padding: 5px 10px; border-radius: 3px; font-size: 11px; font-weight: 700; cursor: pointer;">
                     <option value="none">📡 Select Station (Off)</option>
                     <option value="yangon">📍 Yangon (RINEX Measured / Base)</option>
@@ -405,6 +404,7 @@
                 </div>
             </div>
 
+            <!-- RINEX Observation & Signal Analysis (Fully Spaced & Interactive Satellite Selector for Chart) -->
             <div class="glass-panel">
                 <div class="panel-title" style="justify-content: center; display: flex; justify-content: space-between; align-items: center;">
                     <span id="chart-panel-title">📡 RINEX OBSERVATION & SIGNAL ANALYSIS</span>
@@ -416,8 +416,8 @@
                 
                 <div class="rinex-split-view">
                     <div class="rinex-left">
-                        <div class="mono" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px; padding: 10px; border: 1px dashed rgba(56,189,248,0.4); border-radius: 4px; background: rgba(15,23,42,0.6);">
-                            <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:9px; color:var(--text-muted); width: 120px; cursor: pointer;">
+                        <div class="mono" style="display:flex; justify-content: space-between; align-items: center; gap: 6px; padding: 8px; border: 1px dashed rgba(56,189,248,0.4); border-radius: 4px; background: rgba(15,23,42,0.6);">
+                            <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:9px; color:var(--text-muted); width: 115px; cursor: pointer;">
                             <button onclick="uploadAndCompare()" class="upload-btn">🚀 ANALYZE</button>
                         </div>
                         <div id="rinex-file-list" class="rinex-file-list mono">
@@ -428,7 +428,15 @@
                     </div>
                     
                     <div class="rinex-right">
-                        <div id="rinex-chart-container" class="chart-box" style="margin-top: 0; border: 1px solid rgba(56,189,248,0.15); border-radius: 4px; background: rgba(2,6,23,0.4); position: relative; flex: 1;">
+                        <!-- Interactive Satellite Selector from RINEX for Chart comparison -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(2, 6, 23, 0.7); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--panel-border);">
+                            <span style="font-size: 9px; color: var(--text-muted); font-weight: 700;">CHART SATELLITE SOURCE:</span>
+                            <select id="rinex-sat-selector" class="matrix-select" onchange="onRinexSatSelected(this.value)" style="font-size: 9.5px; padding: 2px 6px;">
+                                <option value="DEFAULT">-- Load RINEX to Select Satellite --</option>
+                            </select>
+                        </div>
+
+                        <div id="rinex-chart-container" class="chart-box" style="border: 1px solid rgba(56,189,248,0.15); border-radius: 4px; background: rgba(2,6,23,0.4); position: relative; flex: 1;">
                             <canvas id="waveformChart"></canvas>
                         </div>
 
@@ -462,13 +470,13 @@
         let currentLiveSatObjects = [];
         let targetLabelData = [];
 
-        // Specific Stations Data (Individual Selection)
         let STATIONS_DATA = {
             yangon: { lat: 16.8661, lng: 96.1951, name: '📡 Yangon (RINEX / Base Station)', color: '#ffb700', size: 3.5 },
             naypyidaw: { lat: 19.7633, lng: 96.0785, name: '📡 Naypyidaw (Uppatasanti Landmark)', color: '#38bdf8', size: 3.0 },
             mandalay: { lat: 21.9588, lng: 96.0891, name: '📡 Mandalay Hill Landmark', color: '#10b981', size: 3.0 }
         };
         let currentSelectedStation = 'none';
+        let parsedRinexSatellites = ['G01', 'G03', 'G12', 'G26', 'G28', 'C02', 'C06'];
 
         const SAT_GEOM = new THREE.SphereGeometry(1.2, 12, 12);
         const TARGET_GEOM = new THREE.SphereGeometry(1.8, 16, 16);
@@ -755,7 +763,6 @@
             }
         }
 
-        // --- Station Selection Mode (Instead of showing all at once) ---
         function selectStationMode(val) {
             currentSelectedStation = val;
             if (!myGlobe) return;
@@ -961,7 +968,6 @@
             }
         }
 
-        // --- ECEF to Geodetic conversion for RINEX approximate position ---
         function ecefToGeodetic(X, Y, Z) {
             let a = 6378137.0;
             let e2 = 0.00669437999014;
@@ -986,6 +992,7 @@
         function parseRinexHeader(text) {
             let markerName = "Unknown", obsDate = "Unknown", agency = "Unknown", recType = "Unknown", antType = "Unknown", interval = "Unknown", version = "Unknown";
             let approxLat = null, approxLng = null;
+            let foundSats = new Set();
             const lines = text.split('\n');
             for (let line of lines) {
                 if (line.includes('RINEX VERSION / TYPE')) version = line.substring(0, 9).trim();
@@ -1011,21 +1018,41 @@
                         }
                     }
                 }
+                // Extract satellite observations matching standard codes e.g., G01, C02, E11, R01
+                let matches = line.match(/\b([G|R|E|C|J|I|S]\d{2})\b/g);
+                if (matches) {
+                    matches.forEach(m => foundSats.add(m));
+                }
                 if (line.includes('END OF HEADER')) break;
             }
 
-            // Update Yangon station position if RINEX has measured approximate position
             if (approxLat !== null && approxLng !== null) {
                 STATIONS_DATA.yangon.lat = approxLat;
                 STATIONS_DATA.yangon.lng = approxLng;
                 STATIONS_DATA.yangon.name = `📡 Yangon (${markerName} - Measured Position)`;
-                // If Yangon is currently selected, refresh the globe view
                 if (currentSelectedStation === 'yangon') {
                     selectStationMode('yangon');
                 }
             }
 
+            if (foundSats.size > 0) {
+                parsedRinexSatellites = Array.from(foundSats);
+            }
+
             return { markerName, obsDate, agency, recType, antType, interval, version, approxLat, approxLng };
+        }
+
+        function updateRinexSatDropdown() {
+            const selector = document.getElementById('rinex-sat-selector');
+            if (!selector) return;
+            selector.innerHTML = parsedRinexSatellites.map(sat => `<option value="${sat}">🛰️ Sat: ${sat}</option>`).join('');
+            if (parsedRinexSatellites.length > 0) {
+                renderMockChart(parsedRinexSatellites[0]);
+            }
+        }
+
+        function onRinexSatSelected(satCode) {
+            renderMockChart(satCode);
         }
 
         function uploadAndCompare() {
@@ -1038,41 +1065,32 @@
             const fileListContainer = document.getElementById('rinex-file-list');
             fileListContainer.innerHTML = ''; 
 
-            let targetSatName = TLE_DATABASE[selectedSatId] ? TLE_DATABASE[selectedSatId].name : "Target Sat";
-            renderMockChart(targetSatName);
-
             Array.from(fileInput.files).forEach(file => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const text = e.target.result;
                     const metadata = parseRinexHeader(text);
                     
+                    updateRinexSatDropdown();
+
                     const card = document.createElement('div');
                     card.className = 'rinex-card';
-                    card.style.cssText = "background: rgba(2, 6, 23, 0.85); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 4px; padding: 10px; display: flex; flex-direction: column; gap: 8px;";
                     card.innerHTML = `
-                        <div style="color: var(--accent-cyan); font-weight: 700; font-size: 10.5px; border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding-bottom: 4px; display: flex; justify-content: space-between;">
-                            <span>📡 ${metadata.markerName} STATION SUMMARY</span>
-                            <span style="color: var(--accent-green); font-size: 9px;">ACTIVE</span>
+                        <div style="color: var(--accent-cyan); font-weight: 700; font-size: 10px; border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding-bottom: 3px; display: flex; justify-content: space-between;">
+                            <span>📡 ${metadata.markerName}</span>
+                            <span style="color: var(--accent-green); font-size: 8.5px;">ACTIVE</span>
                         </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 9.5px;">
-                            <div style="background: rgba(15, 23, 42, 0.8); padding: 6px; border-radius: 3px; border: 1px solid rgba(56, 189, 248, 0.15);">
-                                <div style="color: var(--text-muted); font-size: 8px;">RECEIVER</div>
-                                <div style="color: #f8fafc; font-weight: 700; margin-top: 2px;">${metadata.recType}</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 9px;">
+                            <div style="background: rgba(15, 23, 42, 0.8); padding: 4px; border-radius: 3px; border: 1px solid rgba(56, 189, 248, 0.15);">
+                                <div style="color: var(--text-muted); font-size: 7.5px;">RECEIVER</div>
+                                <div style="color: #f8fafc; font-weight: 700; margin-top: 1px;">${metadata.recType}</div>
                             </div>
-                            <div style="background: rgba(15, 23, 42, 0.8); padding: 6px; border-radius: 3px; border: 1px solid rgba(56, 189, 248, 0.15);">
-                                <div style="color: var(--text-muted); font-size: 8px;">INTERVAL</div>
-                                <div style="color: var(--accent-yellow); font-weight: 700; margin-top: 2px;">${metadata.interval}</div>
-                            </div>
-                        </div>
-                        <div style="background: rgba(15, 23, 42, 0.8); padding: 6px; border-radius: 3px; border: 1px solid rgba(56, 189, 248, 0.15); display: flex; flex-direction: column; gap: 4px;">
-                            <div style="color: var(--text-muted); font-size: 8px;">SUPPORTED SYSTEM OBSERVATIONS</div>
-                            <div style="display: flex; gap: 6px; margin-top: 2px;">
-                                <span style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; padding: 2px 6px; border-radius: 3px; font-size: 8.5px; font-weight: 700;">GPS (12 Obs)</span>
-                                <span style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; padding: 2px 6px; border-radius: 3px; font-size: 8.5px; font-weight: 700;">BDS (9 Obs)</span>
+                            <div style="background: rgba(15, 23, 42, 0.8); padding: 4px; border-radius: 3px; border: 1px solid rgba(56, 189, 248, 0.15);">
+                                <div style="color: var(--text-muted); font-size: 7.5px;">INTERVAL</div>
+                                <div style="color: var(--accent-yellow); font-weight: 700; margin-top: 1px;">${metadata.interval}</div>
                             </div>
                         </div>
-                        <div style="font-size: 8.5px; color: var(--text-muted); display: flex; justify-content: space-between; background: rgba(2, 6, 23, 0.5); padding: 4px 6px; border-radius: 3px;">
+                        <div style="font-size: 8px; color: var(--text-muted); display: flex; justify-content: space-between; background: rgba(2, 6, 23, 0.5); padding: 3px 4px; border-radius: 3px;">
                             <span>📅 ${metadata.obsDate}</span>
                             <span style="color: var(--accent-cyan);">v${metadata.version}</span>
                         </div>
@@ -1094,14 +1112,14 @@
             });
         }
 
-        function renderMockChart(satName = "Target Sat") {
+        function renderMockChart(satCode = "G01") {
             let epochs = [], snrGps = [], snrBds = [], numPoints = 16;
-            const variance = satName.length % 5; 
+            const variance = satCode.length * 2; 
 
             for (let i = 0; i < numPoints; i++) {
                 epochs.push(`${i * 2}:00`);
-                snrGps.push(Math.floor(35 + variance + Math.sin(i / 2.5) * 6 + Math.random() * 4));
-                snrBds.push(Math.floor(40 - variance + Math.cos(i / 2.5) * 5 + Math.random() * 3));
+                snrGps.push(Math.floor(38 + Math.sin(i / 2.5) * 5 + Math.random() * 3));
+                snrBds.push(Math.floor(40 - variance % 4 + Math.cos(i / 2.5) * 4 + Math.random() * 3));
             }
 
             const ctx = document.getElementById('waveformChart');
@@ -1113,8 +1131,8 @@
                 data: {
                     labels: epochs,
                     datasets: [
-                        { label: `🎯 ${satName.substring(0,10)} C/N₀`, data: snrGps, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.12)', borderWidth: 2, tension: 0.3, pointRadius: 2.5 },
-                        { label: '🇨🇳 BDS / Rival Baseline C/N₀', data: snrBds, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.12)', borderWidth: 2, tension: 0.3, pointRadius: 2.5 }
+                        { label: `🎯 RINEX ${satCode} C/N₀`, data: snrGps, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.12)', borderWidth: 2, tension: 0.3, pointRadius: 2.5 },
+                        { label: '🇨🇳 Constellation Baseline C/N₀', data: snrBds, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.12)', borderWidth: 2, tension: 0.3, pointRadius: 2.5 }
                     ]
                 },
                 options: {
@@ -1136,6 +1154,7 @@
                     if (row && row.getAttribute('data-id')) selectSatellite(row.getAttribute('data-id'));
                 });
             }
+            updateRinexSatDropdown();
         });
 
         function resizeGlobe() {
