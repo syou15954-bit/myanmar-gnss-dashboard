@@ -319,8 +319,8 @@
                 <div class="dop-grid mono" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 8px;">
                     <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">TOTAL</div><div class="dop-val" style="color:#f8fafc;" id="total-sats">0</div></div>
                     <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">ACTIVE</div><div class="dop-val" style="color:var(--accent-green);" id="active-sats">0</div></div>
-                    <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">WARNING</div><div class="dop-val" style="color:var(--accent-yellow);" id="warning-sats">2</div></div>
-                    <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">OFFLINE</div><div class="dop-val" style="color:var(--accent-red);" id="offline-sats">1</div></div>
+                    <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">WARNING</div><div class="dop-val" style="color:var(--accent-yellow);" id="warning-sats">0</div></div>
+                    <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">OFFLINE</div><div class="dop-val" style="color:var(--accent-red);" id="offline-sats">0</div></div>
                 </div>
                 
                 <div style="flex:1; overflow-y:auto; margin-top: 4px; border: 1px solid var(--panel-border); border-radius: 4px; border-bottom: none;">
@@ -672,16 +672,46 @@
             return count;
         }
 
+        // 🚀 Helper to calculate TLE Epoch Age in Days
+        function getTleAgeDays(line1) {
+            try {
+                let epochStr = line1.substring(18, 32).trim();
+                let yearPrefix = parseInt(epochStr.substring(0, 2));
+                let year = yearPrefix < 50 ? 2000 + yearPrefix : 1900 + yearPrefix;
+                let dayOfYear = parseFloat(epochStr.substring(2));
+                
+                let jan1 = new Date(year, 0, 1);
+                let epochDate = new Date(jan1.getTime() + (dayOfYear - 1) * 24 * 60 * 60 * 1000);
+                
+                let now = new Date();
+                let diffDays = (now - epochDate) / (1000 * 60 * 60 * 24);
+                return diffDays;
+            } catch (e) {
+                return 0;
+            }
+        }
+
         function renderCustomSelection() {
             try {
                 let satList = getFilteredSatellites();
                 currentLiveSatObjects = [];
+                let activeCount = 0, warningCount = 0, offlineCount = 0;
 
                 satList.forEach(s => {
                     const sgp4Pos = propagateSGP4(s.id);
                     const visibleInMM = isSatVisibleInMyanmar(sgp4Pos.lat, sgp4Pos.lng);
 
                     if (!isMyanmarOnlyMode || visibleInMM) {
+                        // Calculate real status based on TLE Epoch Age
+                        let ageDays = getTleAgeDays(s.line1);
+                        if (ageDays > 30) {
+                            offlineCount++;
+                        } else if (ageDays > 14) {
+                            warningCount++;
+                        } else {
+                            activeCount++;
+                        }
+
                         currentLiveSatObjects.push({
                             id: s.id || "00000", 
                             fullName: s.name || "Unknown", 
@@ -694,8 +724,16 @@
                     }
                 });
 
-                document.getElementById('total-sats').innerText = currentLiveSatObjects.length;
-                document.getElementById('active-sats').innerText = currentLiveSatObjects.length;
+                let totalCount = currentLiveSatObjects.length;
+                // Ensure mathematical consistency: Total = Active + Warning + Offline
+                if (activeCount + warningCount + offlineCount !== totalCount) {
+                    activeCount = Math.max(0, totalCount - warningCount - offlineCount);
+                }
+
+                document.getElementById('total-sats').innerText = totalCount;
+                document.getElementById('active-sats').innerText = activeCount;
+                document.getElementById('warning-sats').innerText = warningCount;
+                document.getElementById('offline-sats').innerText = offlineCount;
                 
                 document.getElementById('fleet-title-text').innerText = isMyanmarOnlyMode 
                     ? '🇲🇲 MYANMAR VISIBLE FLEET STATUS' 
