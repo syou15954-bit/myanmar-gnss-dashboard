@@ -60,6 +60,8 @@
             flex-shrink: 0;
             gap: 15px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            position: relative;
+            z-index: 100;
         }
 
         .myanmar-filter-btn {
@@ -226,7 +228,7 @@
 <body>
 
     <header class="top-nav">
-        <!-- Left Side: Controls & Constellation Dropdown Menu -->
+        <!-- Left Side: View TLE, Myanmar Filter & Custom Multi-Select Constellation Box -->
         <div style="display: flex; gap: 8px; align-items: center;">
             <button class="view-switch-btn mono" onclick="openTLEModal()">📋 VIEW TLE DATA</button>
             <button class="myanmar-filter-btn mono" id="mm-only-btn" onclick="toggleMyanmarVisibleOnly(this)">🇲🇲 MYANMAR VISIBLE ONLY</button>
@@ -234,18 +236,23 @@
                 ● CHECKING...
             </div>
             
-            <!-- 🚀 Constellation Dropdown Bar -->
-            <select id="constellation-dropdown" class="matrix-select" onchange="onConstellationDropdownChange(this.value)" style="background: rgba(2, 6, 23, 0.9); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 5px 12px; border-radius: 4px; font-size: 10.5px; font-weight: 700; cursor: pointer;">
-                <option value="all">✨ ALL CONSTELLATIONS</option>
-                <option value="gps">🛰️ GPS ONLY</option>
-                <option value="bds">🛰️ BEIDOU ONLY</option>
-                <option value="galileo">🛰️ GALILEO ONLY</option>
-                <option value="glonass">🛰️ GLONASS ONLY</option>
-                <option value="other">🌐 OTHER ONLY</option>
-            </select>
+            <!-- 🚀 Clean Multi-Select Constellation Dropdown Box (Left Side under VIEW TLE) -->
+            <div style="position: relative;" id="constellation-dropdown-container">
+                <button class="view-switch-btn mono" onclick="toggleConstellationMenu(event)" style="background: rgba(2,6,23,0.8); border-color: var(--accent-cyan); color: var(--accent-cyan);">
+                    🛰️ CONSTELLATIONS ▾
+                </button>
+                <div id="constellation-menu-box" class="mono" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; background: rgba(15, 23, 42, 0.98); border: 1px solid var(--accent-cyan); border-radius: 6px; padding: 10px; width: 170px; z-index: 300; box-shadow: 0 10px 25px rgba(0,0,0,0.8);">
+                    <div style="font-size: 8.5px; color: var(--text-muted); margin-bottom: 6px; border-bottom: 1px solid var(--panel-border); padding-bottom: 4px;">SELECT SYSTEMS:</div>
+                    <label style="display: flex; align-items: center; gap: 6px; font-size: 9.5px; color: #10b981; padding: 3px 0; cursor: pointer;"><input type="checkbox" value="gps" checked onchange="onConstellationCheckboxChange()"> 🛰️ GPS</label>
+                    <label style="display: flex; align-items: center; gap: 6px; font-size: 9.5px; color: #ef4444; padding: 3px 0; cursor: pointer;"><input type="checkbox" value="bds" checked onchange="onConstellationCheckboxChange()"> 🛰️ BEIDOU</label>
+                    <label style="display: flex; align-items: center; gap: 6px; font-size: 9.5px; color: #38bdf8; padding: 3px 0; cursor: pointer;"><input type="checkbox" value="galileo" checked onchange="onConstellationCheckboxChange()"> 🇪🇺 GALILEO</label>
+                    <label style="display: flex; align-items: center; gap: 6px; font-size: 9.5px; color: #c084fc; padding: 3px 0; cursor: pointer;"><input type="checkbox" value="glonass" checked onchange="onConstellationCheckboxChange()"> 🇷🇺 GLONASS</label>
+                    <label style="display: flex; align-items: center; gap: 6px; font-size: 9.5px; color: #f59e0b; padding: 3px 0; cursor: pointer;"><input type="checkbox" value="other" checked onchange="onConstellationCheckboxChange()"> 🌐 OTHER</label>
+                </div>
+            </div>
         </div>
 
-        <!-- Center: GNSS Tactical Mission Control -->
+        <!-- Center: GNSS Tactical Mission Control Title -->
         <div class="brand-title-box">
             <div class="brand-dot"></div>
             <span>GNSS Tactical Mission Control</span>
@@ -509,6 +516,29 @@
         function openTLEModal() { document.getElementById('tleModal').style.display = 'block'; }
         function closeTLEModal() { document.getElementById('tleModal').style.display = 'none'; }
 
+        // 🚀 Toggle Constellation Checkbox Menu
+        function toggleConstellationMenu(e) {
+            e.stopPropagation();
+            const box = document.getElementById('constellation-menu-box');
+            box.style.display = box.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', () => {
+            const box = document.getElementById('constellation-menu-box');
+            if (box) box.style.display = 'none';
+        });
+
+        // 🚀 Handle multi-select checkboxes
+        function onConstellationCheckboxChange() {
+            const checkboxes = document.querySelectorAll('#constellation-menu-box input[type="checkbox"]');
+            activeSystems.clear();
+            checkboxes.forEach(cb => {
+                if (cb.checked) activeSystems.add(cb.value);
+            });
+            renderCustomSelection();
+        }
+
         function toggleMyanmarVisibleOnly(btn) {
             isMyanmarOnlyMode = !isMyanmarOnlyMode;
             btn.classList.toggle('active-mm', isMyanmarOnlyMode);
@@ -594,16 +624,6 @@
             let fallbackList = generateHighDensityFallbackList();
             categorizeSatsList(fallbackList);
             document.getElementById('tle-status-badge') && (document.getElementById('tle-status-badge').innerText = `● LIVE SIMULATION`);
-            renderCustomSelection();
-        }
-
-        // 🚀 Constellation Dropdown Selection Handler
-        function onConstellationDropdownChange(val) {
-            if (val === 'all') {
-                activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass', 'other']);
-            } else {
-                activeSystems = new Set([val]);
-            }
             renderCustomSelection();
         }
 
