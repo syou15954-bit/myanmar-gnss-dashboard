@@ -47,7 +47,7 @@
 
         .mono { font-family: 'JetBrains Mono', monospace; }
 
-        /* 🚀 Perfectly Aligned Top Navigation with True Absolute Centering */
+        /* Top Navigation & Filters */
         .top-nav {
             display: flex;
             justify-content: space-between;
@@ -94,7 +94,6 @@
         }
         .view-switch-btn:hover { background: rgba(56, 189, 248, 0.35); }
 
-        /* 🚀 Dead-Center Brand Title */
         .brand-title-box {
             position: absolute;
             left: 50%;
@@ -157,7 +156,6 @@
             border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding-bottom: 5px;
         }
 
-        /* Upcoming Passes Panel */
         .hud-right-passes { top: 12px; right: 12px; width: 310px; display: flex; flex-direction: column; max-height: 290px; }
 
         .matrix-select {
@@ -185,14 +183,12 @@
             border-radius: 6px; padding: 12px; display: flex; flex-direction: column; min-height: 0; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
-        /* Centered Clear Panel Titles */
         .panel-title {
             font-size: 12px; font-weight: 700; color: var(--accent-cyan); margin-bottom: 8px; display: flex;
             justify-content: center; align-items: center; border-bottom: 1px solid rgba(56, 189, 248, 0.25);
             padding-bottom: 6px; flex-shrink: 0; letter-spacing: 0.5px; text-transform: uppercase; text-align: center; width: 100%;
         }
 
-        /* Local GNSS DB & Fleet Status */
         .cyber-table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 0; }
         .cyber-table th { text-align: left; color: var(--text-muted); padding: 5px 4px; border-bottom: 1px solid var(--panel-border); font-size: 9px; position: sticky; top: 0; background: rgba(2, 6, 23, 0.95); z-index: 5; }
         .cyber-table td { padding: 5px 4px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #cbd5e1; }
@@ -209,7 +205,6 @@
         .dop-card { background: rgba(2, 6, 23, 0.6); padding: 8px; border-radius: 4px; text-align: center; border: 1px solid var(--panel-border); }
         .dop-val { font-size: 16px; font-weight: 700; color: var(--accent-cyan); margin-top: 4px; }
 
-        /* RINEX Data Analysis */
         .rinex-split-view { display: flex; gap: 12px; flex: 1; min-height: 0; }
         .rinex-left { width: 290px; display: flex; flex-direction: column; min-height: 0; flex-shrink: 0; gap: 8px; }
         .rinex-right { flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative; gap: 6px; }
@@ -227,7 +222,6 @@
 
         .pass-card:hover { background: rgba(56, 189, 248, 0.15) !important; }
 
-        /* TLE Modal fixed cleanly at top-left */
         #tleModal {
             display: none; 
             position: fixed; 
@@ -256,7 +250,6 @@
 <body>
 
     <header class="top-nav">
-        <!-- Left Side: View TLE, Myanmar Filter & Multi-Select Constellation Box -->
         <div class="top-nav-left">
             <button class="view-switch-btn mono" onclick="openTLEModal()">📋 VIEW TLE DATA</button>
             <button class="myanmar-filter-btn mono" id="mm-only-btn" onclick="toggleMyanmarVisibleOnly(this)">🇲🇲 MYANMAR VISIBLE ONLY</button>
@@ -264,7 +257,6 @@
                 ● CHECKING...
             </div>
             
-            <!-- 🚀 Clean Multi-Select Constellation Dropdown Box -->
             <div style="position: relative;" id="constellation-dropdown-container">
                 <button class="view-switch-btn mono" onclick="toggleConstellationMenu(event)" style="background: rgba(2,6,23,0.8); border-color: var(--accent-cyan); color: var(--accent-cyan);">
                     🛰️ CONSTELLATIONS ▾
@@ -280,13 +272,11 @@
             </div>
         </div>
 
-        <!-- Center: GNSS Tactical Mission Control (Dead Center) -->
         <div class="brand-title-box">
             <div class="brand-dot"></div>
             <span>GNSS Tactical Mission Control</span>
         </div>
 
-        <!-- Right Side: Country Legend -->
         <div class="top-nav-right country-legend mono">
             <div class="legend-item"><div class="legend-dot" style="background:#10b981;"></div><span>🇺🇸 GPS</span></div>
             <div class="legend-item"><div class="legend-dot" style="background:#ef4444;"></div><span>🇨🇳 BDS</span></div>
@@ -544,7 +534,6 @@
         function openTLEModal() { document.getElementById('tleModal').style.display = 'block'; }
         function closeTLEModal() { document.getElementById('tleModal').style.display = 'none'; }
 
-        // 🚀 Toggle Constellation Checkbox Menu
         function toggleConstellationMenu(e) {
             e.stopPropagation();
             const box = document.getElementById('constellation-menu-box');
@@ -821,18 +810,24 @@
                     `;}).join('');
                 }
 
-                targetLabelData = currentLiveSatObjects.filter(s => s.id === selectedSatId);
-
-                if (myGlobe) {
-                    myGlobe.objectsData(currentLiveSatObjects);
-                    myGlobe.htmlElementsData(targetLabelData);
+                // 🚀 If current filtered objects list is empty, reset selected satellite and clear orbit paths/passes
+                if (currentLiveSatObjects.length === 0) {
+                    selectedSatId = '';
+                    if (myGlobe) {
+                        myGlobe.pathsData([]);
+                        myGlobe.htmlElementsData([]);
+                    }
+                    const passListContainer = document.getElementById('upcoming-passes-list');
+                    if (passListContainer) {
+                        passListContainer.innerHTML = '<div style="text-align:center; color:var(--text-muted); font-size:9px; padding:15px;">No satellites available</div>';
+                    }
+                } else {
+                    if (!currentLiveSatObjects.some(s => s.id === selectedSatId)) {
+                        selectSatellite(currentLiveSatObjects[0].id);
+                    }
+                    populateUpcomingPassesList();
                 }
-                
-                populateUpcomingPassesList();
 
-                if (currentLiveSatObjects.length > 0 && !currentLiveSatObjects.some(s => s.id === selectedSatId)) {
-                    selectSatellite(currentLiveSatObjects[0].id);
-                }
                 resizeGlobe();
 
             } catch (err) {
@@ -859,7 +854,11 @@
         function populateUpcomingPassesList() {
             try {
                 const listContainer = document.getElementById('upcoming-passes-list');
-                if (!listContainer || currentLiveSatObjects.length === 0) return;
+                if (!listContainer) return;
+                if (currentLiveSatObjects.length === 0) {
+                    listContainer.innerHTML = '<div style="text-align:center; color:var(--text-muted); font-size:9px; padding:15px;">No satellites available</div>';
+                    return;
+                }
                 
                 const now = new Date();
                 
