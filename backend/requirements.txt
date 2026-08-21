@@ -7,3 +7,4 @@ requests
 sgp4
 pynmea2
 python-dotenv
+pydantic
