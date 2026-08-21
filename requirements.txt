@@ -6,4 +6,3 @@ python-multipart
 requests
 sgp4
 pynmea2
-Flask
