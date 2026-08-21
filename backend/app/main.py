@@ -53,6 +53,7 @@ def serve_dashboard():
 
 @app.get("/api/v1/dashboard/summary")
 def get_dashboard_summary():
+    # TODO: mock data — replace with real DB/fleet-status feed
     return {
         "fleet_status": {"total": 31, "active": 28, "degraded": 2, "inactive": 1},
         "global_coverage": {"coverage_percent": 98.7, "avg_pdop": 1.8},
@@ -65,6 +66,7 @@ def get_dashboard_summary():
 
 @app.get("/api/v1/dashboard/telemetry")
 def get_telemetry_metrics():
+    # TODO: mock data — replace with real telemetry/sensor feed
     return {
         "selected_sat": "SVN-62 / PRN-07",
         "fuel_level": 85,
