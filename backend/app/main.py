@@ -20,6 +20,49 @@ from app.analytics.dop_calculator import calculate_dop_metrics
 from app.parsers.rinex_parser import parse_rinex_bytes
 from app.analytics.gnss_compare import analyze_gps_vs_bds
 
+def categorize_sat(name):
+    uname = name.upper()
+    if 'GPS' in uname:
+        return 'gps'
+    elif 'BEIDOU' in uname or 'BD' in uname or 'C0' in uname:
+        return 'bds'
+    elif 'GALILEO' in uname or 'GSAT' in uname:
+        return 'galileo'
+    elif 'GLONASS' in uname or 'COSMOS' in uname:
+        return 'glonass'
+    return 'gps'
+
+def parse_gnss_tle(tle_text):
+    categories = {'gps': [], 'bds': [], 'galileo': [], 'glonass': [], 'all': []}
+    if not tle_text or '<html' in tle_text.lower():
+        return categories
+
+    lines = [line.strip() for line in tle_text.strip().split('\n') if line.strip()]
+    i = 0
+    while i < len(lines):
+        try:
+            if i + 2 < len(lines) and lines[i+1].startswith('1 ') and lines[i+2].startswith('2 '):
+                sat_name = lines[i]
+                line1 = lines[i+1]
+                line2 = lines[i+2]
+                if len(line1) >= 7:
+                    norad_id = line1[2:7].strip()
+                    cat = categorize_sat(sat_name)
+                    sat_obj = {
+                        'id': norad_id,
+                        'name': f"{sat_name} ({norad_id})",
+                        'line1': line1,
+                        'line2': line2
+                    }
+                    categories[cat].append(sat_obj)
+                    categories['all'].append(sat_obj)
+                i += 3
+            else:
+                i += 1
+        except Exception:
+            i += 1
+    return categories
+
 app = FastAPI(title="Myanmar GNSS Dashboard API", version="1.0.0")
 
 app.add_middleware(
@@ -89,7 +132,7 @@ def fetch_satellite_orbits(system: str = "gps"):
 def get_skyplot_api(system: str = "gps", mask_angle: float = 10.0):
     group = "beidou" if system.lower() == "bds" else "gps-ops"
     tle_res = get_live_tle_data(constellation=group)
-    
+
     if tle_res.get("status") != "success":
         return {"status": "error", "message": "Failed to fetch TLE data"}
 
@@ -110,13 +153,13 @@ def get_skyplot_api(system: str = "gps", mask_angle: float = 10.0):
 def get_dop_metrics_api(system: str = "gps", mask_angle: float = 10.0):
     group = "beidou" if system.lower() == "bds" else "gps-ops"
     tle_res = get_live_tle_data(constellation=group)
-    
+
     if tle_res.get("status") != "success":
         return {"status": "error", "message": "Failed to fetch TLE data"}
 
     skyplot_data = calculate_skyplot_data(tle_res["data"], mask_angle=mask_angle)
     dop_results = calculate_dop_metrics(skyplot_data)
-    
+
     return {
         "status": "success",
         "station": "Yangon Ground Station",
@@ -130,10 +173,10 @@ async def compare_gps_bds_endpoint(file: UploadFile = File(...)):
         contents = await file.read()
         df = parse_rinex_bytes(contents, file.filename)
         results = analyze_gps_vs_bds(df)
-        
+
         if "error" in results:
             return {"status": "error", "message": results["error"]}
-            
+
         return {
             "status": "success",
             "filename": file.filename,
@@ -141,3 +184,18 @@ async def compare_gps_bds_endpoint(file: UploadFile = File(...)):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Data Processing Error: {str(e)}")
+
+@app.get("/api/tle")
+def get_live_tles():
+    try:
+        cache_path = os.path.join(BACKEND_DIR, 'tle_cache.txt')
+        if os.path.exists(cache_path):
+            with open(cache_path, 'r', encoding='utf-8') as f:
+                tle_text = f.read()
+            parsed = parse_gnss_tle(tle_text)
+            if parsed and parsed.get('all'):
+                return {'status': 'live', 'data': parsed}
+    except Exception as e:
+        print(f"Failed to read local TLE cache: {e}")
+
+    return {'status': 'fallback', 'data': {'gps': [], 'bds': [], 'galileo': [], 'glonass': [], 'all': []}}
