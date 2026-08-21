@@ -1305,7 +1305,7 @@
             });
         }
 
-        // 🚀 Render Real Signal C/N0 Chart with animation: false for a completely stable, non-jittery display
+        // 🚀 Render Real Signal C/N0 Chart with animation: false (No jitter/jump)
         function renderSystemComparisonChart(st, sysA = "GPS", sysB = "BDS") {
             const getSysColor = (s) => {
                 if(s === 'GPS') return '#10b981';
@@ -1318,50 +1318,64 @@
             let dataA = (st.chartDataBySys && st.chartDataBySys[sysA]) ? st.chartDataBySys[sysA] : [];
             let dataB = (st.chartDataBySys && st.chartDataBySys[sysB]) ? st.chartDataBySys[sysB] : [];
 
-            let datasets = [
-                {
-                    label: `📡 ${st.name} (${sysA}: ${st.counts[sysA]} Sats - Real C/N0 Avg)`,
-                    data: dataA,
-                    borderColor: getSysColor(sysA),
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    borderWidth: 2.2,
-                    tension: 0.2,
-                    pointRadius: 3
-                },
-                {
-                    label: `📡 ${st.name} (${sysB}: ${st.counts[sysB]} Sats - Real C/N0 Avg)`,
-                    data: dataB,
-                    borderColor: getSysColor(sysB),
-                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                    borderWidth: 2.2,
-                    tension: 0.2,
-                    pointRadius: 3
-                }
-            ];
-
             const ctx = document.getElementById('waveformChart');
             if (!ctx) return;
-            if (waveformChart) waveformChart.destroy();
 
-            waveformChart = new Chart(ctx.getContext('2d'), {
-                type: 'line',
-                data: { labels: labels, datasets: datasets },
-                options: {
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    animation: false, // 🚀 ဒီနေရာမှာ animation ကို လုံးဝပိတ်လိုက်ပါပြီ (လိုင်းများ လုံးဝမရွေ့ဘဲ ငြိမ်သက်နေမည်)
-                    plugins: { legend: { display: true, labels: { color: '#94a3b8', font: { size: 8 } } } },
-                    scales: {
-                        x: { grid: { color: 'rgba(56, 189, 248, 0.05)' }, ticks: { color: '#94a3b8', font: { size: 7 } } },
-                        y: { 
-                            grid: { color: 'rgba(56, 189, 248, 0.1)' }, 
-                            ticks: { color: '#94a3b8', font: { size: 8 } }, 
-                            title: { display: true, text: 'SNR (C/N0 dB-Hz)', color: '#94a3b8', font: { size: 7 } },
-                            min: 25, max: 55 
+            if (waveformChart) {
+                // Update existing chart instance smoothly without destroying canvas context
+                waveformChart.data.labels = labels;
+                waveformChart.data.datasets[0].label = `📡 ${st.name} (${sysA}: ${st.counts[sysA]} Sats - Real C/N0 Avg)`;
+                waveformChart.data.datasets[0].data = dataA;
+                waveformChart.data.datasets[0].borderColor = getSysColor(sysA);
+
+                waveformChart.data.datasets[1].label = `📡 ${st.name} (${sysB}: ${st.counts[sysB]} Sats - Real C/N0 Avg)`;
+                waveformChart.data.datasets[1].data = dataB;
+                waveformChart.data.datasets[1].borderColor = getSysColor(sysB);
+
+                waveformChart.update('none'); // Update without animation/flicker
+            } else {
+                waveformChart = new Chart(ctx.getContext('2d'), {
+                    type: 'line',
+                    data: { 
+                        labels: labels, 
+                        datasets: [
+                            {
+                                label: `📡 ${st.name} (${sysA}: ${st.counts[sysA]} Sats - Real C/N0 Avg)`,
+                                data: dataA,
+                                borderColor: getSysColor(sysA),
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                borderWidth: 2.2,
+                                tension: 0.2,
+                                pointRadius: 3
+                            },
+                            {
+                                label: `📡 ${st.name} (${sysB}: ${st.counts[sysB]} Sats - Real C/N0 Avg)`,
+                                data: dataB,
+                                borderColor: getSysColor(sysB),
+                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                borderWidth: 2.2,
+                                tension: 0.2,
+                                pointRadius: 3
+                            }
+                        ] 
+                    },
+                    options: {
+                        responsive: true, 
+                        maintainAspectRatio: false,
+                        animation: false, // 🚀 Animation disabled completely
+                        plugins: { legend: { display: true, labels: { color: '#94a3b8', font: { size: 8 } } } },
+                        scales: {
+                            x: { grid: { color: 'rgba(56, 189, 248, 0.05)' }, ticks: { color: '#94a3b8', font: { size: 7 } } },
+                            y: { 
+                                grid: { color: 'rgba(56, 189, 248, 0.1)' }, 
+                                ticks: { color: '#94a3b8', font: { size: 8 } }, 
+                                title: { display: true, text: 'SNR (C/N0 dB-Hz)', color: '#94a3b8', font: { size: 7 } },
+                                min: 25, max: 55 
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
