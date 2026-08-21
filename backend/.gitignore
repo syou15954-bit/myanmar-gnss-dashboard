@@ -5,3 +5,5 @@ __pycache__/
 *.pyd
 .venv/
 venv/
+reset_pass.py
+*.env
