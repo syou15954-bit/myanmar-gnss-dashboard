@@ -24,7 +24,11 @@ app = FastAPI(title="Myanmar GNSS Dashboard API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        # "https://yourdomain.com",  # production frontend domain ရှိရင် ဒီနေရာမှာ ထည့်ပါ
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
