@@ -773,7 +773,6 @@
                     `;}).join('');
                 }
 
-                // If no satellites match filter, clear orbit paths and label cleanly
                 if (currentLiveSatObjects.length === 0) {
                     selectedSatId = '';
                     if (myGlobe) {
@@ -1023,7 +1022,6 @@
             return { lat: lat * (180 / Math.PI), lng: lon * (180 / Math.PI) };
         }
 
-        // 🚀 Real RINEX 2 & 3 Observation Parser Engine
         function parseFullRinex(text, fileName) {
             const lines = text.split(/\r?\n/);
             let version = "3.04";
@@ -1250,7 +1248,6 @@
             let sysB = document.getElementById('rinex-sys-b').value;
             renderSystemComparisonChart(st, sysA, sysB);
 
-            // Render REAL parsed satellite observation records into table
             const obsTableBody = document.getElementById('rinex-obs-table-body');
             if (st.satRecords && st.satRecords.length > 0) {
                 obsTableBody.innerHTML = st.satRecords.map(r => `
@@ -1308,7 +1305,7 @@
             });
         }
 
-        // 🚀 Render Real Signal C/N0 Chart from Uploaded File Data
+        // 🚀 Render Real Signal C/N0 Chart with animation: false for a completely stable, non-jittery display
         function renderSystemComparisonChart(st, sysA = "GPS", sysB = "BDS") {
             const getSysColor = (s) => {
                 if(s === 'GPS') return '#10b981';
@@ -1350,7 +1347,9 @@
                 type: 'line',
                 data: { labels: labels, datasets: datasets },
                 options: {
-                    responsive: true, maintainAspectRatio: false,
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    animation: false, // 🚀 ဒီနေရာမှာ animation ကို လုံးဝပိတ်လိုက်ပါပြီ (လိုင်းများ လုံးဝမရွေ့ဘဲ ငြိမ်သက်နေမည်)
                     plugins: { legend: { display: true, labels: { color: '#94a3b8', font: { size: 8 } } } },
                     scales: {
                         x: { grid: { color: 'rgba(56, 189, 248, 0.05)' }, ticks: { color: '#94a3b8', font: { size: 7 } } },
