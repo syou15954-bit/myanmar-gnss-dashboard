@@ -230,7 +230,6 @@
                     <label style="display: flex; align-items: center; gap: 6px; font-size: 9.5px; color: #ef4444; padding: 3px 0; cursor: pointer;"><input type="checkbox" value="bds" checked onchange="onConstellationCheckboxChange()"> 🛰️ BEIDOU</label>
                     <label style="display: flex; align-items: center; gap: 6px; font-size: 9.5px; color: #38bdf8; padding: 3px 0; cursor: pointer;"><input type="checkbox" value="galileo" checked onchange="onConstellationCheckboxChange()"> 🇪🇺 GALILEO</label>
                     <label style="display: flex; align-items: center; gap: 6px; font-size: 9.5px; color: #c084fc; padding: 3px 0; cursor: pointer;"><input type="checkbox" value="glonass" checked onchange="onConstellationCheckboxChange()"> 🇷🇺 GLONASS</label>
-                    <label style="display: flex; align-items: center; gap: 6px; font-size: 9.5px; color: #f59e0b; padding: 3px 0; cursor: pointer;"><input type="checkbox" value="other" checked onchange="onConstellationCheckboxChange()"> 🌐 OTHER</label>
                 </div>
             </div>
         </div>
@@ -245,7 +244,6 @@
             <div class="legend-item"><div class="legend-dot" style="background:#ef4444;"></div><span>🇨🇳 BDS</span></div>
             <div class="legend-item"><div class="legend-dot" style="background:#38bdf8;"></div><span>🇪🇺 GAL</span></div>
             <div class="legend-item"><div class="legend-dot" style="background:#c084fc;"></div><span>🇷🇺 GLO</span></div>
-            <div class="legend-item"><div class="legend-dot" style="background:#f59e0b;"></div><span>🌐 OTHER</span></div>
         </div>
     </header>
 
@@ -460,8 +458,8 @@
         let modes = { tracks: true };
 
         let TLE_DATABASE = {};
-        let CONSTELLATION_SATS = { gps: [], bds: [], galileo: [], glonass: [], other: [], all: [] };
-        let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass', 'other']);
+        let CONSTELLATION_SATS = { gps: [], bds: [], galileo: [], glonass: [], all: [] };
+        let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass']);
         let currentLiveSatObjects = [];
         let targetLabelData = [];
 
@@ -481,8 +479,7 @@
             'gps': new THREE.MeshBasicMaterial({ color: '#10b981' }),
             'bds': new THREE.MeshBasicMaterial({ color: '#ef4444' }),
             'galileo': new THREE.MeshBasicMaterial({ color: '#38bdf8' }),
-            'glonass': new THREE.MeshBasicMaterial({ color: '#c084fc' }),
-            'other': new THREE.MeshBasicMaterial({ color: '#f59e0b' })
+            'glonass': new THREE.MeshBasicMaterial({ color: '#c084fc' })
         };
 
         function getSatMaterial(name) {
@@ -491,7 +488,7 @@
             if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('C0')) return SAT_MATS['bds'];
             if (uname.includes('GALILEO') || uname.includes('GSAT')) return SAT_MATS['galileo'];
             if (uname.includes('GLONASS') || uname.includes('COSMOS')) return SAT_MATS['glonass'];
-            return SAT_MATS['other'];
+            return SAT_MATS['gps'];
         }
 
         function openTLEModal() { document.getElementById('tleModal').style.display = 'block'; }
@@ -541,7 +538,7 @@
             if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('C0')) return '#ef4444';
             if (uname.includes('GALILEO') || uname.includes('GSAT')) return '#38bdf8';
             if (uname.includes('GLONASS') || uname.includes('COSMOS')) return '#c084fc';
-            return '#f59e0b';
+            return '#10b981';
         }
 
         function generateHighDensityFallbackList() {
@@ -570,14 +567,14 @@
         }
 
         function categorizeSatsList(list) {
-            let cat = { gps: [], bds: [], galileo: [], glonass: [], other: [], all: list };
+            let cat = { gps: [], bds: [], galileo: [], glonass: [], all: list };
             list.forEach(s => {
                 let uname = (s.name || "").toUpperCase();
                 if (uname.includes('GPS') || uname.includes('NAVSTAR')) cat.gps.push(s);
                 else if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('C0')) cat.bds.push(s);
                 else if (uname.includes('GALILEO') || uname.includes('GSAT')) cat.galileo.push(s);
                 else if (uname.includes('GLONASS') || uname.includes('COSMOS')) cat.glonass.push(s);
-                else cat.other.push(s);
+                else cat.gps.push(s);
 
                 TLE_DATABASE[s.id] = s;
             });
@@ -1465,34 +1462,34 @@
         let lastFrameTime = performance.now();
         let lastPassUpdate = 0;
 
-        function animateSatellites(currentTime) {
-            const deltaSec = (currentTime - lastFrameTime) / 1000;
-            lastFrameTime = currentTime;
+        Function animateSatellites(currentTime) {
+            Const deltaSec = (currentTime - lastFrameTime) / 1000;
+            LastFrameTime = currentTime;
 
-            if (currentLiveSatObjects.length > 0) {
-                currentLiveSatObjects.forEach(s => {
-                    const sgp4Pos = propagateSGP4(s.id);
-                    s.lat = sgp4Pos.lat;
-                    s.lng = sgp4Pos.lng;
+            If (currentLiveSatObjects.length > 0) {
+                CurrentLiveSatObjects.forEach(s => {
+                    Const sgp4Pos = propagateSGP4(s.id);
+                    S.lat = sgp4Pos.lat;
+                    S.lng = sgp4Pos.lng;
                 });
 
-                if (myGlobe) {
-                    myGlobe.objectsData(currentLiveSatObjects);
-                    myGlobe.htmlElementsData(targetLabelData);
+                If (myGlobe) {
+                    MyGlobe.objectsData(currentLiveSatObjects);
+                    MyGlobe.htmlElementsData(targetLabelData);
                 }
             }
 
-            if (currentTime - lastPassUpdate > 1000) {
-                lastPassUpdate = currentTime;
-                populateUpcomingPassesList();
+            If (currentTime - lastPassUpdate > 1000) {
+                LastPassUpdate = currentTime;
+                PopulateUpcomingPassesList();
             }
 
-            requestAnimationFrame(animateSatellites);
+            RequestAnimationFrame(animateSatellites);
         }
         
-        loadCelesTrakTLEs().then(() => {
-            lastFrameTime = performance.now();
-            requestAnimationFrame(animateSatellites);
+        LoadCelesTrakTLEs().then(() => {
+            LastFrameTime = performance.now();
+            RequestAnimationFrame(animateSatellites);
         });
 
     </script>
