@@ -122,17 +122,6 @@
         .feature-btn:hover { color: #fff; border-color: var(--accent-cyan); }
         .feature-btn.active-mode { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border-color: var(--accent-cyan); }
 
-        /* Floating Minimalist Play/Pause HUD Button */
-        .globe-hud-control {
-            position: absolute; top: 12px; left: 12px; z-index: 20;
-            background: rgba(15, 23, 42, 0.85); border: 1px solid var(--accent-cyan);
-            color: var(--accent-cyan); padding: 6px 12px; border-radius: 4px;
-            font-size: 11px; font-weight: 700; cursor: pointer; backdrop-filter: blur(8px);
-            display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            transition: all 0.2s;
-        }
-        .globe-hud-control:hover { background: rgba(56, 189, 248, 0.2); }
-
         .hud-card {
             position: absolute; z-index: 10; background: rgba(15, 23, 42, 0.92); border: 1px solid var(--panel-border);
             backdrop-filter: blur(12px); border-radius: 6px; padding: 10px 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
@@ -263,11 +252,6 @@
         <section class="globe-stage">
             <div id="globeViz"></div>
 
-            <!-- Floating Minimalist Rotation Button -->
-            <button class="globe-hud-control mono" id="globe-rot-btn" onclick="toggleGlobeRotation()">
-                <span id="rot-icon">⏸️</span> <span id="rot-text">PAUSE</span>
-            </button>
-
             <div id="tleModal" class="mono">
                 <div class="modal-header">
                     <span>📋 NORAD TLE DATA INSPECTION</span>
@@ -291,6 +275,8 @@
                     <option value="naypyidaw">📍 Naypyidaw (Uppatasanti Landmark)</option>
                     <option value="mandalay">📍 Mandalay Hill Landmark</option>
                 </select>
+                <!-- Clean Play/Pause Icon Button inside bottom control bar -->
+                <button class="feature-btn active-mode" id="btn-rotation" onclick="toggleGlobeRotation()" title="Pause/Resume Rotation" style="padding: 4px 10px; font-size: 13px;">⏸️</button>
                 <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit & Ground Track</button>
             </div>
 
@@ -855,12 +841,9 @@
             if (!myGlobe) return;
             isRotating = !isRotating;
             myGlobe.controls().autoRotate = isRotating;
-            
-            const iconEl = document.getElementById('rot-icon');
-            const textEl = document.getElementById('rot-text');
-            if (iconEl && textEl) {
-                iconEl.innerText = isRotating ? '⏸️' : '▶️';
-                textEl.innerText = isRotating ? 'PAUSE' : 'PLAY';
+            const btn = document.getElementById('btn-rotation');
+            if (btn) {
+                btn.innerText = isRotating ? '⏸️' : '▶️';
             }
         }
 
