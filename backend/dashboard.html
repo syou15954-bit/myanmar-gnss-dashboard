@@ -1462,34 +1462,34 @@
         let lastFrameTime = performance.now();
         let lastPassUpdate = 0;
 
-        Function animateSatellites(currentTime) {
-            Const deltaSec = (currentTime - lastFrameTime) / 1000;
-            LastFrameTime = currentTime;
+        function animateSatellites(currentTime) {
+            const deltaSec = (currentTime - lastFrameTime) / 1000;
+            lastFrameTime = currentTime;
 
-            If (currentLiveSatObjects.length > 0) {
-                CurrentLiveSatObjects.forEach(s => {
-                    Const sgp4Pos = propagateSGP4(s.id);
-                    S.lat = sgp4Pos.lat;
-                    S.lng = sgp4Pos.lng;
+            if (currentLiveSatObjects.length > 0) {
+                currentLiveSatObjects.forEach(s => {
+                    const sgp4Pos = propagateSGP4(s.id);
+                    s.lat = sgp4Pos.lat;
+                    s.lng = sgp4Pos.lng;
                 });
 
-                If (myGlobe) {
-                    MyGlobe.objectsData(currentLiveSatObjects);
-                    MyGlobe.htmlElementsData(targetLabelData);
+                if (myGlobe) {
+                    myGlobe.objectsData(currentLiveSatObjects);
+                    myGlobe.htmlElementsData(targetLabelDate);
                 }
             }
 
-            If (currentTime - lastPassUpdate > 1000) {
-                LastPassUpdate = currentTime;
-                PopulateUpcomingPassesList();
+            if (currentTime - lastPassUpdate > 1000) {
+                lastPassUpdate = currentTime;
+                populateUpcomingPassesList();
             }
 
-            RequestAnimationFrame(animateSatellites);
+            requestAnimationFrame(animateSatellites);
         }
         
-        LoadCelesTrakTLEs().then(() => {
-            LastFrameTime = performance.now();
-            RequestAnimationFrame(animateSatellites);
+        loadCelesTrakTLEs().then(() => {
+            lastFrameTime = performance.now();
+            requestAnimationFrame(animateSatellites);
         });
 
     </script>
