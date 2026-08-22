@@ -275,7 +275,8 @@
                     <option value="naypyidaw">📍 Naypyidaw (Uppatasanti Landmark)</option>
                     <option value="mandalay">📍 Mandalay Hill Landmark</option>
                 </select>
-                <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit Ring & Ground Track</button>
+                <button class="feature-btn active-mode" id="btn-rotation" onclick="toggleGlobeRotation(this)">⏸️ PAUSE ROTATION</button>
+                <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit & Ground Track</button>
             </div>
 
             <div class="hud-card hud-right-passes mono">
@@ -456,6 +457,7 @@
         let waveformChart = null;
         let myGlobe = null;
         let modes = { tracks: true };
+        let isRotating = true;
 
         let TLE_DATABASE = {};
         let CONSTELLATION_SATS = { gps: [], bds: [], galileo: [], glonass: [], all: [] };
@@ -472,8 +474,12 @@
         let uploadedStationsList = [];
         let activeSelectedFileIndex = 0;
 
-        const SAT_GEOM = new THREE.SphereGeometry(1.2, 12, 12);
-        const TARGET_GEOM = new THREE.SphereGeometry(1.8, 16, 16);
+        // Distinct 3D Geometries for each Constellation
+        const GPS_GEOM = new THREE.BoxGeometry(1.4, 1.4, 1.4);          // Cube for GPS
+        const BDS_GEOM = new THREE.ConeGeometry(1.0, 2.2, 5);           // Cone for BDS
+        const GAL_GEOM = new THREE.CylinderGeometry(0.8, 0.8, 2.0, 6);  // Cylinder for Galileo
+        const GLO_GEOM = new THREE.DodecahedronGeometry(1.2);           // Dodecahedron for GLONASS
+        const TARGET_GEOM = new THREE.SphereGeometry(1.8, 16, 16);      // Target Sphere
 
         const SAT_MATS = {
             'gps': new THREE.MeshBasicMaterial({ color: '#10b981' }),
@@ -481,6 +487,15 @@
             'galileo': new THREE.MeshBasicMaterial({ color: '#38bdf8' }),
             'glonass': new THREE.MeshBasicMaterial({ color: '#c084fc' })
         };
+
+        function getSatGeometry(name) {
+            let uname = (name || '').toUpperCase();
+            if (uname.includes('GPS') || uname.includes('NAVSTAR')) return GPS_GEOM;
+            if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('C0')) return BDS_GEOM;
+            if (uname.includes('GALILEO') || uname.includes('GSAT')) return GAL_GEOM;
+            if (uname.includes('GLONASS') || uname.includes('COSMOS')) return GLO_GEOM;
+            return GPS_GEOM;
+        }
 
         function getSatMaterial(name) {
             let uname = (name || '').toUpperCase();
@@ -808,6 +823,14 @@
                     .ringRepeatPeriod(800);
                 myGlobe.pointOfView({ lat: st.lat, lng: st.lng, altitude: 0.8 }, 1200);
             }
+        }
+
+        function toggleGlobeRotation(btn) {
+            if (!myGlobe) return;
+            isRotating = !isRotating;
+            myGlobe.controls().autoRotate = isRotating;
+            btn.classList.toggle('active-mode', isRotating);
+            btn.innerText = isRotating ? '⏸️ PAUSE ROTATION' : '▶️ RESUME ROTATION';
         }
 
         function populateUpcomingPassesList() {
@@ -1410,7 +1433,7 @@
                     .objectAltitude('alt')
                     .objectThreeObject(d => {
                         const isTarget = d.id === selectedSatId;
-                        const geom = isTarget ? TARGET_GEOM : SAT_GEOM;
+                        const geom = isTarget ? TARGET_GEOM : getSatGeometry(d.fullName);
                         const mat = getSatMaterial(d.fullName);
                         return new THREE.Mesh(geom, mat);
                     })
@@ -1475,7 +1498,7 @@
 
                 if (myGlobe) {
                     myGlobe.objectsData(currentLiveSatObjects);
-                    myGlobe.htmlElementsData(targetLabelDate);
+                    myGlobe.htmlElementsData(targetLabelData);
                 }
             }
 
