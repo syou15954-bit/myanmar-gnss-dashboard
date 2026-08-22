@@ -122,6 +122,17 @@
         .feature-btn:hover { color: #fff; border-color: var(--accent-cyan); }
         .feature-btn.active-mode { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border-color: var(--accent-cyan); }
 
+        /* Floating Minimalist Play/Pause HUD Button */
+        .globe-hud-control {
+            position: absolute; top: 12px; left: 12px; z-index: 20;
+            background: rgba(15, 23, 42, 0.85); border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan); padding: 6px 12px; border-radius: 4px;
+            font-size: 11px; font-weight: 700; cursor: pointer; backdrop-filter: blur(8px);
+            display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transition: all 0.2s;
+        }
+        .globe-hud-control:hover { background: rgba(56, 189, 248, 0.2); }
+
         .hud-card {
             position: absolute; z-index: 10; background: rgba(15, 23, 42, 0.92); border: 1px solid var(--panel-border);
             backdrop-filter: blur(12px); border-radius: 6px; padding: 10px 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
@@ -252,6 +263,11 @@
         <section class="globe-stage">
             <div id="globeViz"></div>
 
+            <!-- Floating Minimalist Rotation Button -->
+            <button class="globe-hud-control mono" id="globe-rot-btn" onclick="toggleGlobeRotation()">
+                <span id="rot-icon">⏸️</span> <span id="rot-text">PAUSE</span>
+            </button>
+
             <div id="tleModal" class="mono">
                 <div class="modal-header">
                     <span>📋 NORAD TLE DATA INSPECTION</span>
@@ -275,7 +291,6 @@
                     <option value="naypyidaw">📍 Naypyidaw (Uppatasanti Landmark)</option>
                     <option value="mandalay">📍 Mandalay Hill Landmark</option>
                 </select>
-                <button class="feature-btn active-mode" id="btn-rotation" onclick="toggleGlobeRotation(this)">⏸️ PAUSE ROTATION</button>
                 <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit & Ground Track</button>
             </div>
 
@@ -474,36 +489,47 @@
         let uploadedStationsList = [];
         let activeSelectedFileIndex = 0;
 
-        // Distinct 3D Geometries for each Constellation
-        const GPS_GEOM = new THREE.BoxGeometry(1.4, 1.4, 1.4);          // Cube for GPS
-        const BDS_GEOM = new THREE.ConeGeometry(1.0, 2.2, 5);           // Cone for BDS
-        const GAL_GEOM = new THREE.CylinderGeometry(0.8, 0.8, 2.0, 6);  // Cylinder for Galileo
-        const GLO_GEOM = new THREE.DodecahedronGeometry(1.2);           // Dodecahedron for GLONASS
-        const TARGET_GEOM = new THREE.SphereGeometry(1.8, 16, 16);      // Target Sphere
+        const TARGET_GEOM = new THREE.SphereGeometry(1.8, 16, 16);
 
-        const SAT_MATS = {
-            'gps': new THREE.MeshBasicMaterial({ color: '#10b981' }),
-            'bds': new THREE.MeshBasicMaterial({ color: '#ef4444' }),
-            'galileo': new THREE.MeshBasicMaterial({ color: '#38bdf8' }),
-            'glonass': new THREE.MeshBasicMaterial({ color: '#c084fc' })
-        };
+        // 🛰️ Realistic Satellite 3D Model Constructor (Central Bus + Dual Solar Panels)
+        function createRealisticSatelliteModel(colorHex) {
+            const group = new THREE.Group();
 
-        function getSatGeometry(name) {
-            let uname = (name || '').toUpperCase();
-            if (uname.includes('GPS') || uname.includes('NAVSTAR')) return GPS_GEOM;
-            if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('C0')) return BDS_GEOM;
-            if (uname.includes('GALILEO') || uname.includes('GSAT')) return GAL_GEOM;
-            if (uname.includes('GLONASS') || uname.includes('COSMOS')) return GLO_GEOM;
-            return GPS_GEOM;
+            // Central Satellite Bus (Main Body)
+            const busGeo = new THREE.BoxGeometry(0.7, 0.7, 0.7);
+            const busMat = new THREE.MeshStandardMaterial({ color: '#cbd5e1', roughness: 0.3, metalness: 0.8 });
+            const busMesh = new THREE.Mesh(busGeo, busMat);
+            group.add(busMesh);
+
+            // Solar Panel Wing - Left
+            const panelGeo = new THREE.BoxGeometry(1.8, 0.04, 0.5);
+            const panelMat = new THREE.MeshStandardMaterial({ color: '#1e3a8a', roughness: 0.2, metalness: 0.9 });
+            const leftPanel = new THREE.Mesh(panelGeo, panelMat);
+            leftPanel.position.x = -1.25;
+            group.add(leftPanel);
+
+            // Solar Panel Wing - Right
+            const rightPanel = new THREE.Mesh(panelGeo, panelMat);
+            rightPanel.position.x = 1.25;
+            group.add(rightPanel);
+
+            // Indicator Beacon / Antenna Core
+            const antennaGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.6, 6);
+            const antennaMat = new THREE.MeshBasicMaterial({ color: colorHex });
+            const antennaMesh = new THREE.Mesh(antennaGeo, antennaMat);
+            antennaMesh.position.y = 0.5;
+            group.add(antennaMesh);
+
+            return group;
         }
 
         function getSatMaterial(name) {
             let uname = (name || '').toUpperCase();
-            if (uname.includes('GPS') || uname.includes('NAVSTAR')) return SAT_MATS['gps'];
-            if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('C0')) return SAT_MATS['bds'];
-            if (uname.includes('GALILEO') || uname.includes('GSAT')) return SAT_MATS['galileo'];
-            if (uname.includes('GLONASS') || uname.includes('COSMOS')) return SAT_MATS['glonass'];
-            return SAT_MATS['gps'];
+            if (uname.includes('GPS') || uname.includes('NAVSTAR')) return '#10b981';
+            if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('C0')) return '#ef4444';
+            if (uname.includes('GALILEO') || uname.includes('GSAT')) return '#38bdf8';
+            if (uname.includes('GLONASS') || uname.includes('COSMOS')) return '#c084fc';
+            return '#10b981';
         }
 
         function openTLEModal() { document.getElementById('tleModal').style.display = 'block'; }
@@ -825,12 +851,17 @@
             }
         }
 
-        function toggleGlobeRotation(btn) {
+        function toggleGlobeRotation() {
             if (!myGlobe) return;
             isRotating = !isRotating;
             myGlobe.controls().autoRotate = isRotating;
-            btn.classList.toggle('active-mode', isRotating);
-            btn.innerText = isRotating ? '⏸️ PAUSE ROTATION' : '▶️ RESUME ROTATION';
+            
+            const iconEl = document.getElementById('rot-icon');
+            const textEl = document.getElementById('rot-text');
+            if (iconEl && textEl) {
+                iconEl.innerText = isRotating ? '⏸️' : '▶️';
+                textEl.innerText = isRotating ? 'PAUSE' : 'PLAY';
+            }
         }
 
         function populateUpcomingPassesList() {
@@ -1433,9 +1464,11 @@
                     .objectAltitude('alt')
                     .objectThreeObject(d => {
                         const isTarget = d.id === selectedSatId;
-                        const geom = isTarget ? TARGET_GEOM : getSatGeometry(d.fullName);
-                        const mat = getSatMaterial(d.fullName);
-                        return new THREE.Mesh(geom, mat);
+                        if (isTarget) {
+                            return new THREE.Mesh(TARGET_GEOM, new THREE.MeshBasicMaterial({ color: '#ffb700', wireframe: true }));
+                        }
+                        const colorHex = getSatColor(d.fullName);
+                        return createRealisticSatelliteModel(colorHex);
                     })
                     .onObjectClick((d) => { if (d && d.id) selectSatellite(d.id); })
                     .htmlElementsData(targetLabelData)
