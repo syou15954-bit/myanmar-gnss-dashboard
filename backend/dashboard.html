@@ -476,33 +476,29 @@
 
         const TARGET_GEOM = new THREE.SphereGeometry(1.8, 16, 16);
 
-        // 🛰️ Realistic Satellite 3D Model using MeshBasicMaterial (Ensures visibility without scene lights)
+        // 🛰️ Stable 3D Satellite Model using Simple MeshBasicMaterial
         function createRealisticSatelliteModel(colorHex) {
             const group = new THREE.Group();
 
-            // Central Satellite Bus (Main Body)
             const busGeo = new THREE.BoxGeometry(0.7, 0.7, 0.7);
-            const busMat = new THREE.MeshBasicMaterial({ color: '#cbd5e1' });
+            const busMat = new THREE.MeshBasicMaterial({ color: 0x94a3b8 });
             const busMesh = new THREE.Mesh(busGeo, busMat);
             group.add(busMesh);
 
-            // Solar Panel Wing - Left
-            const panelGeo = new THREE.BoxGeometry(1.8, 0.04, 0.5);
-            const panelMat = new THREE.MeshBasicMaterial({ color: '#1e3a8a' });
+            const panelGeo = new THREE.BoxGeometry(2.0, 0.04, 0.6);
+            const panelMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
             const leftPanel = new THREE.Mesh(panelGeo, panelMat);
-            leftPanel.position.x = -1.25;
+            leftPanel.position.x = -1.35;
             group.add(leftPanel);
 
-            // Solar Panel Wing - Right
             const rightPanel = new THREE.Mesh(panelGeo, panelMat);
-            rightPanel.position.x = 1.25;
+            rightPanel.position.x = 1.35;
             group.add(rightPanel);
 
-            // Indicator Beacon / Antenna Core
-            const antennaGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.6, 6);
+            const antennaGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.8, 6);
             const antennaMat = new THREE.MeshBasicMaterial({ color: colorHex });
             const antennaMesh = new THREE.Mesh(antennaGeo, antennaMat);
-            antennaMesh.position.y = 0.5;
+            antennaMesh.position.y = 0.6;
             group.add(antennaMesh);
 
             return group;
@@ -804,6 +800,10 @@
                     populateUpcomingPassesList();
                 }
 
+                if (myGlobe) {
+                    myGlobe.objectsData(currentLiveSatObjects);
+                }
+
                 resizeGlobe();
 
             } catch (err) {
@@ -989,7 +989,6 @@
             targetLabelData = currentLiveSatObjects.filter(s => s.id === id);
 
             if (myGlobe) {
-                myGlobe.objectsData(currentLiveSatObjects);
                 myGlobe.htmlElementsData(targetLabelData);
 
                 const currentPos = propagateSGP4(id);
@@ -1427,8 +1426,8 @@
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
                 myGlobe = Globe()(container)
-                    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-                    .backgroundImageUrl('https://cdn.jsdelivr.net/npm/three-globe/example/img/night-sky.png')
+                    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+                    .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
                     .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.18 })
                     .showAtmosphere(true).atmosphereColor('#38bdf8').atmosphereAltitude(0.22)
                     .polygonCapColor(() => 'rgba(56, 189, 248, 0.18)').polygonSideColor(() => 'rgba(56, 189, 248, 0.05)').polygonStrokeColor(() => '#38bdf8').polygonAltitude(0.012)
@@ -1438,7 +1437,7 @@
                     .objectThreeObject(d => {
                         const isTarget = d.id === selectedSatId;
                         if (isTarget) {
-                            return new THREE.Mesh(TARGET_GEOM, new THREE.MeshBasicMaterial({ color: '#ffb700', wireframe: true }));
+                            return new THREE.Mesh(TARGET_GEOM, new THREE.MeshBasicMaterial({ color: 0xffb700, wireframe: true }));
                         }
                         const colorHex = getSatColor(d.fullName);
                         return createRealisticSatelliteModel(colorHex);
@@ -1482,7 +1481,7 @@
 
                 myGlobe.controls().autoRotate = true;
                 myGlobe.controls().autoRotateSpeed = 0.3;
-                setTimeout(resizeGlobe, 100);
+                setTimeout(resizeGlobe, 150);
             }
         } catch (e) { console.error("Globe Load Error:", e); }
 
@@ -1501,11 +1500,6 @@
                     s.lat = sgp4Pos.lat;
                     s.lng = sgp4Pos.lng;
                 });
-
-                if (myGlobe) {
-                    myGlobe.objectsData(currentLiveSatObjects);
-                    myGlobe.htmlElementsData(targetLabelData);
-                }
             }
 
             if (currentTime - lastPassUpdate > 1000) {
