@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GNSS Tactical Mission Control Center</title>
 
-    <!-- 🛠️ FIXED: Using Stable Three.js v0.152.0 for globe.gl compatibility -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.min.js"></script>
+    <!-- 🛠️ FIXED: Use ONLY globe.gl (it bundles Three.js internally) -->
     <script src="https://unpkg.com/globe.gl"></script>
     <script src="https://cdn.jsdelivr.net/npm/satellite.js@4.1.3/dist/satellite.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -475,10 +474,14 @@
         let uploadedStationsList = [];
         let activeSelectedFileIndex = 0;
 
-        const TARGET_GEOM = new THREE.SphereGeometry(1.8, 16, 16);
+        // Helper to safely access Three.js from globe.gl bundled namespace
+        function getTHREE() {
+            return window.THREE || (typeof Globe !== 'undefined' && Globe.THREE);
+        }
 
-        // 🛰️ Stable 3D Satellite Model using Simple MeshBasicMaterial (Compatible with Three.js v0.152.0)
+        // 🛰️ Stable 3D Satellite Model using Globe.gl internal THREE
         function createRealisticSatelliteModel(colorHex) {
+            const THREE = getTHREE();
             const group = new THREE.Group();
 
             const busGeo = new THREE.BoxGeometry(0.7, 0.7, 0.7);
@@ -1437,8 +1440,9 @@
                     .objectAltitude('alt')
                     .objectThreeObject(d => {
                         const isTarget = d.id === selectedSatId;
+                        const THREE = getTHREE();
                         if (isTarget) {
-                            return new THREE.Mesh(TARGET_GEOM, new THREE.MeshBasicMaterial({ color: 0xffb700, wireframe: true }));
+                            return new THREE.Mesh(new THREE.SphereGeometry(1.8, 16, 16), new THREE.MeshBasicMaterial({ color: 0xffb700, wireframe: true }));
                         }
                         const colorHex = getSatColor(d.fullName);
                         return createRealisticSatelliteModel(colorHex);
