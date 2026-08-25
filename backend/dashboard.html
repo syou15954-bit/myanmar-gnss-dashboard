@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GNSS Tactical Mission Control Center</title>
 
-    <!-- 🛠️ FIXED: Three.js MUST be loaded BEFORE globe.gl -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <!-- 🛠️ FIXED: Using Stable Three.js v0.152.0 for globe.gl compatibility -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.min.js"></script>
     <script src="https://unpkg.com/globe.gl"></script>
     <script src="https://cdn.jsdelivr.net/npm/satellite.js@4.1.3/dist/satellite.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -477,7 +477,7 @@
 
         const TARGET_GEOM = new THREE.SphereGeometry(1.8, 16, 16);
 
-        // 🛰️ Stable 3D Satellite Model using Simple MeshBasicMaterial
+        // 🛰️ Stable 3D Satellite Model using Simple MeshBasicMaterial (Compatible with Three.js v0.152.0)
         function createRealisticSatelliteModel(colorHex) {
             const group = new THREE.Group();
 
