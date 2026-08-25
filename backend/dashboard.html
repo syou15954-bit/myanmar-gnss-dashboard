@@ -275,7 +275,6 @@
                     <option value="naypyidaw">📍 Naypyidaw (Uppatasanti Landmark)</option>
                     <option value="mandalay">📍 Mandalay Hill Landmark</option>
                 </select>
-                <!-- Clean Play/Pause Icon Button inside bottom control bar -->
                 <button class="feature-btn active-mode" id="btn-rotation" onclick="toggleGlobeRotation()" title="Pause/Resume Rotation" style="padding: 4px 10px; font-size: 13px;">⏸️</button>
                 <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit & Ground Track</button>
             </div>
@@ -477,19 +476,19 @@
 
         const TARGET_GEOM = new THREE.SphereGeometry(1.8, 16, 16);
 
-        // 🛰️ Realistic Satellite 3D Model Constructor (Central Bus + Dual Solar Panels)
+        // 🛰️ Realistic Satellite 3D Model using MeshBasicMaterial (Ensures visibility without scene lights)
         function createRealisticSatelliteModel(colorHex) {
             const group = new THREE.Group();
 
             // Central Satellite Bus (Main Body)
             const busGeo = new THREE.BoxGeometry(0.7, 0.7, 0.7);
-            const busMat = new THREE.MeshStandardMaterial({ color: '#cbd5e1', roughness: 0.3, metalness: 0.8 });
+            const busMat = new THREE.MeshBasicMaterial({ color: '#cbd5e1' });
             const busMesh = new THREE.Mesh(busGeo, busMat);
             group.add(busMesh);
 
             // Solar Panel Wing - Left
             const panelGeo = new THREE.BoxGeometry(1.8, 0.04, 0.5);
-            const panelMat = new THREE.MeshStandardMaterial({ color: '#1e3a8a', roughness: 0.2, metalness: 0.9 });
+            const panelMat = new THREE.MeshBasicMaterial({ color: '#1e3a8a' });
             const leftPanel = new THREE.Mesh(panelGeo, panelMat);
             leftPanel.position.x = -1.25;
             group.add(leftPanel);
@@ -509,8 +508,8 @@
             return group;
         }
 
-        function getSatMaterial(name) {
-            let uname = (name || '').toUpperCase();
+        function getSatColor(satName) {
+            let uname = (satName || '').toUpperCase();
             if (uname.includes('GPS') || uname.includes('NAVSTAR')) return '#10b981';
             if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('C0')) return '#ef4444';
             if (uname.includes('GALILEO') || uname.includes('GSAT')) return '#38bdf8';
@@ -557,15 +556,6 @@
         function isSatVisibleInMyanmar(lat, lng) {
             if (isNaN(lat) || isNaN(lng)) return false;
             return (lat >= -25.0 && lat <= 55.0 && lng >= 30.0 && lng <= 160.0);
-        }
-
-        function getSatColor(satName) {
-            let uname = (satName || '').toUpperCase();
-            if (uname.includes('GPS') || uname.includes('NAVSTAR')) return '#10b981';
-            if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('C0')) return '#ef4444';
-            if (uname.includes('GALILEO') || uname.includes('GSAT')) return '#38bdf8';
-            if (uname.includes('GLONASS') || uname.includes('COSMOS')) return '#c084fc';
-            return '#10b981';
         }
 
         function generateHighDensityFallbackList() {
