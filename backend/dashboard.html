@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GNSS Tactical Mission Control Center</title>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://unpkg.com/globe.gl"></script>
+    <!-- 🛠️ FIXED: Three.js MUST be loaded BEFORE globe.gl -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/globe.gl"></script>
     <script src="https://cdn.jsdelivr.net/npm/satellite.js@4.1.3/dist/satellite.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -1426,8 +1427,8 @@
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
                 myGlobe = Globe()(container)
-                    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-                    .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
+                    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+                    .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
                     .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.18 })
                     .showAtmosphere(true).atmosphereColor('#38bdf8').atmosphereAltitude(0.22)
                     .polygonCapColor(() => 'rgba(56, 189, 248, 0.18)').polygonSideColor(() => 'rgba(56, 189, 248, 0.05)').polygonStrokeColor(() => '#38bdf8').polygonAltitude(0.012)
