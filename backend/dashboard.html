@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GNSS Tactical Mission Control Center</title>
 
-    <!-- 🛠️ 100% STABLE IMPORTS -->
-    <script src="https://unpkg.com/three"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.min.js"></script>
     <script src="https://unpkg.com/globe.gl"></script>
     <script src="https://cdn.jsdelivr.net/npm/satellite.js@4.1.3/dist/satellite.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -408,6 +407,7 @@
                 
                 <div class="rinex-split-view">
                     <div class="rinex-left">
+                        
                         <div class="mono" style="display:flex; flex-direction: column; gap: 6px; padding: 8px; border: 1px dashed rgba(56,189,248,0.4); border-radius: 4px; background: rgba(15,23,42,0.6);">
                             <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:9px; color:var(--text-muted); width: 100%; cursor: pointer;">
                             <button onclick="uploadAndCompare()" class="upload-btn" style="width: 100%; padding: 6px 0;">🚀 ANALYZE FILES</button>
@@ -495,31 +495,46 @@
             return window.THREE || (typeof Globe !== 'undefined' && Globe.THREE);
         }
 
-        // 🛰️ Stable 3D Satellite Model
+        // 🛠️ Memory Optimization: Create Geometries Only ONCE
+        let sharedGeometries = null;
+
+        function initSharedGeometries(THREE) {
+            if (sharedGeometries) return;
+            sharedGeometries = {
+                busGeo: new THREE.BoxGeometry(0.7, 0.7, 0.7),
+                busMat: new THREE.MeshBasicMaterial({ color: 0x94a3b8 }),
+                panelGeo: new THREE.BoxGeometry(2.0, 0.04, 0.6),
+                panelMat: new THREE.MeshBasicMaterial({ color: 0x38bdf8 }),
+                antennaGeo: new THREE.CylinderGeometry(0.06, 0.06, 0.8, 6),
+                targetGeom: new THREE.SphereGeometry(1.8, 16, 16),
+                targetMat: new THREE.MeshBasicMaterial({ color: 0xffb700, wireframe: true }),
+                matCache: {}
+            };
+        }
+
+        // 🛰️ Stable 3D Satellite Model (Memory Leak Free)
         function createRealisticSatelliteModel(colorHex) {
             const THREE = getTHREE();
             if (!THREE) return null;
-            
+            initSharedGeometries(THREE);
+
             const group = new THREE.Group();
 
-            const busGeo = new THREE.BoxGeometry(0.7, 0.7, 0.7);
-            const busMat = new THREE.MeshBasicMaterial({ color: 0x94a3b8 });
-            const busMesh = new THREE.Mesh(busGeo, busMat);
+            const busMesh = new THREE.Mesh(sharedGeometries.busGeo, sharedGeometries.busMat);
             group.add(busMesh);
 
-            const panelGeo = new THREE.BoxGeometry(2.0, 0.04, 0.6);
-            const panelMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
-            const leftPanel = new THREE.Mesh(panelGeo, panelMat);
+            const leftPanel = new THREE.Mesh(sharedGeometries.panelGeo, sharedGeometries.panelMat);
             leftPanel.position.x = -1.35;
             group.add(leftPanel);
 
-            const rightPanel = new THREE.Mesh(panelGeo, panelMat);
+            const rightPanel = new THREE.Mesh(sharedGeometries.panelGeo, sharedGeometries.panelMat);
             rightPanel.position.x = 1.35;
             group.add(rightPanel);
 
-            const antennaGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.8, 6);
-            const antennaMat = new THREE.MeshBasicMaterial({ color: colorHex }); 
-            const antennaMesh = new THREE.Mesh(antennaGeo, antennaMat);
+            if (!sharedGeometries.matCache[colorHex]) {
+                sharedGeometries.matCache[colorHex] = new THREE.MeshBasicMaterial({ color: colorHex });
+            }
+            const antennaMesh = new THREE.Mesh(sharedGeometries.antennaGeo, sharedGeometries.matCache[colorHex]);
             antennaMesh.position.y = 0.6;
             group.add(antennaMesh);
 
@@ -714,7 +729,6 @@
                     const visibleInMM = isSatVisibleInMyanmar(sgp4Pos.lat, sgp4Pos.lng);
 
                     if (!isMyanmarOnlyMode || visibleInMM) {
-                        // 🛠️ FIXED: Ignore TLE Age in Simulation Mode so they don't appear OFFLINE
                         let ageDays = isSimulationMode ? 0 : getTleAgeDays(s.line1);
                         if (ageDays > 30) {
                             offlineCount++;
@@ -828,8 +842,9 @@
                     populateUpcomingPassesList();
                 }
 
+                // 🛠️ FIXED: Update objects safely only during custom selection filters
                 if (myGlobe) {
-                    myGlobe.objectsData(currentLiveSatObjects);
+                    myGlobe.objectsData([...currentLiveSatObjects]);
                 }
 
                 resizeGlobe();
@@ -1209,8 +1224,6 @@
                     }
                 }
 
-                console.log("✅ RINEX Parsing Successful with Waveforms:", { markerName, version, satRecordsCount: satRecords.length });
-
                 return {
                     markerName: markerName !== "Unknown" ? markerName : fileName,
                     obsDate, recType, interval, version, counts,
@@ -1247,7 +1260,6 @@
             fileListContainer.innerHTML = ''; 
             uploadedStationsList = [];
 
-            // ဖိုင် Upload တင်ပြီးပြီဆိုရင် CSV နဲ့ Accuracy ခလုတ်တွေကို ဖော်ပေးမယ်
             document.getElementById('btn-export-csv').style.display = 'inline-block';
             document.getElementById('btn-check-acc').style.display = 'inline-block';
 
@@ -1517,7 +1529,6 @@
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
                 myGlobe = Globe()(container)
-                    // 🛠️ FIXED: Used reliable UNPKG links to prevent CORS blocking
                     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
                     .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.18 })
@@ -1530,8 +1541,10 @@
                         const isTarget = d.id === selectedSatId;
                         const THREE = getTHREE();
                         if (!THREE) return null;
+                        initSharedGeometries(THREE);
+
                         if (isTarget) {
-                            return new THREE.Mesh(new THREE.SphereGeometry(1.8, 16, 16), new THREE.MeshBasicMaterial({ color: 0xffb700, wireframe: true }));
+                            return new THREE.Mesh(sharedGeometries.targetGeom, sharedGeometries.targetMat);
                         }
                         const colorHex = getSatColor(d.fullName);
                         return createRealisticSatelliteModel(colorHex);
@@ -1581,38 +1594,26 @@
 
         window.addEventListener('resize', resizeGlobe);
 
-        let lastFrameTime = performance.now();
-        let lastPassUpdate = 0;
-        let lastPosUpdate = 0;
-
-        function animateSatellites(currentTime) {
-            const deltaSec = (currentTime - lastFrameTime) / 1000;
-            lastFrameTime = currentTime;
-
-            if (currentTime - lastPosUpdate > 1000) { 
-                lastPosUpdate = currentTime;
-                if (currentLiveSatObjects.length > 0) {
-                    currentLiveSatObjects.forEach(s => {
-                        const sgp4Pos = propagateSGP4(s.id);
-                        s.lat = sgp4Pos.lat;
-                        s.lng = sgp4Pos.lng;
-                    });
-                    if (myGlobe) {
-                        myGlobe.objectsData(currentLiveSatObjects);
-                    }
-                }
+        // 🛠️ 100% Smooth Animation WITHOUT Memory Leaks
+        function animateSatellites() {
+            if (currentLiveSatObjects.length > 0) {
+                currentLiveSatObjects.forEach(s => {
+                    const sgp4Pos = propagateSGP4(s.id);
+                    s.lat = sgp4Pos.lat;
+                    s.lng = sgp4Pos.lng;
+                });
             }
-
-            if (currentTime - lastPassUpdate > 10000) {
-                lastPassUpdate = currentTime;
-                populateUpcomingPassesList();
-            }
-
             requestAnimationFrame(animateSatellites);
         }
         
+        // Pass List Update loop (every 10 seconds)
+        setInterval(() => {
+            if (currentLiveSatObjects.length > 0) {
+                populateUpcomingPassesList();
+            }
+        }, 10000);
+
         loadCelesTrakTLEs().then(() => {
-            lastFrameTime = performance.now();
             requestAnimationFrame(animateSatellites);
         });
 
