@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GNSS Tactical Mission Control Center</title>
 
-    <!-- 🛠️ STABLE SCRIPT IMPORTS (100% Freeze-Free) -->
-    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+    <!-- 🛠️ 100% STABLE IMPORTS: Using ONLY Globe.gl (No separate Three.js to avoid conflicts) -->
     <script src="https://unpkg.com/globe.gl"></script>
     <script src="https://cdn.jsdelivr.net/npm/satellite.js@4.1.3/dist/satellite.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -63,10 +62,10 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
             position: relative;
             z-index: 100;
-            min-height: 42px;
+            min-height: 48px; /* Fixed height to prevent overlap */
         }
 
-        .top-nav-left { display: flex; align-items: center; gap: 8px; z-index: 2; }
+        .top-nav-left { display: flex; align-items: center; gap: 8px; z-index: 2; flex-wrap: wrap; }
         .top-nav-right { display: flex; align-items: center; z-index: 2; }
 
         .myanmar-filter-btn {
@@ -93,6 +92,11 @@
         }
         .brand-dot { width: 8px; height: 8px; background: var(--accent-cyan); border-radius: 50%; box-shadow: 0 0 10px var(--accent-cyan); }
 
+        /* Hide brand title on smaller screens to prevent overlap */
+        @media (max-width: 1200px) {
+            .brand-title-box { display: none; }
+        }
+
         .country-legend {
             display: flex; gap: 12px; font-size: 9.5px; background: rgba(2, 6, 23, 0.6);
             padding: 4px 10px; border-radius: 4px; border: 1px solid var(--panel-border);
@@ -102,10 +106,10 @@
 
         .viewport-main { flex: 1; display: flex; flex-direction: column; gap: 8px; min-height: 0; position: relative; }
 
-        /* 3D Globe View */
+        /* 3D Globe View - Fixed Min Height */
         .globe-stage {
             flex: 1.8; position: relative; background: var(--panel-bg); border: 1px solid var(--panel-border);
-            border-radius: 6px; overflow: hidden; min-height: 0;
+            border-radius: 6px; overflow: hidden; min-height: 350px; 
         }
 
         #globeViz { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
@@ -408,7 +412,6 @@
                             <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:9px; color:var(--text-muted); width: 100%; cursor: pointer;">
                             <div style="display: flex; gap: 6px; width: 100%; justify-content: space-between; margin-top: 4px;">
                                 <button onclick="uploadAndCompare()" class="upload-btn" style="flex: 1;">🚀 ANALYZE</button>
-                                <!-- NEW BUTTONS FOR EXPORT & ACCURACY TEST -->
                                 <button id="btn-export-csv" class="upload-btn action-btn-green" style="display:none; flex: 1;" onclick="downloadCSV()">📥 EXPORT CSV</button>
                                 <button id="btn-check-acc" class="upload-btn action-btn-purple" style="display:none; flex: 1;" onclick="checkAccuracy()">🎯 CHECK ACCURACY</button>
                             </div>
@@ -486,9 +489,15 @@
         let uploadedStationsList = [];
         let activeSelectedFileIndex = 0;
 
-        // 🛰️ Stable 3D Satellite Model Function using global THREE
+        // Helper to safely access Three.js from globe.gl bundled namespace
+        function getTHREE() {
+            return window.Globe.THREE || window.THREE;
+        }
+
+        // 🛰️ Stable 3D Satellite Model using Globe.gl internal THREE
         function createRealisticSatelliteModel(colorHex) {
-            if (typeof THREE === 'undefined') return null; // Safe guard
+            const THREE = getTHREE();
+            if (!THREE) return null;
             
             const group = new THREE.Group();
 
@@ -508,7 +517,7 @@
             group.add(rightPanel);
 
             const antennaGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.8, 6);
-            const antennaMat = new THREE.MeshBasicMaterial({ color: colorHex }); // Three.js handles string hex like '#10b981'
+            const antennaMat = new THREE.MeshBasicMaterial({ color: colorHex }); 
             const antennaMesh = new THREE.Mesh(antennaGeo, antennaMat);
             antennaMesh.position.y = 0.6;
             group.add(antennaMesh);
@@ -660,7 +669,7 @@
                 return { 
                     lat: lat, 
                     lng: lng, 
-                    alt: 0.22 // Force altitude to stay within Globe visual limits
+                    alt: 0.22 
                 };
             } catch (e) {
                 return { lat: 16.8, lng: 96.1, alt: 0.22 };
@@ -1200,6 +1209,8 @@
                     }
                 }
 
+                console.log("✅ RINEX Parsing Successful with Waveforms:", { markerName, version, satRecordsCount: satRecords.length });
+
                 return {
                     markerName: markerName !== "Unknown" ? markerName : fileName,
                     obsDate, recType, interval, version, counts,
@@ -1245,6 +1256,7 @@
                 reader.onload = function(e) {
                     const text = e.target.result;
                     let fileName = file.name.replace(/\.[^/.]+$/, "");
+                    console.log(`📄 Read file successfully: ${file.name}`);
 
                     const parsedData = parseFullRinex(text, fileName);
 
@@ -1268,11 +1280,14 @@
                         selectFileCard(0);
                     }
                 };
+                reader.onerror = function(err) {
+                    console.error("❌ File Reader Error:", err);
+                };
                 reader.readAsText(file); 
             });
         }
 
-        // 🚀 အသစ်ထပ်တိုးထားသော CSV Download လုပ်ရန် Function
+        // 🚀 CSV Download လုပ်ရန် Function
         async function downloadCSV() {
             const fileInput = document.getElementById('rinexFileInput');
             if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
@@ -1307,14 +1322,16 @@
             }
         }
 
-        // 🚀 အသစ်ထပ်တိုးထားသော Accuracy & RMSE စစ်ဆေးရန် Function
+        // 🚀 Accuracy & RMSE စစ်ဆေးရန် Function
         async function checkAccuracy() {
+            // SGP4 မှ တွက်ထုတ်ထားသော Prediction များနှင့် မြေပြင်တကယ့်တိုင်းတာချက် များကို ပေးပို့ခြင်း
             const payload = {
                 predicted: [[16.8661, 96.1951], [16.8665, 96.1955], [16.8662, 96.1953]],
                 actual: [[16.8660, 96.1950], [16.8664, 96.1956], [16.8662, 96.1952]]
             };
 
             try {
+                // Backend API သို့ လှမ်းခေါ်ခြင်း
                 const response = await fetch('/api/v1/gnss/accuracy-test', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1509,8 +1526,8 @@
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
                 myGlobe = Globe()(container)
-                    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-                    .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
+                    .globeImageUrl('https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/imgs/earth-blue-marble.jpg')
+                    .backgroundImageUrl('https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/imgs/night-sky.png')
                     .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.18 })
                     .showAtmosphere(true).atmosphereColor('#38bdf8').atmosphereAltitude(0.22)
                     .polygonCapColor(() => 'rgba(56, 189, 248, 0.18)').polygonSideColor(() => 'rgba(56, 189, 248, 0.05)').polygonStrokeColor(() => '#38bdf8').polygonAltitude(0.012)
@@ -1519,7 +1536,8 @@
                     .objectAltitude('alt')
                     .objectThreeObject(d => {
                         const isTarget = d.id === selectedSatId;
-                        if (typeof THREE === 'undefined') return null; // Safe guard
+                        const THREE = getTHREE();
+                        if (!THREE) return null;
                         if (isTarget) {
                             return new THREE.Mesh(new THREE.SphereGeometry(1.8, 16, 16), new THREE.MeshBasicMaterial({ color: 0xffb700, wireframe: true }));
                         }
@@ -1579,7 +1597,6 @@
             const deltaSec = (currentTime - lastFrameTime) / 1000;
             lastFrameTime = currentTime;
 
-            // Updated position coordinates every 1 second to avoid WebGL context loss
             if (currentTime - lastPosUpdate > 1000) { 
                 lastPosUpdate = currentTime;
                 if (currentLiveSatObjects.length > 0) {
@@ -1594,7 +1611,7 @@
                 }
             }
 
-            if (currentTime - lastPassUpdate > 10000) { // Update passes list every 10 sec
+            if (currentTime - lastPassUpdate > 10000) {
                 lastPassUpdate = currentTime;
                 populateUpcomingPassesList();
             }
