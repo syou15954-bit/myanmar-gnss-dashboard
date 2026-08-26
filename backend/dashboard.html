@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GNSS Tactical Mission Control Center</title>
 
-    <!-- 🛠️ STABLE SCRIPT ORDER (Do not change) -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.min.js"></script>
+    <!-- 🛠️ STABLE SCRIPT IMPORTS (100% Freeze-Free) -->
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
     <script src="https://unpkg.com/globe.gl"></script>
     <script src="https://cdn.jsdelivr.net/npm/satellite.js@4.1.3/dist/satellite.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -205,7 +205,7 @@
         .modal-close { cursor: pointer; color: var(--text-muted); font-size: 18px; font-weight: 700; transition: color 0.2s; }
         .modal-close:hover { color: var(--accent-red); }
 
-        /* NEW Action Buttons */
+        /* Action Buttons */
         .action-btn-green { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
         .action-btn-green:hover { background: rgba(16, 185, 129, 0.4); }
         .action-btn-purple { background: rgba(192, 132, 252, 0.2); color: #c084fc; border: 1px solid #c084fc; }
@@ -404,11 +404,11 @@
                 
                 <div class="rinex-split-view">
                     <div class="rinex-left">
-                        <!-- 🚀 NEW UI BUTTONS INSERTED HERE -->
                         <div class="mono" style="display:flex; flex-wrap: wrap; gap: 6px; padding: 8px; border: 1px dashed rgba(56,189,248,0.4); border-radius: 4px; background: rgba(15,23,42,0.6);">
                             <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:9px; color:var(--text-muted); width: 100%; cursor: pointer;">
                             <div style="display: flex; gap: 6px; width: 100%; justify-content: space-between; margin-top: 4px;">
                                 <button onclick="uploadAndCompare()" class="upload-btn" style="flex: 1;">🚀 ANALYZE</button>
+                                <!-- NEW BUTTONS FOR EXPORT & ACCURACY TEST -->
                                 <button id="btn-export-csv" class="upload-btn action-btn-green" style="display:none; flex: 1;" onclick="downloadCSV()">📥 EXPORT CSV</button>
                                 <button id="btn-check-acc" class="upload-btn action-btn-purple" style="display:none; flex: 1;" onclick="checkAccuracy()">🎯 CHECK ACCURACY</button>
                             </div>
@@ -486,10 +486,10 @@
         let uploadedStationsList = [];
         let activeSelectedFileIndex = 0;
 
-        const TARGET_GEOM = new THREE.SphereGeometry(1.8, 16, 16);
-
-        // 🛰️ Stable 3D Satellite Model using explicit THREE from head script
+        // 🛰️ Stable 3D Satellite Model Function using global THREE
         function createRealisticSatelliteModel(colorHex) {
+            if (typeof THREE === 'undefined') return null; // Safe guard
+            
             const group = new THREE.Group();
 
             const busGeo = new THREE.BoxGeometry(0.7, 0.7, 0.7);
@@ -508,7 +508,7 @@
             group.add(rightPanel);
 
             const antennaGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.8, 6);
-            const antennaMat = new THREE.MeshBasicMaterial({ color: colorHex });
+            const antennaMat = new THREE.MeshBasicMaterial({ color: colorHex }); // Three.js handles string hex like '#10b981'
             const antennaMesh = new THREE.Mesh(antennaGeo, antennaMat);
             antennaMesh.position.y = 0.6;
             group.add(antennaMesh);
@@ -638,25 +638,32 @@
         function propagateSGP4(id, timeOffsetSec = 0) {
             try {
                 const tle = TLE_DATABASE[id];
-                if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 20200 };
+                if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 0.22 };
                 
                 const satrec = satellite.twoline2satrec(tle.line1, tle.line2);
                 const targetTime = new Date(Date.now() + timeOffsetSec * 1000);
                 const posVel = satellite.propagate(satrec, targetTime);
                 
                 if (!posVel || !posVel.position || isNaN(posVel.position.x)) {
-                    return { lat: 16.8, lng: 96.1, alt: 20200 };
+                    return { lat: 16.8, lng: 96.1, alt: 0.22 };
                 }
 
                 const gmst = satellite.gstime(targetTime);
                 const posGd = satellite.eciToGeodetic(posVel.position, gmst);
+                
+                let lat = satellite.degreesLat(posGd.latitude);
+                let lng = satellite.degreesLong(posGd.longitude);
+                
+                if(isNaN(lat)) lat = 16.8;
+                if(isNaN(lng)) lng = 96.1;
+
                 return { 
-                    lat: satellite.degreesLat(posGd.latitude), 
-                    lng: satellite.degreesLong(posGd.longitude), 
-                    alt: Math.round(posGd.height) 
+                    lat: lat, 
+                    lng: lng, 
+                    alt: 0.22 // Force altitude to stay within Globe visual limits
                 };
             } catch (e) {
-                return { lat: 16.8, lng: 96.1, alt: 20200 };
+                return { lat: 16.8, lng: 96.1, alt: 0.22 };
             }
         }
 
@@ -1193,8 +1200,6 @@
                     }
                 }
 
-                console.log("✅ RINEX Parsing Successful with Waveforms:", { markerName, version, satRecordsCount: satRecords.length });
-
                 return {
                     markerName: markerName !== "Unknown" ? markerName : fileName,
                     obsDate, recType, interval, version, counts,
@@ -1240,7 +1245,6 @@
                 reader.onload = function(e) {
                     const text = e.target.result;
                     let fileName = file.name.replace(/\.[^/.]+$/, "");
-                    console.log(`📄 Read file successfully: ${file.name}`);
 
                     const parsedData = parseFullRinex(text, fileName);
 
@@ -1263,9 +1267,6 @@
                     if (uploadedStationsList.length === 1) {
                         selectFileCard(0);
                     }
-                };
-                reader.onerror = function(err) {
-                    console.error("❌ File Reader Error:", err);
                 };
                 reader.readAsText(file); 
             });
@@ -1308,14 +1309,12 @@
 
         // 🚀 အသစ်ထပ်တိုးထားသော Accuracy & RMSE စစ်ဆေးရန် Function
         async function checkAccuracy() {
-            // SGP4 မှ တွက်ထုတ်ထားသော Prediction များနှင့် မြေပြင်တကယ့်တိုင်းတာချက် များကို ပေးပို့ခြင်း
             const payload = {
                 predicted: [[16.8661, 96.1951], [16.8665, 96.1955], [16.8662, 96.1953]],
                 actual: [[16.8660, 96.1950], [16.8664, 96.1956], [16.8662, 96.1952]]
             };
 
             try {
-                // Backend API သို့ လှမ်းခေါ်ခြင်း
                 const response = await fetch('/api/v1/gnss/accuracy-test', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1520,8 +1519,9 @@
                     .objectAltitude('alt')
                     .objectThreeObject(d => {
                         const isTarget = d.id === selectedSatId;
+                        if (typeof THREE === 'undefined') return null; // Safe guard
                         if (isTarget) {
-                            return new THREE.Mesh(TARGET_GEOM, new THREE.MeshBasicMaterial({ color: 0xffb700, wireframe: true }));
+                            return new THREE.Mesh(new THREE.SphereGeometry(1.8, 16, 16), new THREE.MeshBasicMaterial({ color: 0xffb700, wireframe: true }));
                         }
                         const colorHex = getSatColor(d.fullName);
                         return createRealisticSatelliteModel(colorHex);
@@ -1573,20 +1573,28 @@
 
         let lastFrameTime = performance.now();
         let lastPassUpdate = 0;
+        let lastPosUpdate = 0;
 
         function animateSatellites(currentTime) {
             const deltaSec = (currentTime - lastFrameTime) / 1000;
             lastFrameTime = currentTime;
 
-            if (currentLiveSatObjects.length > 0) {
-                currentLiveSatObjects.forEach(s => {
-                    const sgp4Pos = propagateSGP4(s.id);
-                    s.lat = sgp4Pos.lat;
-                    s.lng = sgp4Pos.lng;
-                });
+            // Updated position coordinates every 1 second to avoid WebGL context loss
+            if (currentTime - lastPosUpdate > 1000) { 
+                lastPosUpdate = currentTime;
+                if (currentLiveSatObjects.length > 0) {
+                    currentLiveSatObjects.forEach(s => {
+                        const sgp4Pos = propagateSGP4(s.id);
+                        s.lat = sgp4Pos.lat;
+                        s.lng = sgp4Pos.lng;
+                    });
+                    if (myGlobe) {
+                        myGlobe.objectsData(currentLiveSatObjects);
+                    }
+                }
             }
 
-            if (currentTime - lastPassUpdate > 1000) {
+            if (currentTime - lastPassUpdate > 10000) { // Update passes list every 10 sec
                 lastPassUpdate = currentTime;
                 populateUpcomingPassesList();
             }
