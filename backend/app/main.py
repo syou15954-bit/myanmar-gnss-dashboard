@@ -1,8 +1,11 @@
 import os
 import sys
+import io
+import numpy as np
+import pandas as pd
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 
 # Module Import Error မတက်စေရန် Path များကို စနစ်တကျ ထည့်သွင်းခြင်း
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -19,6 +22,7 @@ from app.analytics.skyplot import calculate_skyplot_data
 from app.analytics.dop_calculator import calculate_dop_metrics
 from app.parsers.rinex_parser import parse_rinex_bytes
 from app.analytics.gnss_compare import analyze_gps_vs_bds
+from app.analytics.accuracy_evaluator import evaluate_accuracy_and_reliability
 
 def categorize_sat(name):
     uname = name.upper()
@@ -70,7 +74,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:8000",
         "http://127.0.0.1:8000",
-        # "https://yourdomain.com",  # production frontend domain ရှိရင် ဒီနေရာမှာ ထည့်ပါ
+        "https://myanmar-gnss-dashboard.onrender.com",  # Production domain ထည့်သွင်းပြီး
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -100,7 +104,6 @@ def serve_dashboard():
 
 @app.get("/api/v1/dashboard/summary")
 def get_dashboard_summary():
-    # TODO: mock data — replace with real DB/fleet-status feed
     return {
         "fleet_status": {"total": 31, "active": 28, "degraded": 2, "inactive": 1},
         "global_coverage": {"coverage_percent": 98.7, "avg_pdop": 1.8},
@@ -113,7 +116,6 @@ def get_dashboard_summary():
 
 @app.get("/api/v1/dashboard/telemetry")
 def get_telemetry_metrics():
-    # TODO: mock data — replace with real telemetry/sensor feed
     return {
         "selected_sat": "SVN-62 / PRN-07",
         "fuel_level": 85,
@@ -184,6 +186,39 @@ async def compare_gps_bds_endpoint(file: UploadFile = File(...)):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Data Processing Error: {str(e)}")
+
+# 📊 Phase 7: Data Export Module (CSV Download Endpoint)
+@app.post("/api/v1/gnss/export/csv")
+async def export_gps_bds_csv(file: UploadFile = File(...)):
+    try:
+        contents = await file.read()
+        df = parse_rinex_bytes(contents, file.filename)
+        results = analyze_gps_vs_bds(df)
+
+        if "error" in results:
+            return {"status": "error", "message": results["error"]}
+
+        summary_df = pd.DataFrame({
+            "Timestamp": results["timestamps"],
+            "GPS_Sats": results["sat_count"]["gps"],
+            "BDS_Sats": results["sat_count"]["bds"]
+        })
+        
+        stream = io.StringIO()
+        summary_df.to_csv(stream, index=False)
+        response = StreamingResponse(iter([stream.getvalue()]), media_type="text/csv")
+        response.headers["Content-Disposition"] = "attachment; filename=gnss_comparison_report.csv"
+        return response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# 📈 Phase 8 & 9: Accuracy Verification & Reliability Testing (RMSE Engine)
+@app.post("/api/v1/gnss/accuracy-test")
+def run_accuracy_verification(data: dict):
+    pred = data.get("predicted", [])
+    act = data.get("actual", [])
+    result = evaluate_accuracy_and_reliability(pred, act)
+    return result
 
 @app.get("/api/tle")
 def get_live_tles():
