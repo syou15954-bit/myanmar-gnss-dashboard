@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GNSS Tactical Mission Control Center</title>
 
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.min.js"></script>
     <script src="https://unpkg.com/globe.gl"></script>
     <script src="https://cdn.jsdelivr.net/npm/satellite.js@4.1.3/dist/satellite.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -208,7 +208,7 @@
         .modal-close { cursor: pointer; color: var(--text-muted); font-size: 18px; font-weight: 700; transition: color 0.2s; }
         .modal-close:hover { color: var(--accent-red); }
 
-        /* FIXED: Action Buttons Layout */
+        /* Action Buttons */
         .action-btn-green { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
         .action-btn-green:hover { background: rgba(16, 185, 129, 0.4); }
         .action-btn-purple { background: rgba(192, 132, 252, 0.2); color: #c084fc; border: 1px solid #c084fc; }
@@ -408,7 +408,7 @@
                 <div class="rinex-split-view">
                     <div class="rinex-left">
                         
-                        <!-- 🛠️ FIXED: UI Buttons Layout -->
+                        <!-- 🛠️ FIXED UI BUTTONS: Stacked perfectly -->
                         <div class="mono" style="display:flex; flex-direction: column; gap: 6px; padding: 8px; border: 1px dashed rgba(56,189,248,0.4); border-radius: 4px; background: rgba(15,23,42,0.6);">
                             <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:9px; color:var(--text-muted); width: 100%; cursor: pointer;">
                             <button onclick="uploadAndCompare()" class="upload-btn" style="width: 100%; padding: 6px 0;">🚀 ANALYZE FILES</button>
@@ -1205,6 +1205,8 @@
                         chartDataBySys.GLO.push(parseFloat((39.5 + Math.cos(h * 0.4) * 4.2).toFixed(1)));
                     }
                 }
+
+                console.log("✅ RINEX Parsing Successful with Waveforms:", { markerName, version, satRecordsCount: satRecords.length });
 
                 return {
                     markerName: markerName !== "Unknown" ? markerName : fileName,
