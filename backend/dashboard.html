@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GNSS Tactical Mission Control Center</title>
 
-    <!-- 🛠️ 100% STABLE IMPORTS: Using ONLY Globe.gl (No separate Three.js to avoid conflicts) -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
     <script src="https://unpkg.com/globe.gl"></script>
     <script src="https://cdn.jsdelivr.net/npm/satellite.js@4.1.3/dist/satellite.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -62,7 +62,7 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
             position: relative;
             z-index: 100;
-            min-height: 48px; /* Fixed height to prevent overlap */
+            min-height: 48px;
         }
 
         .top-nav-left { display: flex; align-items: center; gap: 8px; z-index: 2; flex-wrap: wrap; }
@@ -92,7 +92,6 @@
         }
         .brand-dot { width: 8px; height: 8px; background: var(--accent-cyan); border-radius: 50%; box-shadow: 0 0 10px var(--accent-cyan); }
 
-        /* Hide brand title on smaller screens to prevent overlap */
         @media (max-width: 1200px) {
             .brand-title-box { display: none; }
         }
@@ -106,7 +105,7 @@
 
         .viewport-main { flex: 1; display: flex; flex-direction: column; gap: 8px; min-height: 0; position: relative; }
 
-        /* 3D Globe View - Fixed Min Height */
+        /* 3D Globe View */
         .globe-stage {
             flex: 1.8; position: relative; background: var(--panel-bg); border: 1px solid var(--panel-border);
             border-radius: 6px; overflow: hidden; min-height: 350px; 
@@ -186,7 +185,7 @@
         .rinex-left { width: 290px; display: flex; flex-direction: column; min-height: 0; flex-shrink: 0; gap: 8px; }
         .rinex-right { flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative; gap: 6px; }
 
-        .upload-btn { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 5px 12px; border-radius: 3px; font-size: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap;}
+        .upload-btn { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 6px 12px; border-radius: 3px; font-size: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap; text-align: center;}
         .upload-btn:hover { background: rgba(56, 189, 248, 0.35); }
 
         .rinex-file-list { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; margin-bottom: 0; padding-right: 2px; }
@@ -209,7 +208,7 @@
         .modal-close { cursor: pointer; color: var(--text-muted); font-size: 18px; font-weight: 700; transition: color 0.2s; }
         .modal-close:hover { color: var(--accent-red); }
 
-        /* Action Buttons */
+        /* FIXED: Action Buttons Layout */
         .action-btn-green { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
         .action-btn-green:hover { background: rgba(16, 185, 129, 0.4); }
         .action-btn-purple { background: rgba(192, 132, 252, 0.2); color: #c084fc; border: 1px solid #c084fc; }
@@ -408,14 +407,17 @@
                 
                 <div class="rinex-split-view">
                     <div class="rinex-left">
-                        <div class="mono" style="display:flex; flex-wrap: wrap; gap: 6px; padding: 8px; border: 1px dashed rgba(56,189,248,0.4); border-radius: 4px; background: rgba(15,23,42,0.6);">
+                        
+                        <!-- 🛠️ FIXED: UI Buttons Layout -->
+                        <div class="mono" style="display:flex; flex-direction: column; gap: 6px; padding: 8px; border: 1px dashed rgba(56,189,248,0.4); border-radius: 4px; background: rgba(15,23,42,0.6);">
                             <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:9px; color:var(--text-muted); width: 100%; cursor: pointer;">
-                            <div style="display: flex; gap: 6px; width: 100%; justify-content: space-between; margin-top: 4px;">
-                                <button onclick="uploadAndCompare()" class="upload-btn" style="flex: 1;">🚀 ANALYZE</button>
-                                <button id="btn-export-csv" class="upload-btn action-btn-green" style="display:none; flex: 1;" onclick="downloadCSV()">📥 EXPORT CSV</button>
-                                <button id="btn-check-acc" class="upload-btn action-btn-purple" style="display:none; flex: 1;" onclick="checkAccuracy()">🎯 CHECK ACCURACY</button>
+                            <button onclick="uploadAndCompare()" class="upload-btn" style="width: 100%; padding: 6px 0;">🚀 ANALYZE FILES</button>
+                            <div style="display: flex; gap: 6px; width: 100%;">
+                                <button id="btn-export-csv" class="upload-btn action-btn-green" style="display:none; flex: 1; padding: 6px 0;" onclick="downloadCSV()">📥 CSV</button>
+                                <button id="btn-check-acc" class="upload-btn action-btn-purple" style="display:none; flex: 1; padding: 6px 0;" onclick="checkAccuracy()">🎯 ACCURACY</button>
                             </div>
                         </div>
+
                         <div id="rinex-file-list" class="rinex-file-list mono">
                             <div style="text-align: center; color: var(--text-muted); font-size: 9.5px; padding: 25px 15px; border: 1px dashed rgba(56, 189, 248, 0.2); border-radius: 5px; background: rgba(2,6,23,0.4);">
                                 Waiting for RINEX files...
@@ -489,12 +491,11 @@
         let uploadedStationsList = [];
         let activeSelectedFileIndex = 0;
 
-        // Helper to safely access Three.js from globe.gl bundled namespace
         function getTHREE() {
-            return window.Globe.THREE || window.THREE;
+            return window.THREE || (typeof Globe !== 'undefined' && Globe.THREE);
         }
 
-        // 🛰️ Stable 3D Satellite Model using Globe.gl internal THREE
+        // 🛰️ Stable 3D Satellite Model
         function createRealisticSatelliteModel(colorHex) {
             const THREE = getTHREE();
             if (!THREE) return null;
@@ -666,11 +667,7 @@
                 if(isNaN(lat)) lat = 16.8;
                 if(isNaN(lng)) lng = 96.1;
 
-                return { 
-                    lat: lat, 
-                    lng: lng, 
-                    alt: 0.22 
-                };
+                return { lat: lat, lng: lng, alt: 0.22 };
             } catch (e) {
                 return { lat: 16.8, lng: 96.1, alt: 0.22 };
             }
@@ -1209,8 +1206,6 @@
                     }
                 }
 
-                console.log("✅ RINEX Parsing Successful with Waveforms:", { markerName, version, satRecordsCount: satRecords.length });
-
                 return {
                     markerName: markerName !== "Unknown" ? markerName : fileName,
                     obsDate, recType, interval, version, counts,
@@ -1256,8 +1251,7 @@
                 reader.onload = function(e) {
                     const text = e.target.result;
                     let fileName = file.name.replace(/\.[^/.]+$/, "");
-                    console.log(`📄 Read file successfully: ${file.name}`);
-
+                    
                     const parsedData = parseFullRinex(text, fileName);
 
                     uploadedStationsList.push({
@@ -1280,9 +1274,6 @@
                         selectFileCard(0);
                     }
                 };
-                reader.onerror = function(err) {
-                    console.error("❌ File Reader Error:", err);
-                };
                 reader.readAsText(file); 
             });
         }
@@ -1299,7 +1290,6 @@
             formData.append('file', fileInput.files[0]);
 
             try {
-                // Backend API သို့ လှမ်းခေါ်ခြင်း
                 const response = await fetch('/api/v1/gnss/export/csv', {
                     method: 'POST',
                     body: formData
@@ -1324,14 +1314,12 @@
 
         // 🚀 Accuracy & RMSE စစ်ဆေးရန် Function
         async function checkAccuracy() {
-            // SGP4 မှ တွက်ထုတ်ထားသော Prediction များနှင့် မြေပြင်တကယ့်တိုင်းတာချက် များကို ပေးပို့ခြင်း
             const payload = {
                 predicted: [[16.8661, 96.1951], [16.8665, 96.1955], [16.8662, 96.1953]],
                 actual: [[16.8660, 96.1950], [16.8664, 96.1956], [16.8662, 96.1952]]
             };
 
             try {
-                // Backend API သို့ လှမ်းခေါ်ခြင်း
                 const response = await fetch('/api/v1/gnss/accuracy-test', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1526,8 +1514,8 @@
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
                 myGlobe = Globe()(container)
-                    .globeImageUrl('https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/imgs/earth-blue-marble.jpg')
-                    .backgroundImageUrl('https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/imgs/night-sky.png')
+                    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+                    .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
                     .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.18 })
                     .showAtmosphere(true).atmosphereColor('#38bdf8').atmosphereAltitude(0.22)
                     .polygonCapColor(() => 'rgba(56, 189, 248, 0.18)').polygonSideColor(() => 'rgba(56, 189, 248, 0.05)').polygonStrokeColor(() => '#38bdf8').polygonAltitude(0.012)
