@@ -105,7 +105,7 @@
 
         .viewport-main { flex: 1; display: flex; flex-direction: column; gap: 8px; min-height: 0; position: relative; }
 
-        /* 3D Globe View - Perfect Centering */
+        /* 3D Globe View */
         .globe-stage {
             flex: 2.2; position: relative; background: var(--panel-bg); border: 1px solid var(--panel-border);
             border-radius: 6px; overflow: hidden; min-height: 420px; 
@@ -575,7 +575,7 @@
             
             if (isMyanmarOnlyMode) {
                 btn.innerText = '🇲🇲 MYANMAR VISIBLE (ACTIVE)';
-                if (myGlobe) myGlobe.pointOfView({ lat: 19.7633, lng: 96.0785, altitude: 1.0 }, 1200);
+                if (myGlobe) myGlobe.pointOfView({ lat: 19.7633, lng: 96.0785, altitude: 0.95 }, 1200);
             } else {
                 btn.innerText = '🇲🇲 MYANMAR VISIBLE ONLY';
             }
@@ -1522,11 +1522,11 @@
         try {
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
-                // 🛠️ 100% FIXED: Using MeshBasicMaterial Globe color so it's fully bright and never dark side shadowed
+                // 🛠️ 100% FIXED & CENTERED: Restored original brightness with centered camera altitude and full lighting
                 myGlobe = Globe()(container)
                     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
-                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.18 })
+                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.15 }, 0)
                     .showAtmosphere(true)
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.25)
@@ -1583,17 +1583,15 @@
                     .pathColor(d => d.color)
                     .pathStroke(d => d.stroke);
 
-                // 🛠️ Force MeshBasicMaterial to make globe fully illuminated from all sides (No Dark Side)
-                setTimeout(() => {
-                    if (myGlobe && myGlobe.scene) {
-                        myGlobe.scene().traverse(obj => {
-                            if (obj.isMesh && obj.material && obj.material.color && obj.material.color.getHex() !== 0x38bdf8 && obj.material.color.getHex() !== 0x10b981) {
-                                // Convert standard material to MeshBasicMaterial so it glows and never goes dark
-                                obj.material = new (getTHREE()).MeshBasicMaterial({ map: obj.material.map, color: 0xffffff });
-                            }
-                        });
-                    }
-                }, 1000);
+                // 🛠️ Add Bright Ambient and Directional Lights so globe is fully illuminated and centered
+                const THREE = getTHREE();
+                if (THREE && myGlobe.scene) {
+                    const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+                    myGlobe.scene().add(ambientLight);
+                    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+                    dirLight.position.set(10, 10, 10);
+                    myGlobe.scene().add(dirLight);
+                }
 
                 fetch('https://unpkg.com/three-globe/example/datasets/ne_110m_admin_0_countries.geojson')
                     .then(res => res.json()).then(countries => { if (myGlobe) myGlobe.polygonsData(countries.features); }).catch(() => {});
