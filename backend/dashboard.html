@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GNSS Tactical Mission Control Center</title>
 
+    <!-- 🛠️ 100% FIXED: Using strict stable version of Three.js to prevent WebGL Crash -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.min.js"></script>
     <script src="https://unpkg.com/globe.gl"></script>
     <script src="https://cdn.jsdelivr.net/npm/satellite.js@4.1.3/dist/satellite.min.js"></script>
@@ -407,7 +408,6 @@
                 
                 <div class="rinex-split-view">
                     <div class="rinex-left">
-                        
                         <div class="mono" style="display:flex; flex-direction: column; gap: 6px; padding: 8px; border: 1px dashed rgba(56,189,248,0.4); border-radius: 4px; background: rgba(15,23,42,0.6);">
                             <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:9px; color:var(--text-muted); width: 100%; cursor: pointer;">
                             <button onclick="uploadAndCompare()" class="upload-btn" style="width: 100%; padding: 6px 0;">🚀 ANALYZE FILES</button>
@@ -492,14 +492,15 @@
         let activeSelectedFileIndex = 0;
 
         function getTHREE() {
-            return window.THREE || (typeof Globe !== 'undefined' && Globe.THREE);
+            return window.THREE;
         }
 
-        // 🛠️ Memory Optimization: Create Geometries Only ONCE
+        // 🛠️ 100% Stable Memory Optimized Geometries
         let sharedGeometries = null;
 
-        function initSharedGeometries(THREE) {
-            if (sharedGeometries) return;
+        function initSharedGeometries() {
+            const THREE = getTHREE();
+            if (!THREE || sharedGeometries) return;
             sharedGeometries = {
                 busGeo: new THREE.BoxGeometry(0.7, 0.7, 0.7),
                 busMat: new THREE.MeshBasicMaterial({ color: 0x94a3b8 }),
@@ -512,11 +513,11 @@
             };
         }
 
-        // 🛰️ Stable 3D Satellite Model (Memory Leak Free)
+        // 🛰️ Solid 3D Satellite Builder
         function createRealisticSatelliteModel(colorHex) {
             const THREE = getTHREE();
             if (!THREE) return null;
-            initSharedGeometries(THREE);
+            initSharedGeometries();
 
             const group = new THREE.Group();
 
@@ -642,6 +643,9 @@
                         json.data.all.forEach(s => { TLE_DATABASE[s.id] = s; });
                         document.getElementById('tle-status-badge') && (document.getElementById('tle-status-badge').innerText = `● LIVE SYNC (${json.data.all.length} SATS)`);
                         renderCustomSelection();
+                        
+                        // Load objects strictly once
+                        if (myGlobe) myGlobe.objectsData([...currentLiveSatObjects]);
                         return; 
                     }
                 }
@@ -652,6 +656,9 @@
             categorizeSatsList(fallbackList);
             document.getElementById('tle-status-badge') && (document.getElementById('tle-status-badge').innerHTML = `<span style="color:var(--accent-yellow);">● LIVE SIMULATION</span>`);
             renderCustomSelection();
+            
+            // Load objects strictly once
+            if (myGlobe) myGlobe.objectsData([...currentLiveSatObjects]);
         }
 
         function getFilteredSatellites() {
@@ -830,6 +837,7 @@
                     if (myGlobe) {
                         myGlobe.pathsData([]);
                         myGlobe.htmlElementsData([]);
+                        myGlobe.objectsData([]);
                     }
                     const passListContainer = document.getElementById('upcoming-passes-list');
                     if (passListContainer) {
@@ -842,12 +850,10 @@
                     populateUpcomingPassesList();
                 }
 
-                // 🛠️ FIXED: Update objects safely only during custom selection filters
-                if (myGlobe) {
+                // If user changes constellation filters, we MUST update objects array
+                if (myGlobe && currentLiveSatObjects.length > 0) {
                     myGlobe.objectsData([...currentLiveSatObjects]);
                 }
-
-                resizeGlobe();
 
             } catch (err) {
                 console.error("Render Error:", err);
@@ -1224,6 +1230,8 @@
                     }
                 }
 
+                console.log("✅ RINEX Parsing Successful with Waveforms:", { markerName, version, satRecordsCount: satRecords.length });
+
                 return {
                     markerName: markerName !== "Unknown" ? markerName : fileName,
                     obsDate, recType, interval, version, counts,
@@ -1260,6 +1268,7 @@
             fileListContainer.innerHTML = ''; 
             uploadedStationsList = [];
 
+            // ဖိုင် Upload တင်ပြီးပြီဆိုရင် CSV နဲ့ Accuracy ခလုတ်တွေကို ဖော်ပေးမယ်
             document.getElementById('btn-export-csv').style.display = 'inline-block';
             document.getElementById('btn-check-acc').style.display = 'inline-block';
 
@@ -1541,7 +1550,7 @@
                         const isTarget = d.id === selectedSatId;
                         const THREE = getTHREE();
                         if (!THREE) return null;
-                        initSharedGeometries(THREE);
+                        initSharedGeometries();
 
                         if (isTarget) {
                             return new THREE.Mesh(sharedGeometries.targetGeom, sharedGeometries.targetMat);
