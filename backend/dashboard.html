@@ -494,17 +494,17 @@
             return window.THREE || (typeof Globe !== 'undefined' && Globe.THREE);
         }
 
+        // 🛠️ Highly visible 3D Satellite Geometry Builder with Glowing Materials
         let sharedGeometries = null;
-
         function initSharedGeometries(THREE) {
             if (sharedGeometries) return;
             sharedGeometries = {
-                busGeo: new THREE.BoxGeometry(0.9, 0.9, 0.9),
-                busMat: new THREE.MeshBasicMaterial({ color: 0x94a3b8 }),
-                panelGeo: new THREE.BoxGeometry(2.6, 0.05, 0.8),
+                busGeo: new THREE.BoxGeometry(1.2, 1.2, 1.2),
+                busMat: new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false }),
+                panelGeo: new THREE.BoxGeometry(4.5, 0.08, 1.2),
                 panelMat: new THREE.MeshBasicMaterial({ color: 0x38bdf8 }),
-                antennaGeo: new THREE.CylinderGeometry(0.08, 0.08, 1.0, 6),
-                targetGeom: new THREE.SphereGeometry(2.2, 16, 16),
+                antennaGeo: new THREE.CylinderGeometry(0.12, 0.12, 1.8, 8),
+                targetGeom: new THREE.SphereGeometry(3.0, 16, 16),
                 targetMat: new THREE.MeshBasicMaterial({ color: 0xffb700, wireframe: true }),
                 matCache: {}
             };
@@ -516,22 +516,26 @@
             initSharedGeometries(THREE);
 
             const group = new THREE.Group();
+            
+            // Satellite Bus Body
             const busMesh = new THREE.Mesh(sharedGeometries.busGeo, sharedGeometries.busMat);
             group.add(busMesh);
 
+            // Solar Panels
             const leftPanel = new THREE.Mesh(sharedGeometries.panelGeo, sharedGeometries.panelMat);
-            leftPanel.position.x = -1.75;
+            leftPanel.position.x = -3.0;
             group.add(leftPanel);
 
             const rightPanel = new THREE.Mesh(sharedGeometries.panelGeo, sharedGeometries.panelMat);
-            rightPanel.position.x = 1.75;
+            rightPanel.position.x = 3.0;
             group.add(rightPanel);
 
+            // Antenna / Sensor
             if (!sharedGeometries.matCache[colorHex]) {
                 sharedGeometries.matCache[colorHex] = new THREE.MeshBasicMaterial({ color: colorHex });
             }
             const antennaMesh = new THREE.Mesh(sharedGeometries.antennaGeo, sharedGeometries.matCache[colorHex]);
-            antennaMesh.position.y = 0.8;
+            antennaMesh.position.y = 1.2;
             group.add(antennaMesh);
 
             return group;
@@ -667,14 +671,14 @@
         function propagateSGP4(id, timeOffsetSec = 0) {
             try {
                 const tle = TLE_DATABASE[id];
-                if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 0.35 };
+                if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 0.45 };
                 
                 const satrec = satellite.twoline2satrec(tle.line1, tle.line2);
                 const targetTime = new Date(Date.now() + timeOffsetSec * 1000);
                 const posVel = satellite.propagate(satrec, targetTime);
                 
                 if (!posVel || !posVel.position || isNaN(posVel.position.x)) {
-                    return { lat: 16.8, lng: 96.1, alt: 0.35 };
+                    return { lat: 16.8, lng: 96.1, alt: 0.45 };
                 }
 
                 const gmst = satellite.gstime(targetTime);
@@ -686,9 +690,9 @@
                 if(isNaN(lat)) lat = 16.8;
                 if(isNaN(lng)) lng = 96.1;
 
-                return { lat: lat, lng: lng, alt: 0.35 };
+                return { lat: lat, lng: lng, alt: 0.45 }; // 🛠️ Explicit high altitude for maximum satellite visibility
             } catch (e) {
-                return { lat: 16.8, lng: 96.1, alt: 0.35 };
+                return { lat: 16.8, lng: 96.1, alt: 0.45 };
             }
         }
 
@@ -746,7 +750,7 @@
                             name: (s.name || "Unknown").substring(0, 16),
                             lat: sgp4Pos.lat, 
                             lng: sgp4Pos.lng, 
-                            alt: 0.35, 
+                            alt: 0.45, 
                             color: getSatColor(s.name)
                         });
                     }
@@ -964,8 +968,8 @@
                         let lng = satellite.degreesLong(posGd.longitude);
 
                         if (!isGroundTrack) {
-                            let normAlt = 0.35 + (posGd.height / 35786) * 0.2;
-                            if (normAlt > 0.55) normAlt = 0.55;
+                            let normAlt = 0.45 + (posGd.height / 35786) * 0.25;
+                            if (normAlt > 0.65) normAlt = 0.65;
                             points.push({ lat, lng, alt: normAlt });
                         } else {
                             points.push({ lat, lng, alt: 0.005 });
@@ -976,7 +980,7 @@
                 return { 
                     coords: points, 
                     color: isGroundTrack ? '#ef4444' : satColor, 
-                    stroke: isGroundTrack ? 2.8 : 3.2 
+                    stroke: isGroundTrack ? 3.0 : 3.5 
                 };
             } catch(e) { return null; }
         }
@@ -1531,7 +1535,6 @@
         try {
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
-                // 🛠️ 100% BULLETPROOF: Using MeshBasicMaterial for Satellites and Orbits so they render instantly and never get hidden
                 myGlobe = Globe()(container)
                     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
@@ -1609,6 +1612,7 @@
 
         window.addEventListener('resize', resizeGlobe);
 
+        // 🛠️ 100% BULLETPROOF ANIMATION LOOP: Forcing satellite objects rendering and dynamic orbit tracks every frame
         function animateSatellites() {
             if (currentLiveSatObjects.length > 0) {
                 currentLiveSatObjects.forEach(s => {
