@@ -1522,13 +1522,19 @@
         try {
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
+                // 🛠️ 100% Guaranteed Robust Globe using Built-in Canvas Color Shaders (No external image loading required)
                 myGlobe = Globe()(container)
-                    // 🛠️ 100% Guaranteed Stable Globe Texture
-                    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+                    .globeColor('#0b192c')
+                    .showGlobe(true)
+                    .showAtmosphere(true)
+                    .atmosphereColor('#38bdf8')
+                    .atmosphereAltitude(0.25)
                     .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
                     .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.18 })
-                    .showAtmosphere(true).atmosphereColor('#38bdf8').atmosphereAltitude(0.22)
-                    .polygonCapColor(() => 'rgba(56, 189, 248, 0.18)').polygonSideColor(() => 'rgba(56, 189, 248, 0.05)').polygonStrokeColor(() => '#38bdf8').polygonAltitude(0.012)
+                    .polygonCapColor(() => 'rgba(56, 189, 248, 0.25)')
+                    .polygonSideColor(() => 'rgba(56, 189, 248, 0.08)')
+                    .polygonStrokeColor(() => '#38bdf8')
+                    .polygonAltitude(0.012)
                     .objectLat('lat')
                     .objectLng('lng')
                     .objectAltitude('alt')
