@@ -472,7 +472,7 @@
         let selectedSatId = '';
         let waveformChart = null;
         let myGlobe = null;
-        let modes = { tracks: true };
+        let modes = { tracks: true }; // Force tracks active by default
         let isRotating = true;
 
         let TLE_DATABASE = {};
@@ -638,6 +638,9 @@
                         json.data.all.forEach(s => { TLE_DATABASE[s.id] = s; });
                         document.getElementById('tle-status-badge') && (document.getElementById('tle-status-badge').innerText = `● LIVE SYNC (${json.data.all.length} SATS)`);
                         renderCustomSelection();
+                        if (currentLiveSatObjects.length > 0) {
+                            selectSatellite(currentLiveSatObjects[0].id);
+                        }
                         return; 
                     }
                 }
@@ -648,6 +651,9 @@
             categorizeSatsList(fallbackList);
             document.getElementById('tle-status-badge') && (document.getElementById('tle-status-badge').innerHTML = `<span style="color:var(--accent-yellow);">● LIVE SIMULATION</span>`);
             renderCustomSelection();
+            if (currentLiveSatObjects.length > 0) {
+                selectSatellite(currentLiveSatObjects[0].id);
+            }
         }
 
         function getFilteredSatellites() {
@@ -832,7 +838,7 @@
                         passListContainer.innerHTML = '<div style="text-align:center; color:var(--text-muted); font-size:9px; padding:15px;">No satellites available</div>';
                     }
                 } else {
-                    if (!currentLiveSatObjects.some(s => s.id === selectedSatId)) {
+                    if (!currentLiveSatObjects.some(s => s.id === selectedSatId) && currentLiveSatObjects.length > 0) {
                         selectSatellite(currentLiveSatObjects[0].id);
                     }
                     populateUpcomingPassesList();
@@ -1602,7 +1608,7 @@
 
         window.addEventListener('resize', resizeGlobe);
 
-        // 🛠️ 100% Guaranteed Smooth Animation Loop for Satellites & Orbits
+        // 🛠️ 100% FIXED ANIMATION LOOP: Forcing satellite positions and active orbit tracks update every frame
         function animateSatellites() {
             if (currentLiveSatObjects.length > 0) {
                 currentLiveSatObjects.forEach(s => {
@@ -1612,6 +1618,9 @@
                 });
                 if (myGlobe) {
                     myGlobe.objectsData([...currentLiveSatObjects]);
+                    if (selectedSatId) {
+                        updateTargetOrbitPath(selectedSatId);
+                    }
                 }
             }
             requestAnimationFrame(animateSatellites);
