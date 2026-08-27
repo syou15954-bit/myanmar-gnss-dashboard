@@ -492,17 +492,17 @@
             return window.THREE || (typeof Globe !== 'undefined' && Globe.THREE);
         }
 
+        // 🛠️ Highly visible 3D Satellite Geometry Builder with bright MeshBasicMaterials
         let sharedGeometries = null;
-
         function initSharedGeometries(THREE) {
             if (sharedGeometries) return;
             sharedGeometries = {
-                busGeo: new THREE.BoxGeometry(2.5, 2.5, 2.5), 
+                busGeo: new THREE.BoxGeometry(4.0, 4.0, 4.0), 
                 busMat: new THREE.MeshBasicMaterial({ color: 0xffffff }),
-                panelGeo: new THREE.BoxGeometry(8.0, 0.15, 2.5),
+                panelGeo: new THREE.BoxGeometry(12.0, 0.2, 3.5),
                 panelMat: new THREE.MeshBasicMaterial({ color: 0x38bdf8 }),
-                antennaGeo: new THREE.CylinderGeometry(0.3, 0.3, 3.5, 8),
-                targetGeom: new THREE.SphereGeometry(4.5, 16, 16),
+                antennaGeo: new THREE.CylinderGeometry(0.5, 0.5, 5.0, 8),
+                targetGeom: new THREE.SphereGeometry(7.0, 16, 16),
                 targetMat: new THREE.MeshBasicMaterial({ color: 0xffb700, wireframe: true }),
                 matCache: {}
             };
@@ -518,18 +518,18 @@
             group.add(busMesh);
 
             const leftPanel = new THREE.Mesh(sharedGeometries.panelGeo, sharedGeometries.panelMat);
-            leftPanel.position.x = -5.0;
+            leftPanel.position.x = -8.0;
             group.add(leftPanel);
 
             const rightPanel = new THREE.Mesh(sharedGeometries.panelGeo, sharedGeometries.panelMat);
-            rightPanel.position.x = 5.0;
+            rightPanel.position.x = 8.0;
             group.add(rightPanel);
 
             if (!sharedGeometries.matCache[colorHex]) {
                 sharedGeometries.matCache[colorHex] = new THREE.MeshBasicMaterial({ color: colorHex });
             }
             const antennaMesh = new THREE.Mesh(sharedGeometries.antennaGeo, sharedGeometries.matCache[colorHex]);
-            antennaMesh.position.y = 2.2;
+            antennaMesh.position.y = 3.5;
             group.add(antennaMesh);
 
             return group;
@@ -665,14 +665,14 @@
         function propagateSGP4(id, timeOffsetSec = 0) {
             try {
                 const tle = TLE_DATABASE[id];
-                if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 0.8 };
+                if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 1.2 };
                 
                 const satrec = satellite.twoline2satrec(tle.line1, tle.line2);
                 const targetTime = new Date(Date.now() + timeOffsetSec * 1000);
                 const posVel = satellite.propagate(satrec, targetTime);
                 
                 if (!posVel || !posVel.position || isNaN(posVel.position.x)) {
-                    return { lat: 16.8, lng: 96.1, alt: 0.8 };
+                    return { lat: 16.8, lng: 96.1, alt: 1.2 };
                 }
 
                 const gmst = satellite.gstime(targetTime);
@@ -684,9 +684,9 @@
                 if(isNaN(lat)) lat = 16.8;
                 if(isNaN(lng)) lng = 96.1;
 
-                return { lat: lat, lng: lng, alt: 0.8 };
+                return { lat: lat, lng: lng, alt: 1.2 }; // 🛠️ Explicit high altitude for maximum satellite visibility
             } catch (e) {
-                return { lat: 16.8, lng: 96.1, alt: 0.8 };
+                return { lat: 16.8, lng: 96.1, alt: 1.2 };
             }
         }
 
@@ -744,7 +744,7 @@
                             name: (s.name || "Unknown").substring(0, 16),
                             lat: sgp4Pos.lat, 
                             lng: sgp4Pos.lng, 
-                            alt: 0.8, 
+                            alt: 1.2, 
                             color: getSatColor(s.name)
                         });
                     }
@@ -962,8 +962,8 @@
                         let lng = satellite.degreesLong(posGd.longitude);
 
                         if (!isGroundTrack) {
-                            let normAlt = 0.8 + (posGd.height / 35786) * 0.3;
-                            if (normAlt > 1.2) normAlt = 1.2;
+                            let normAlt = 1.2 + (posGd.height / 35786) * 0.4;
+                            if (normAlt > 1.8) normAlt = 1.8;
                             points.push({ lat, lng, alt: normAlt });
                         } else {
                             points.push({ lat, lng, alt: 0.005 });
@@ -974,7 +974,7 @@
                 return { 
                     coords: points, 
                     color: isGroundTrack ? '#ef4444' : satColor, 
-                    stroke: isGroundTrack ? 3.5 : 4.0 
+                    stroke: isGroundTrack ? 4.0 : 4.5 
                 };
             } catch(e) { return null; }
         }
@@ -1038,7 +1038,7 @@
 
                 const currentPos = propagateSGP4(id);
                 if (currentPos) {
-                    myGlobe.pointOfView({ lat: currentPos.lat, lng: currentPos.lng, altitude: 1.5 }, 1000);
+                    myGlobe.pointOfView({ lat: currentPos.lat, lng: currentPos.lng, altitude: 1.8 }, 1000);
                 }
             }
 
@@ -1525,10 +1525,10 @@
                 myGlobe = Globe()(container)
                     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
-                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.5 }, 0) 
+                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.8 }, 0) 
                     .showAtmosphere(true)
                     .atmosphereColor('#38bdf8')
-                    .atmosphereAltitude(0.3)
+                    .atmosphereAltitude(0.35)
                     .polygonCapColor(() => 'rgba(56, 189, 248, 0.18)')
                     .polygonSideColor(() => 'rgba(56, 189, 248, 0.05)')
                     .polygonStrokeColor(() => '#38bdf8')
@@ -1584,7 +1584,7 @@
 
                 const THREE = getTHREE();
                 if (THREE && myGlobe.scene) {
-                    const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);
+                    const ambientLight = new THREE.AmbientLight(0xffffff, 2.5);
                     myGlobe.scene().add(ambientLight);
                 }
 
