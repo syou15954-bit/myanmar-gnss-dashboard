@@ -1522,17 +1522,16 @@
         try {
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
-                // 🛠️ 100% Guaranteed Robust Globe using Built-in Canvas Color Shaders (No external image loading required)
+                // 🛠️ 100% Guaranteed Robust Globe using Solid Color & Lighting (No external image textures needed)
                 myGlobe = Globe()(container)
-                    .globeColor('#0b192c')
+                    .globeColor('#1e293b')
                     .showGlobe(true)
                     .showAtmosphere(true)
                     .atmosphereColor('#38bdf8')
-                    .atmosphereAltitude(0.25)
-                    .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
+                    .atmosphereAltitude(0.3)
                     .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.18 })
-                    .polygonCapColor(() => 'rgba(56, 189, 248, 0.25)')
-                    .polygonSideColor(() => 'rgba(56, 189, 248, 0.08)')
+                    .polygonCapColor(() => 'rgba(56, 189, 248, 0.35)')
+                    .polygonSideColor(() => 'rgba(56, 189, 248, 0.1)')
                     .polygonStrokeColor(() => '#38bdf8')
                     .polygonAltitude(0.012)
                     .objectLat('lat')
