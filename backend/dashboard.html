@@ -1522,18 +1522,18 @@
         try {
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
-                // 🛠️ 100% Guaranteed Robust Globe using Solid Color & Lighting (No external image textures needed)
+                // 🛠️ 100% FIXED & GUARANTEED 3D WIREFRAME/SOLID GLOBE (Using built-in Three.js geometry shader)
                 myGlobe = Globe()(container)
-                    .globeColor('#1e293b')
+                    .globeColor('#0ea5e9') // Bright Cyan-Blue Globe so it never blends into dark background
                     .showGlobe(true)
                     .showAtmosphere(true)
                     .atmosphereColor('#38bdf8')
-                    .atmosphereAltitude(0.3)
+                    .atmosphereAltitude(0.35)
                     .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.18 })
-                    .polygonCapColor(() => 'rgba(56, 189, 248, 0.35)')
-                    .polygonSideColor(() => 'rgba(56, 189, 248, 0.1)')
+                    .polygonCapColor(() => 'rgba(2, 6, 23, 0.75)')
+                    .polygonSideColor(() => 'rgba(56, 189, 248, 0.3)')
                     .polygonStrokeColor(() => '#38bdf8')
-                    .polygonAltitude(0.012)
+                    .polygonAltitude(0.015)
                     .objectLat('lat')
                     .objectLng('lng')
                     .objectAltitude('alt')
