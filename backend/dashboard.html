@@ -320,7 +320,6 @@
                 </div>
             </div>
 
-            <!-- Constellation Comparison & Metrics -->
             <div class="glass-panel mono" style="justify-content: space-between;">
                 <div class="panel-title">
                     <span id="matrix-card-title">📈 CONSTELLATION COMPARISON & METRICS</span>
@@ -395,7 +394,6 @@
                 </div>
             </div>
 
-            <!-- RINEX Observation & Signal Analysis -->
             <div class="glass-panel">
                 <div class="panel-title" style="justify-content: center; display: flex; justify-content: space-between; align-items: center;">
                     <span id="chart-panel-title">📡 RINEX OBSERVATION & SIGNAL ANALYSIS</span>
@@ -499,7 +497,7 @@
         function initSharedGeometries(THREE) {
             if (sharedGeometries) return;
             sharedGeometries = {
-                busGeo: new THREE.BoxGeometry(2.5, 2.5, 2.5), // 🛠️ Massively scaled up for crystal-clear visibility
+                busGeo: new THREE.BoxGeometry(2.5, 2.5, 2.5), 
                 busMat: new THREE.MeshBasicMaterial({ color: 0xffffff }),
                 panelGeo: new THREE.BoxGeometry(8.0, 0.15, 2.5),
                 panelMat: new THREE.MeshBasicMaterial({ color: 0x38bdf8 }),
@@ -686,7 +684,7 @@
                 if(isNaN(lat)) lat = 16.8;
                 if(isNaN(lng)) lng = 96.1;
 
-                return { lat: lat, lng: lng, alt: 0.8 }; // 🛠️ Scaled higher altitude for crisp visibility
+                return { lat: lat, lng: lng, alt: 0.8 };
             } catch (e) {
                 return { lat: 16.8, lng: 96.1, alt: 0.8 };
             }
@@ -1093,7 +1091,6 @@
         }
 
         function parseFullRinex(text, fileName) {
-            console.log("📂 Parsing RINEX file started:", fileName);
             try {
                 const lines = text.split(/\r?\n/);
                 let version = "3.04";
@@ -1234,7 +1231,6 @@
                     chartLabels, chartDataBySys, satRecords
                 };
             } catch (err) {
-                console.error("❌ RINEX Parsing Error:", err);
                 return {
                     markerName: fileName,
                     obsDate: "2026-08-21", recType: "Generic Receiver", interval: "15.000 Sec", version: "3.04",
@@ -1259,7 +1255,6 @@
                 return;
             }
 
-            console.log(`🚀 Uploading ${fileInput.files.length} file(s)...`);
             const fileListContainer = document.getElementById('rinex-file-list');
             fileListContainer.innerHTML = ''; 
             uploadedStationsList = [];
@@ -1327,9 +1322,7 @@
                 } else {
                     alert("Failed to export CSV from server.");
                 }
-            } catch (err) {
-                console.error("Export CSV Error:", err);
-            }
+            } catch (err) {}
         }
 
         async function checkAccuracy() {
@@ -1357,9 +1350,7 @@
                 } else {
                     alert("Accuracy test failed: " + res.error);
                 }
-            } catch (err) {
-                console.error("Accuracy Test Error:", err);
-            }
+            } catch (err) {}
         }
 
         function selectFileCard(index) {
@@ -1534,7 +1525,7 @@
                 myGlobe = Globe()(container)
                     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
-                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.5 }, 0) // 🛠️ Wider altitude to fully capture satellites and orbit paths inside viewport
+                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.5 }, 0) 
                     .showAtmosphere(true)
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.3)
@@ -1604,7 +1595,7 @@
                 myGlobe.controls().autoRotateSpeed = 0.3;
                 setTimeout(resizeGlobe, 150);
             }
-        } catch (e) { console.error("Globe Load Error:", e); }
+        } catch (e) {}
 
         window.addEventListener('resize', resizeGlobe);
 
