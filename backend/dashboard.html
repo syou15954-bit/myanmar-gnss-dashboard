@@ -472,7 +472,7 @@
         let selectedSatId = '';
         let waveformChart = null;
         let myGlobe = null;
-        let modes = { tracks: true }; // Force tracks active by default
+        let modes = { tracks: true };
         let isRotating = true;
 
         let TLE_DATABASE = {};
@@ -499,12 +499,12 @@
         function initSharedGeometries(THREE) {
             if (sharedGeometries) return;
             sharedGeometries = {
-                busGeo: new THREE.BoxGeometry(0.7, 0.7, 0.7),
+                busGeo: new THREE.BoxGeometry(0.9, 0.9, 0.9), // 🛠️ Enlarged for high visibility
                 busMat: new THREE.MeshBasicMaterial({ color: 0x94a3b8 }),
-                panelGeo: new THREE.BoxGeometry(2.0, 0.04, 0.6),
+                panelGeo: new THREE.BoxGeometry(2.6, 0.05, 0.8), // 🛠️ Enlarged solar panels
                 panelMat: new THREE.MeshBasicMaterial({ color: 0x38bdf8 }),
-                antennaGeo: new THREE.CylinderGeometry(0.06, 0.06, 0.8, 6),
-                targetGeom: new THREE.SphereGeometry(1.8, 16, 16),
+                antennaGeo: new THREE.CylinderGeometry(0.08, 0.08, 1.0, 6),
+                targetGeom: new THREE.SphereGeometry(2.2, 16, 16),
                 targetMat: new THREE.MeshBasicMaterial({ color: 0xffb700, wireframe: true }),
                 matCache: {}
             };
@@ -520,18 +520,18 @@
             group.add(busMesh);
 
             const leftPanel = new THREE.Mesh(sharedGeometries.panelGeo, sharedGeometries.panelMat);
-            leftPanel.position.x = -1.35;
+            leftPanel.position.x = -1.75;
             group.add(leftPanel);
 
             const rightPanel = new THREE.Mesh(sharedGeometries.panelGeo, sharedGeometries.panelMat);
-            rightPanel.position.x = 1.35;
+            rightPanel.position.x = 1.75;
             group.add(rightPanel);
 
             if (!sharedGeometries.matCache[colorHex]) {
                 sharedGeometries.matCache[colorHex] = new THREE.MeshBasicMaterial({ color: colorHex });
             }
             const antennaMesh = new THREE.Mesh(sharedGeometries.antennaGeo, sharedGeometries.matCache[colorHex]);
-            antennaMesh.position.y = 0.6;
+            antennaMesh.position.y = 0.8;
             group.add(antennaMesh);
 
             return group;
@@ -686,9 +686,9 @@
                 if(isNaN(lat)) lat = 16.8;
                 if(isNaN(lng)) lng = 96.1;
 
-                return { lat: lat, lng: lng, alt: 0.22 };
+                return { lat: lat, lng: lng, alt: 0.35 }; // 🛠️ Explicit altitude offset for clear visibility
             } catch (e) {
-                return { lat: 16.8, lng: 96.1, alt: 0.22 };
+                return { lat: 16.8, lng: 96.1, alt: 0.35 };
             }
         }
 
@@ -746,7 +746,7 @@
                             name: (s.name || "Unknown").substring(0, 16),
                             lat: sgp4Pos.lat, 
                             lng: sgp4Pos.lng, 
-                            alt: 0.22, 
+                            alt: 0.35, 
                             color: getSatColor(s.name)
                         });
                     }
@@ -961,8 +961,8 @@
                         let lng = satellite.degreesLong(posGd.longitude);
 
                         if (!isGroundTrack) {
-                            let normAlt = 0.28 + (posGd.height / 35786) * 0.15;
-                            if (normAlt > 0.42) normAlt = 0.42;
+                            let normAlt = 0.35 + (posGd.height / 35786) * 0.2;
+                            if (normAlt > 0.55) normAlt = 0.55;
                             points.push({ lat, lng, alt: normAlt });
                         } else {
                             points.push({ lat, lng, alt: 0.005 });
@@ -973,7 +973,7 @@
                 return { 
                     coords: points, 
                     color: isGroundTrack ? '#ef4444' : satColor, 
-                    stroke: isGroundTrack ? 2.5 : 3.0 
+                    stroke: isGroundTrack ? 2.8 : 3.2 
                 };
             } catch(e) { return null; }
         }
@@ -1037,7 +1037,7 @@
 
                 const currentPos = propagateSGP4(id);
                 if (currentPos) {
-                    myGlobe.pointOfView({ lat: currentPos.lat, lng: currentPos.lng, altitude: 0.9 }, 1000);
+                    myGlobe.pointOfView({ lat: currentPos.lat, lng: currentPos.lng, altitude: 0.95 }, 1000);
                 }
             }
 
@@ -1608,7 +1608,6 @@
 
         window.addEventListener('resize', resizeGlobe);
 
-        // 🛠️ 100% FIXED ANIMATION LOOP: Forcing satellite positions and active orbit tracks update every frame
         function animateSatellites() {
             if (currentLiveSatObjects.length > 0) {
                 currentLiveSatObjects.forEach(s => {
