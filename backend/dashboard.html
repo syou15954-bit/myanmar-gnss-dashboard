@@ -499,9 +499,9 @@
         function initSharedGeometries(THREE) {
             if (sharedGeometries) return;
             sharedGeometries = {
-                busGeo: new THREE.BoxGeometry(0.9, 0.9, 0.9), // 🛠️ Enlarged for high visibility
+                busGeo: new THREE.BoxGeometry(0.9, 0.9, 0.9),
                 busMat: new THREE.MeshBasicMaterial({ color: 0x94a3b8 }),
-                panelGeo: new THREE.BoxGeometry(2.6, 0.05, 0.8), // 🛠️ Enlarged solar panels
+                panelGeo: new THREE.BoxGeometry(2.6, 0.05, 0.8),
                 panelMat: new THREE.MeshBasicMaterial({ color: 0x38bdf8 }),
                 antennaGeo: new THREE.CylinderGeometry(0.08, 0.08, 1.0, 6),
                 targetGeom: new THREE.SphereGeometry(2.2, 16, 16),
@@ -667,14 +667,14 @@
         function propagateSGP4(id, timeOffsetSec = 0) {
             try {
                 const tle = TLE_DATABASE[id];
-                if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 0.22 };
+                if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 0.35 };
                 
                 const satrec = satellite.twoline2satrec(tle.line1, tle.line2);
                 const targetTime = new Date(Date.now() + timeOffsetSec * 1000);
                 const posVel = satellite.propagate(satrec, targetTime);
                 
                 if (!posVel || !posVel.position || isNaN(posVel.position.x)) {
-                    return { lat: 16.8, lng: 96.1, alt: 0.22 };
+                    return { lat: 16.8, lng: 96.1, alt: 0.35 };
                 }
 
                 const gmst = satellite.gstime(targetTime);
@@ -686,7 +686,7 @@
                 if(isNaN(lat)) lat = 16.8;
                 if(isNaN(lng)) lng = 96.1;
 
-                return { lat: lat, lng: lng, alt: 0.35 }; // 🛠️ Explicit altitude offset for clear visibility
+                return { lat: lat, lng: lng, alt: 0.35 };
             } catch (e) {
                 return { lat: 16.8, lng: 96.1, alt: 0.35 };
             }
@@ -846,6 +846,9 @@
 
                 if (myGlobe) {
                     myGlobe.objectsData(currentLiveSatObjects);
+                    if (selectedSatId) {
+                        updateTargetOrbitPath(selectedSatId);
+                    }
                 }
 
                 resizeGlobe();
@@ -1528,6 +1531,7 @@
         try {
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
+                // 🛠️ 100% BULLETPROOF: Using MeshBasicMaterial for Satellites and Orbits so they render instantly and never get hidden
                 myGlobe = Globe()(container)
                     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
@@ -1590,11 +1594,8 @@
 
                 const THREE = getTHREE();
                 if (THREE && myGlobe.scene) {
-                    const ambientLight = new THREE.AmbientLight(0xffffff, 1.8);
+                    const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);
                     myGlobe.scene().add(ambientLight);
-                    const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
-                    dirLight.position.set(15, 15, 15);
-                    myGlobe.scene().add(dirLight);
                 }
 
                 fetch('https://unpkg.com/three-globe/example/datasets/ne_110m_admin_0_countries.geojson')
