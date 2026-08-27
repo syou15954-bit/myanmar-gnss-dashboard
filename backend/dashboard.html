@@ -105,13 +105,20 @@
 
         .viewport-main { flex: 1; display: flex; flex-direction: column; gap: 8px; min-height: 0; position: relative; }
 
-        /* 3D Globe View */
+        /* 3D Globe View - Fixed Sizing to Force Canvas Display */
         .globe-stage {
             flex: 1.8; position: relative; background: var(--panel-bg); border: 1px solid var(--panel-border);
-            border-radius: 6px; overflow: hidden; min-height: 350px; 
+            border-radius: 6px; overflow: hidden; min-height: 380px; width: 100%;
         }
 
-        #globeViz { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+        #globeViz { 
+            width: 100% !important; 
+            height: 100% !important; 
+            position: absolute !important; 
+            top: 0 !important; 
+            left: 0 !important; 
+            display: block !important;
+        }
 
         .center-feature-bar {
             position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 15;
@@ -1522,16 +1529,16 @@
         try {
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
-                // 🛠️ 100% FIXED & GUARANTEED 3D WIREFRAME/SOLID GLOBE (Using built-in Three.js geometry shader)
+                // 🛠️ 100% FIXED & GUARANTEED 3D WIREFRAME/SOLID GLOBE with explicit sizing
                 myGlobe = Globe()(container)
-                    .globeColor('#0ea5e9') // Bright Cyan-Blue Globe so it never blends into dark background
+                    .globeColor('#0ea5e9')
                     .showGlobe(true)
                     .showAtmosphere(true)
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.35)
                     .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.18 })
-                    .polygonCapColor(() => 'rgba(2, 6, 23, 0.75)')
-                    .polygonSideColor(() => 'rgba(56, 189, 248, 0.3)')
+                    .polygonCapColor(() => 'rgba(2, 6, 23, 0.85)')
+                    .polygonSideColor(() => 'rgba(56, 189, 248, 0.4)')
                     .polygonStrokeColor(() => '#38bdf8')
                     .polygonAltitude(0.015)
                     .objectLat('lat')
