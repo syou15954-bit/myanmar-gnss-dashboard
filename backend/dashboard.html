@@ -492,20 +492,20 @@
             return window.THREE || (typeof Globe !== 'undefined' && Globe.THREE);
         }
 
-        // 🛠️ 100% Guaranteed Visible 3D Satellite Geometry Builder with Direct Three.js Mesh
+        // 🛠️ 100% Guaranteed Visible 3D Satellite Model using Globe.gl customThreeObject
         function createSatelliteThreeObject(d) {
             const THREE = getTHREE();
             if (!THREE) return null;
 
             const group = new THREE.Group();
             
-            // Satellite Main Body (Glowing Box)
+            // Satellite Body
             const bodyGeo = new THREE.BoxGeometry(4.0, 4.0, 4.0);
             const bodyMat = new THREE.MeshBasicMaterial({ color: d.color || 0x10b981 });
             const body = new THREE.Mesh(bodyGeo, bodyMat);
             group.add(body);
 
-            // Solar Panels (Left & Right Wings)
+            // Solar Panels
             const panelGeo = new THREE.BoxGeometry(14.0, 0.3, 4.0);
             const panelMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
             
@@ -669,7 +669,7 @@
                 if(isNaN(lat)) lat = 16.8;
                 if(isNaN(lng)) lng = 96.1;
 
-                return { lat: lat, lng: lng, alt: 0.8 }; // 🛠️ Explicit high altitude for clear 3D satellite model visibility
+                return { lat: lat, lng: lng, alt: 0.8 };
             } catch (e) {
                 return { lat: 16.8, lng: 96.1, alt: 0.8 };
             }
@@ -918,6 +918,7 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
+        // 🛠️ Robust SGP4 Orbit & Ground Track Generator for 3D Lines
         function generateSatOrbitTrack(id, isGroundTrack = false) {
             try {
                 const sat = TLE_DATABASE[id];
@@ -932,7 +933,7 @@
                 
                 const points = [];
                 const now = new Date();
-                const numSteps = 120;
+                const numSteps = 150; // High resolution path points
                 const stepSec = periodSec / numSteps;
                 
                 for (let i = 0; i <= numSteps; i++) {
@@ -948,10 +949,10 @@
 
                         if (!isGroundTrack) {
                             let normAlt = 0.8 + (posGd.height / 35786) * 0.4;
-                            if (normAlt > 1.5) normAlt = 1.5;
+                            if (normAlt > 1.6) normAlt = 1.6;
                             points.push({ lat, lng, alt: normAlt });
                         } else {
-                            points.push({ lat, lng, alt: 0.005 });
+                            points.push({ lat, lng, alt: 0.005 }); // Surface ground track
                         }
                     }
                 }
@@ -959,7 +960,7 @@
                 return { 
                     coords: points, 
                     color: isGroundTrack ? '#ef4444' : satColor, 
-                    stroke: isGroundTrack ? 4.5 : 5.5 
+                    stroke: isGroundTrack ? 3.5 : 5.0 
                 };
             } catch(e) { return null; }
         }
