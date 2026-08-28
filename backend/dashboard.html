@@ -492,13 +492,39 @@
             return window.THREE || (typeof Globe !== 'undefined' && Globe.THREE);
         }
 
+        // 🛠️ 100% Guaranteed 3D Satellite Model using Globe.gl customThreeObject
         let sharedGeometries = null;
         function initSharedGeometries(THREE) {
             if (sharedGeometries) return;
             sharedGeometries = {
+                busGeo: new THREE.BoxGeometry(3.0, 3.0, 3.0),
+                busMat: new THREE.MeshBasicMaterial({ color: 0xffffff }),
+                panelGeo: new THREE.BoxGeometry(10.0, 0.2, 3.0),
+                panelMat: new THREE.MeshBasicMaterial({ color: 0x38bdf8 }),
                 targetGeom: new THREE.SphereGeometry(6.0, 16, 16),
-                targetMat: new THREE.MeshBasicMaterial({ color: 0xffb700, wireframe: true })
+                targetMat: new THREE.MeshBasicMaterial({ color: 0xffb700, wireframe: true }),
+                matCache: {}
             };
+        }
+
+        function createRealisticSatelliteModel(colorHex) {
+            const THREE = getTHREE();
+            if (!THREE) return null;
+            initSharedGeometries(THREE);
+
+            const group = new THREE.Group();
+            const busMesh = new THREE.Mesh(sharedGeometries.busGeo, sharedGeometries.busMat);
+            group.add(busMesh);
+
+            const leftPanel = new THREE.Mesh(sharedGeometries.panelGeo, sharedGeometries.panelMat);
+            leftPanel.position.x = -6.5;
+            group.add(leftPanel);
+
+            const rightPanel = new THREE.Mesh(sharedGeometries.panelGeo, sharedGeometries.panelMat);
+            rightPanel.position.x = 6.5;
+            group.add(rightPanel);
+
+            return group;
         }
 
         function getSatColor(satName) {
@@ -795,7 +821,7 @@
                     selectedSatId = '';
                     if (myGlobe) {
                         myGlobe.pathsData([]);
-                        myGlobe.htmlElementsData([]);
+                        myGlobe.objectsData([]);
                     }
                     const passListContainer = document.getElementById('upcoming-passes-list');
                     if (passListContainer) {
@@ -809,7 +835,7 @@
                 }
 
                 if (myGlobe) {
-                    myGlobe.htmlElementsData(currentLiveSatObjects);
+                    myGlobe.objectsData(currentLiveSatObjects);
                     if (selectedSatId) {
                         updateTargetOrbitPath(selectedSatId);
                     }
@@ -1000,8 +1026,6 @@
             targetLabelData = currentLiveSatObjects.filter(s => s.id === id);
 
             if (myGlobe) {
-                myGlobe.htmlElementsData(currentLiveSatObjects);
-
                 const currentPos = propagateSGP4(id);
                 if (currentPos) {
                     myGlobe.pointOfView({ lat: currentPos.lat, lng: currentPos.lng, altitude: 2.2 }, 1000);
@@ -1506,15 +1530,15 @@
                             <div style="
                                 background: ${countryColor}; 
                                 color: #030712; 
-                                padding: 2px 6px; 
+                                padding: 3px 8px; 
                                 border-radius: 4px; 
-                                font-size: 8.5px; 
+                                font-size: 9.5px; 
                                 font-family: 'JetBrains Mono', monospace; 
                                 font-weight: 700; 
                                 white-space: nowrap; 
-                                box-shadow: 0 0 10px ${countryColor};
+                                box-shadow: 0 0 12px ${countryColor};
                                 cursor: pointer;
-                                border: 1px solid #fff;
+                                border: 1.5px solid #fff;
                             ">🛰️ ${d.name}</div>
                         `;
                         el.onclick = () => selectSatellite(d.id);
