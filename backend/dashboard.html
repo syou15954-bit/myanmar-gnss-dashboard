@@ -492,7 +492,7 @@
             return window.THREE || (typeof Globe !== 'undefined' && Globe.THREE);
         }
 
-        // 🛠️ 100% Guaranteed Visible 3D Satellite Model using Globe.gl customThreeObject
+        // 🛠️ 3D Satellite Model Generator
         function createSatelliteThreeObject(d) {
             const THREE = getTHREE();
             if (!THREE) return null;
@@ -933,7 +933,7 @@
                 
                 const points = [];
                 const now = new Date();
-                const numSteps = 150; // High resolution path points
+                const numSteps = 150;
                 const stepSec = periodSec / numSteps;
                 
                 for (let i = 0; i <= numSteps; i++) {
@@ -952,7 +952,7 @@
                             if (normAlt > 1.6) normAlt = 1.6;
                             points.push({ lat, lng, alt: normAlt });
                         } else {
-                            points.push({ lat, lng, alt: 0.005 }); // Surface ground track
+                            points.push({ lat, lng, alt: 0.005 });
                         }
                     }
                 }
@@ -1026,6 +1026,7 @@
                 }
             }
 
+            // 🛠️ Trigger and render orbit path immediately upon satellite selection/click
             updateTargetOrbitPath(id);
         }
 
