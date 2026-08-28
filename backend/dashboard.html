@@ -492,41 +492,6 @@
             return window.THREE || (typeof Globe !== 'undefined' && Globe.THREE);
         }
 
-        // 🛠️ 100% Robust 3D Satellite Model using Globe.gl customThreeObject
-        let sharedGeometries = null;
-        function initSharedGeometries(THREE) {
-            if (sharedGeometries) return;
-            sharedGeometries = {
-                busGeo: new THREE.BoxGeometry(2.5, 2.5, 2.5),
-                busMat: new THREE.MeshBasicMaterial({ color: 0xffffff }),
-                panelGeo: new THREE.BoxGeometry(9.0, 0.2, 3.0),
-                panelMat: new THREE.MeshBasicMaterial({ color: 0x38bdf8 }),
-                targetGeom: new THREE.SphereGeometry(5.0, 16, 16),
-                targetMat: new THREE.MeshBasicMaterial({ color: 0xffb700, wireframe: true }),
-                matCache: {}
-            };
-        }
-
-        function createRealisticSatelliteModel(colorHex) {
-            const THREE = getTHREE();
-            if (!THREE) return null;
-            initSharedGeometries(THREE);
-
-            const group = new THREE.Group();
-            const busMesh = new THREE.Mesh(sharedGeometries.busGeo, sharedGeometries.busMat);
-            group.add(busMesh);
-
-            const leftPanel = new THREE.Mesh(sharedGeometries.panelGeo, sharedGeometries.panelMat);
-            leftPanel.position.x = -6.0;
-            group.add(leftPanel);
-
-            const rightPanel = new THREE.Mesh(sharedGeometries.panelGeo, sharedGeometries.panelMat);
-            rightPanel.position.x = 6.0;
-            group.add(rightPanel);
-
-            return group;
-        }
-
         function getSatColor(satName) {
             let uname = (satName || '').toUpperCase();
             if (uname.includes('GPS') || uname.includes('NAVSTAR')) return '#10b981';
@@ -657,14 +622,14 @@
         function propagateSGP4(id, timeOffsetSec = 0) {
             try {
                 const tle = TLE_DATABASE[id];
-                if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 0.5 };
+                if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 0.35 };
                 
                 const satrec = satellite.twoline2satrec(tle.line1, tle.line2);
                 const targetTime = new Date(Date.now() + timeOffsetSec * 1000);
                 const posVel = satellite.propagate(satrec, targetTime);
                 
                 if (!posVel || !posVel.position || isNaN(posVel.position.x)) {
-                    return { lat: 16.8, lng: 96.1, alt: 0.5 };
+                    return { lat: 16.8, lng: 96.1, alt: 0.35 };
                 }
 
                 const gmst = satellite.gstime(targetTime);
@@ -676,9 +641,9 @@
                 if(isNaN(lat)) lat = 16.8;
                 if(isNaN(lng)) lng = 96.1;
 
-                return { lat: lat, lng: lng, alt: 0.5 }; // 🛠️ Explicit altitude offset for 3D object rendering
+                return { lat: lat, lng: lng, alt: 0.35 };
             } catch (e) {
-                return { lat: 16.8, lng: 96.1, alt: 0.5 };
+                return { lat: 16.8, lng: 96.1, alt: 0.35 };
             }
         }
 
@@ -736,7 +701,7 @@
                             name: (s.name || "Unknown").substring(0, 16),
                             lat: sgp4Pos.lat, 
                             lng: sgp4Pos.lng, 
-                            alt: 0.5, 
+                            alt: 0.35, 
                             color: getSatColor(s.name)
                         });
                     }
@@ -821,7 +786,7 @@
                     selectedSatId = '';
                     if (myGlobe) {
                         myGlobe.pathsData([]);
-                        myGlobe.objectsData([]);
+                        myGlobe.pointsData([]);
                     }
                     const passListContainer = document.getElementById('upcoming-passes-list');
                     if (passListContainer) {
@@ -835,7 +800,15 @@
                 }
 
                 if (myGlobe) {
-                    myGlobe.objectsData(currentLiveSatObjects);
+                    // 🛠️ Using Globe.gl native 3D points layer for absolute guaranteed visibility on globe surface and orbit space
+                    myGlobe.pointsData(currentLiveSatObjects)
+                          .pointLat('lat')
+                          .pointLng('lng')
+                          .pointAltitude('alt')
+                          .pointColor('color')
+                          .pointRadius(0.35)
+                          .pointResolution(16);
+
                     if (selectedSatId) {
                         updateTargetOrbitPath(selectedSatId);
                     }
@@ -954,8 +927,8 @@
                         let lng = satellite.degreesLong(posGd.longitude);
 
                         if (!isGroundTrack) {
-                            let normAlt = 0.5 + (posGd.height / 35786) * 0.3;
-                            if (normAlt > 1.0) normAlt = 1.0;
+                            let normAlt = 0.35 + (posGd.height / 35786) * 0.25;
+                            if (normAlt > 0.7) normAlt = 0.7;
                             points.push({ lat, lng, alt: normAlt });
                         } else {
                             points.push({ lat, lng, alt: 0.005 });
@@ -966,7 +939,7 @@
                 return { 
                     coords: points, 
                     color: isGroundTrack ? '#ef4444' : satColor, 
-                    stroke: isGroundTrack ? 4.0 : 4.5 
+                    stroke: isGroundTrack ? 3.5 : 4.0 
                 };
             } catch(e) { return null; }
         }
@@ -1519,31 +1492,13 @@
                     .polygonSideColor(() => 'rgba(56, 189, 248, 0.05)')
                     .polygonStrokeColor(() => '#38bdf8')
                     .polygonAltitude(0.015)
-                    .htmlElementsData(currentLiveSatObjects)
-                    .htmlLat('lat')
-                    .htmlLng('lng')
-                    .htmlAltitude('alt')
-                    .htmlElement(d => {
-                        const el = document.createElement('div');
-                        const countryColor = d.color || '#10b981';
-                        el.innerHTML = `
-                            <div style="
-                                background: ${countryColor}; 
-                                color: #030712; 
-                                padding: 3px 8px; 
-                                border-radius: 4px; 
-                                font-size: 9.5px; 
-                                font-family: 'JetBrains Mono', monospace; 
-                                font-weight: 700; 
-                                white-space: nowrap; 
-                                box-shadow: 0 0 12px ${countryColor};
-                                cursor: pointer;
-                                border: 1.5px solid #fff;
-                            ">🛰️ ${d.name}</div>
-                        `;
-                        el.onclick = () => selectSatellite(d.id);
-                        return el;
-                    })
+                    .pointsData(currentLiveSatObjects)
+                    .pointLat('lat')
+                    .pointLng('lng')
+                    .pointAltitude('alt')
+                    .pointColor('color')
+                    .pointRadius(0.4)
+                    .pointResolution(16)
                     .onObjectClick((d) => { if (d && d.id) selectSatellite(d.id); })
                     .pathsData([])
                     .pathPoints(d => d.coords)
@@ -1578,7 +1533,7 @@
                     s.lng = sgp4Pos.lng;
                 });
                 if (myGlobe) {
-                    myGlobe.htmlElementsData([...currentLiveSatObjects]);
+                    myGlobe.pointsData([...currentLiveSatObjects]);
                     if (selectedSatId) {
                         updateTargetOrbitPath(selectedSatId);
                     }
