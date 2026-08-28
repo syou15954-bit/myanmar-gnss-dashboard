@@ -453,7 +453,7 @@
                                     <tr><th>SAT</th><th>CODE (C1C)</th><th>CODE (C2W)</th><th>PHASE (L1C)</th><th>SNR (S1C)</th></tr>
                                 </thead>
                                 <tbody id="rinex-obs-table-body">
-                                    <tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No observation data found in file.</td></tr>
+                                    <tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Please select a RINEX file card on the left.</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -492,32 +492,13 @@
             return window.THREE || (typeof Globe !== 'undefined' && Globe.THREE);
         }
 
-        // 🛠️ 100% Robust 3D Satellite Model Builder for Globe.gl customThreeObject
-        function getSatelliteThreeObject(d) {
-            const THREE = getTHREE();
-            if (!THREE) return null;
-
-            const group = new THREE.Group();
-            
-            // Satellite Central Body
-            const bodyGeo = new THREE.BoxGeometry(3.5, 3.5, 3.5);
-            const bodyMat = new THREE.MeshBasicMaterial({ color: d.color || 0x10b981 });
-            const body = new THREE.Mesh(bodyGeo, bodyMat);
-            group.add(body);
-
-            // Solar Panels
-            const panelGeo = new THREE.BoxGeometry(12.0, 0.3, 4.0);
-            const panelMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
-            
-            const leftPanel = new THREE.Mesh(panelGeo, panelMat);
-            leftPanel.position.x = -8.0;
-            group.add(leftPanel);
-
-            const rightPanel = new THREE.Mesh(panelGeo, panelMat);
-            rightPanel.position.x = 8.0;
-            group.add(rightPanel);
-
-            return group;
+        let sharedGeometries = null;
+        function initSharedGeometries(THREE) {
+            if (sharedGeometries) return;
+            sharedGeometries = {
+                targetGeom: new THREE.SphereGeometry(6.0, 16, 16),
+                targetMat: new THREE.MeshBasicMaterial({ color: 0xffb700, wireframe: true })
+            };
         }
 
         function getSatColor(satName) {
@@ -650,14 +631,14 @@
         function propagateSGP4(id, timeOffsetSec = 0) {
             try {
                 const tle = TLE_DATABASE[id];
-                if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 0.6 };
+                if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 0.5 };
                 
                 const satrec = satellite.twoline2satrec(tle.line1, tle.line2);
                 const targetTime = new Date(Date.now() + timeOffsetSec * 1000);
                 const posVel = satellite.propagate(satrec, targetTime);
                 
                 if (!posVel || !posVel.position || isNaN(posVel.position.x)) {
-                    return { lat: 16.8, lng: 96.1, alt: 0.6 };
+                    return { lat: 16.8, lng: 96.1, alt: 0.5 };
                 }
 
                 const gmst = satellite.gstime(targetTime);
@@ -669,9 +650,9 @@
                 if(isNaN(lat)) lat = 16.8;
                 if(isNaN(lng)) lng = 96.1;
 
-                return { lat: lat, lng: lng, alt: 0.6 }; // 🛠️ Explicit altitude offset for 3D object rendering
+                return { lat: lat, lng: lng, alt: 0.5 };
             } catch (e) {
-                return { lat: 16.8, lng: 96.1, alt: 0.6 };
+                return { lat: 16.8, lng: 96.1, alt: 0.5 };
             }
         }
 
@@ -729,7 +710,7 @@
                             name: (s.name || "Unknown").substring(0, 16),
                             lat: sgp4Pos.lat, 
                             lng: sgp4Pos.lng, 
-                            alt: 0.6, 
+                            alt: 0.5, 
                             color: getSatColor(s.name)
                         });
                     }
@@ -828,7 +809,7 @@
                 }
 
                 if (myGlobe) {
-                    myGlobe.objectsData(currentLiveSatObjects);
+                    myGlobe.htmlElementsData(currentLiveSatObjects);
                     if (selectedSatId) {
                         updateTargetOrbitPath(selectedSatId);
                     }
@@ -947,8 +928,8 @@
                         let lng = satellite.degreesLong(posGd.longitude);
 
                         if (!isGroundTrack) {
-                            let normAlt = 0.6 + (posGd.height / 35786) * 0.3;
-                            if (normAlt > 1.2) normAlt = 1.2;
+                            let normAlt = 0.5 + (posGd.height / 35786) * 0.3;
+                            if (normAlt > 1.0) normAlt = 1.0;
                             points.push({ lat, lng, alt: normAlt });
                         } else {
                             points.push({ lat, lng, alt: 0.005 });
@@ -959,7 +940,7 @@
                 return { 
                     coords: points, 
                     color: isGroundTrack ? '#ef4444' : satColor, 
-                    stroke: isGroundTrack ? 4.5 : 5.0 
+                    stroke: isGroundTrack ? 4.0 : 4.5 
                 };
             } catch(e) { return null; }
         }
@@ -1019,7 +1000,7 @@
             targetLabelData = currentLiveSatObjects.filter(s => s.id === id);
 
             if (myGlobe) {
-                myGlobe.htmlElementsData(targetLabelData);
+                myGlobe.htmlElementsData(currentLiveSatObjects);
 
                 const currentPos = propagateSGP4(id);
                 if (currentPos) {
@@ -1514,36 +1495,32 @@
                     .polygonSideColor(() => 'rgba(56, 189, 248, 0.05)')
                     .polygonStrokeColor(() => '#38bdf8')
                     .polygonAltitude(0.015)
-                    .objectLat('lat')
-                    .objectLng('lng')
-                    .objectAltitude('alt')
-                    .objectThreeObject(createSatelliteThreeObject)
-                    .onObjectClick((d) => { if (d && d.id) selectSatellite(d.id); })
-                    .htmlElementsData(targetLabelData)
+                    .htmlElementsData(currentLiveSatObjects)
                     .htmlLat('lat')
                     .htmlLng('lng')
                     .htmlAltitude('alt')
                     .htmlElement(d => {
                         const el = document.createElement('div');
-                        const countryColor = getSatColor(d.fullName);
+                        const countryColor = d.color || '#10b981';
                         el.innerHTML = `
                             <div style="
-                                border: 1px solid ${countryColor}; 
-                                background: rgba(2, 6, 23, 0.9); 
-                                color: ${countryColor}; 
-                                padding: 3px 6px; 
+                                background: ${countryColor}; 
+                                color: #030712; 
+                                padding: 2px 6px; 
                                 border-radius: 4px; 
-                                font-size: 9px; 
+                                font-size: 8.5px; 
                                 font-family: 'JetBrains Mono', monospace; 
                                 font-weight: 700; 
                                 white-space: nowrap; 
-                                pointer-events: none; 
-                                transform: translate(12px, -12px); 
                                 box-shadow: 0 0 10px ${countryColor};
-                            ">TARGET: ${d.name}</div>
+                                cursor: pointer;
+                                border: 1px solid #fff;
+                            ">🛰️ ${d.name}</div>
                         `;
+                        el.onclick = () => selectSatellite(d.id);
                         return el;
                     })
+                    .onObjectClick((d) => { if (d && d.id) selectSatellite(d.id); })
                     .pathsData([])
                     .pathPoints(d => d.coords)
                     .pathPointLat(p => p.lat)
@@ -1577,7 +1554,7 @@
                     s.lng = sgp4Pos.lng;
                 });
                 if (myGlobe) {
-                    myGlobe.objectsData([...currentLiveSatObjects]);
+                    myGlobe.htmlElementsData([...currentLiveSatObjects]);
                     if (selectedSatId) {
                         updateTargetOrbitPath(selectedSatId);
                     }
