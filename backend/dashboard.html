@@ -492,20 +492,20 @@
             return window.THREE || (typeof Globe !== 'undefined' && Globe.THREE);
         }
 
-        // 🛠️ 100% Guaranteed 3D Satellite Model using Globe.gl customThreeObject
+        // 🛠️ 100% Guaranteed Visible 3D Satellite Geometry Builder with Direct Three.js Mesh
         function createSatelliteThreeObject(d) {
             const THREE = getTHREE();
             if (!THREE) return null;
 
             const group = new THREE.Group();
             
-            // Satellite Body
+            // Satellite Main Body (Glowing Box)
             const bodyGeo = new THREE.BoxGeometry(4.0, 4.0, 4.0);
             const bodyMat = new THREE.MeshBasicMaterial({ color: d.color || 0x10b981 });
             const body = new THREE.Mesh(bodyGeo, bodyMat);
             group.add(body);
 
-            // Solar Panels
+            // Solar Panels (Left & Right Wings)
             const panelGeo = new THREE.BoxGeometry(14.0, 0.3, 4.0);
             const panelMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
             
@@ -650,14 +650,14 @@
         function propagateSGP4(id, timeOffsetSec = 0) {
             try {
                 const tle = TLE_DATABASE[id];
-                if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 0.6 };
+                if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 0.8 };
                 
                 const satrec = satellite.twoline2satrec(tle.line1, tle.line2);
                 const targetTime = new Date(Date.now() + timeOffsetSec * 1000);
                 const posVel = satellite.propagate(satrec, targetTime);
                 
                 if (!posVel || !posVel.position || isNaN(posVel.position.x)) {
-                    return { lat: 16.8, lng: 96.1, alt: 0.6 };
+                    return { lat: 16.8, lng: 96.1, alt: 0.8 };
                 }
 
                 const gmst = satellite.gstime(targetTime);
@@ -669,9 +669,9 @@
                 if(isNaN(lat)) lat = 16.8;
                 if(isNaN(lng)) lng = 96.1;
 
-                return { lat: lat, lng: lng, alt: 0.6 }; // 🛠️ Explicit altitude for 3D object rendering
+                return { lat: lat, lng: lng, alt: 0.8 }; // 🛠️ Explicit high altitude for clear 3D satellite model visibility
             } catch (e) {
-                return { lat: 16.8, lng: 96.1, alt: 0.6 };
+                return { lat: 16.8, lng: 96.1, alt: 0.8 };
             }
         }
 
@@ -729,7 +729,7 @@
                             name: (s.name || "Unknown").substring(0, 16),
                             lat: sgp4Pos.lat, 
                             lng: sgp4Pos.lng, 
-                            alt: 0.6, 
+                            alt: 0.8, 
                             color: getSatColor(s.name)
                         });
                     }
@@ -947,8 +947,8 @@
                         let lng = satellite.degreesLong(posGd.longitude);
 
                         if (!isGroundTrack) {
-                            let normAlt = 0.6 + (posGd.height / 35786) * 0.3;
-                            if (normAlt > 1.2) normAlt = 1.2;
+                            let normAlt = 0.8 + (posGd.height / 35786) * 0.4;
+                            if (normAlt > 1.5) normAlt = 1.5;
                             points.push({ lat, lng, alt: normAlt });
                         } else {
                             points.push({ lat, lng, alt: 0.005 });
@@ -959,7 +959,7 @@
                 return { 
                     coords: points, 
                     color: isGroundTrack ? '#ef4444' : satColor, 
-                    stroke: isGroundTrack ? 4.5 : 5.0 
+                    stroke: isGroundTrack ? 4.5 : 5.5 
                 };
             } catch(e) { return null; }
         }
@@ -1516,7 +1516,7 @@
                     .objectLat('lat')
                     .objectLng('lng')
                     .objectAltitude('alt')
-                    .objectThreeObject(createRealisticSatelliteModel)
+                    .objectThreeObject(createSatelliteThreeObject)
                     .onObjectClick((d) => { if (d && d.id) selectSatellite(d.id); })
                     .pathsData([])
                     .pathPoints(d => d.coords)
