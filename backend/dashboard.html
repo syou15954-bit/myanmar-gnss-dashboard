@@ -916,67 +916,60 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
-        // 🛠️ Robust SGP4 Orbit Track Generator with flat coordinate array mapping
-        function generateSatOrbitTrack(id, isGroundTrack = false) {
-            try {
-                const sat = TLE_DATABASE[id];
-                if (!sat || typeof satellite === 'undefined') return null;
-                
-                const satrec = satellite.twoline2satrec(sat.line1, sat.line2);
-                const satColor = getSatColor(sat.name);
-                
-                const meanMotionRadMin = satrec.no_kozai || satrec.no || 0.004;
-                const periodMin = (2 * Math.PI) / meanMotionRadMin;
-                const periodSec = periodMin * 60;
-                
-                const points = [];
-                const now = new Date();
-                const numSteps = 180;
-                const stepSec = periodSec / numSteps;
-                
-                for (let i = 0; i <= numSteps; i++) {
-                    const timeOffset = (i * stepSec) - (periodSec / 2);
-                    const targetTime = new Date(now.getTime() + timeOffset * 1000);
-                    const posVel = satellite.propagate(satrec, targetTime);
-                    
-                    if (posVel && posVel.position && !isNaN(posVel.position.x)) {
-                        const targetGmst = satellite.gstime(targetTime);
-                        const posGd = satellite.eciToGeodetic(posVel.position, targetGmst);
-                        let lat = satellite.degreesLat(posGd.latitude);
-                        let lng = satellite.degreesLong(posGd.longitude);
-
-                        if (!isGroundTrack) {
-                            let normAlt = 0.8 + (posGd.height / 35786) * 0.4;
-                            if (normAlt > 1.6) normAlt = 1.6;
-                            points.push({ lat: lat, lng: lng, alt: normAlt });
-                        } else {
-                            points.push({ lat: lat, lng: lng, alt: 0.005 });
-                        }
-                    }
-                }
-                if (points.length === 0) return null;
-                return { 
-                    coords: points, 
-                    color: isGroundTrack ? '#ef4444' : satColor, 
-                    stroke: isGroundTrack ? 3.5 : 6.0 
-                };
-            } catch(e) { return null; }
-        }
-
+        // 🛠️ Robust SGP4 3D Orbit Track Generator using direct 3D vector meshes for guaranteed visibility
+        let activeOrbitMeshGroup = null;
         function updateTargetOrbitPath(id) {
             if (!myGlobe || !id || !TLE_DATABASE[id]) return;
-            if (!modes.tracks) { 
-                myGlobe.pathsData([]); 
-                return; 
+            const THREE = getTHREE();
+            if (!THREE) return;
+
+            // Remove previous orbit lines if any
+            if (activeOrbitMeshGroup && myGlobe.scene) {
+                myGlobe.scene().remove(activeOrbitMeshGroup);
+                activeOrbitMeshGroup = null;
             }
-            const orbitTrack = generateSatOrbitTrack(id, false); 
-            const groundTrack = generateSatOrbitTrack(id, true);    
-            
-            let pathsArray = [];
-            if (orbitTrack) pathsArray.push(orbitTrack);
-            if (groundTrack) pathsArray.push(groundTrack);
-            
-            myGlobe.pathsData(pathsArray);
+
+            if (!modes.tracks) return;
+
+            const sat = TLE_DATABASE[id];
+            const satrec = satellite.twoline2satrec(sat.line1, sat.line2);
+            const satColor = getSatColor(sat.name);
+
+            const meanMotionRadMin = satrec.no_kozai || satrec.no || 0.004;
+            const periodSec = ((2 * Math.PI) / meanMotionRadMin) * 60;
+
+            const now = new Date();
+            const numSteps = 200;
+            const stepSec = periodSec / numSteps;
+            const points = [];
+
+            for (let i = 0; i <= numSteps; i++) {
+                const timeOffset = (i * stepSec) - (periodSec / 2);
+                const targetTime = new Date(now.getTime() + timeOffset * 1000);
+                const posVel = satellite.propagate(satrec, targetTime);
+
+                if (posVel && posVel.position && !isNaN(posVel.position.x)) {
+                    // ECI position vector directly converted into Globe 3D coordinates
+                    // Scale factor: Globe radius is 100 in globe.gl three-globe space
+                    const x = posVel.position.x * 0.0156;
+                    const y = posVel.position.y * 0.0156;
+                    const z = posVel.position.z * 0.0156;
+                    points.push(new THREE.Vector3(x, z, -y)); // Three.js coordinate mapping (Y-up)
+                }
+            }
+
+            if (points.length < 2) return;
+
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const material = new THREE.LineBasicMaterial({ 
+                color: satColor, 
+                linewidth: 3, 
+                transparent: true, 
+                opacity: 0.85 
+            });
+
+            activeOrbitMeshGroup = new THREE.Line(geometry, material);
+            myGlobe.scene().add(activeOrbitMeshGroup);
         }
 
         function toggleFeatureMode(feature, btn) {
@@ -1024,7 +1017,7 @@
                 }
             }
 
-            // 🛠️ Force render orbit paths instantly on click
+            // 🛠️ Render 3D Orbit line instantly on click
             updateTargetOrbitPath(id);
         }
 
@@ -1517,14 +1510,7 @@
                     .objectLng('lng')
                     .objectAltitude('alt')
                     .objectThreeObject(createSatelliteThreeObject)
-                    .onObjectClick((d) => { if (d && d.id) selectSatellite(d.id); })
-                    .pathsData([])
-                    .pathPoints('coords')
-                    .pathPointLat(p => p.lat)
-                    .pathPointLng(p => p.lng)
-                    .pathPointAlt(p => p.alt)
-                    .pathColor('color')
-                    .pathStroke('stroke');
+                    .onObjectClick((d) => { if (d && d.id) selectSatellite(d.id); });
 
                 const THREE = getTHREE();
                 if (THREE && myGlobe.scene) {
