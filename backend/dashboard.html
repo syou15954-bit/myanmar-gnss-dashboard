@@ -481,7 +481,7 @@
 
         let STATIONS_DATA = {
             yangon: { lat: 16.8661, lng: 96.1951, name: '📡 Yangon (RINEX / Base Station)', color: '#ffb700', size: 3.5 },
-            pyidaw: { lat: 19.7633, lng: 96.0785, name: '📡 Naypyidaw (Uppatasanti Landmark)', color: '#38bdf8', size: 3.0 },
+            naypyidaw: { lat: 19.7633, lng: 96.0785, name: '📡 Naypyidaw (Uppatasanti Landmark)', color: '#38bdf8', size: 3.0 },
             mandalay: { lat: 21.9588, lng: 96.0891, name: '📡 Mandalay Hill Landmark', color: '#10b981', size: 3.0 }
         };
         let currentSelectedStation = 'none';
@@ -916,7 +916,7 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
-        // 🛠️ Robust SGP4 Orbit & Ground Track Generator with correct Path Binding Properties
+        // 🛠️ Fully Corrected SGP4 Orbit Path Generator with explicit path point accessors
         function generateSatOrbitTrack(id, isGroundTrack = false) {
             try {
                 const sat = TLE_DATABASE[id];
@@ -950,7 +950,7 @@
                             if (normAlt > 1.6) normAlt = 1.6;
                             points.push({ lat: lat, lng: lng, alt: normAlt });
                         } else {
-                            points.push({ lat: lng, lng: lat, alt: 0.005 }); // Surface track
+                            points.push({ lat: lat, lng: lng, alt: 0.005 });
                         }
                     }
                 }
@@ -958,7 +958,7 @@
                 return { 
                     coords: points, 
                     color: isGroundTrack ? '#ef4444' : satColor, 
-                    stroke: isGroundTrack ? 3.5 : 5.0 
+                    stroke: isGroundTrack ? 3.5 : 5.5 
                 };
             } catch(e) { return null; }
         }
@@ -976,6 +976,7 @@
             if (orbitTrack) pathsArray.push(orbitTrack);
             if (groundTrack) pathsArray.push(groundTrack);
             
+            // 🛠️ Directly update pathsData to render orbits instantly
             myGlobe.pathsData(pathsArray);
         }
 
@@ -1024,7 +1025,7 @@
                 }
             }
 
-            // 🛠️ Force render orbit paths instantly on click
+            // 🛠️ Force render orbit paths instantly upon selection
             updateTargetOrbitPath(id);
         }
 
