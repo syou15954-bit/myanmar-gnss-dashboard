@@ -497,12 +497,12 @@
         function initSharedGeometries(THREE) {
             if (sharedGeometries) return;
             sharedGeometries = {
-                busGeo: new THREE.BoxGeometry(3.5, 3.5, 3.5), 
+                busGeo: new THREE.BoxGeometry(4.0, 4.0, 4.0), 
                 busMat: new THREE.MeshBasicMaterial({ color: 0xffffff }),
-                panelGeo: new THREE.BoxGeometry(10.0, 0.2, 3.0),
+                panelGeo: new THREE.BoxGeometry(12.0, 0.25, 3.5),
                 panelMat: new THREE.MeshBasicMaterial({ color: 0x38bdf8 }),
-                antennaGeo: new THREE.CylinderGeometry(0.4, 0.4, 4.5, 8),
-                targetGeom: new THREE.SphereGeometry(6.0, 16, 16),
+                antennaGeo: new THREE.CylinderGeometry(0.5, 0.5, 5.0, 8),
+                targetGeom: new THREE.SphereGeometry(8.0, 16, 16),
                 targetMat: new THREE.MeshBasicMaterial({ color: 0xffb700, wireframe: true }),
                 matCache: {}
             };
@@ -518,18 +518,18 @@
             group.add(busMesh);
 
             const leftPanel = new THREE.Mesh(sharedGeometries.panelGeo, sharedGeometries.panelMat);
-            leftPanel.position.x = -6.5;
+            leftPanel.position.x = -8.0;
             group.add(leftPanel);
 
             const rightPanel = new THREE.Mesh(sharedGeometries.panelGeo, sharedGeometries.panelMat);
-            rightPanel.position.x = 6.5;
+            rightPanel.position.x = 8.0;
             group.add(rightPanel);
 
             if (!sharedGeometries.matCache[colorHex]) {
                 sharedGeometries.matCache[colorHex] = new THREE.MeshBasicMaterial({ color: colorHex });
             }
             const antennaMesh = new THREE.Mesh(sharedGeometries.antennaGeo, sharedGeometries.matCache[colorHex]);
-            antennaMesh.position.y = 2.8;
+            antennaMesh.position.y = 3.5;
             group.add(antennaMesh);
 
             return group;
@@ -573,7 +573,7 @@
             
             if (isMyanmarOnlyMode) {
                 btn.innerText = '🇲🇲 MYANMAR VISIBLE (ACTIVE)';
-                if (myGlobe) myGlobe.pointOfView({ lat: 19.7633, lng: 96.0785, altitude: 2.2 }, 1200);
+                if (myGlobe) myGlobe.pointOfView({ lat: 19.7633, lng: 96.0785, altitude: 2.5 }, 1200);
             } else {
                 btn.innerText = '🇲🇲 MYANMAR VISIBLE ONLY';
             }
@@ -665,14 +665,14 @@
         function propagateSGP4(id, timeOffsetSec = 0) {
             try {
                 const tle = TLE_DATABASE[id];
-                if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 1.2 };
+                if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 2.0 };
                 
                 const satrec = satellite.twoline2satrec(tle.line1, tle.line2);
                 const targetTime = new Date(Date.now() + timeOffsetSec * 1000);
                 const posVel = satellite.propagate(satrec, targetTime);
                 
                 if (!posVel || !posVel.position || isNaN(posVel.position.x)) {
-                    return { lat: 16.8, lng: 96.1, alt: 1.2 };
+                    return { lat: 16.8, lng: 96.1, alt: 2.0 };
                 }
 
                 const gmst = satellite.gstime(targetTime);
@@ -684,9 +684,9 @@
                 if(isNaN(lat)) lat = 16.8;
                 if(isNaN(lng)) lng = 96.1;
 
-                return { lat: lat, lng: lng, alt: 1.2 }; // 🛠️ Explicit high altitude offset so objects render well outside surface
+                return { lat: lat, lng: lng, alt: 2.0 }; // 🛠️ Maximum explicit altitude offset so satellites float prominently above globe
             } catch (e) {
-                return { lat: 16.8, lng: 96.1, alt: 1.2 };
+                return { lat: 16.8, lng: 96.1, alt: 2.0 };
             }
         }
 
@@ -744,7 +744,7 @@
                             name: (s.name || "Unknown").substring(0, 16),
                             lat: sgp4Pos.lat, 
                             lng: sgp4Pos.lng, 
-                            alt: 1.2, 
+                            alt: 2.0, 
                             color: getSatColor(s.name)
                         });
                     }
@@ -962,8 +962,8 @@
                         let lng = satellite.degreesLong(posGd.longitude);
 
                         if (!isGroundTrack) {
-                            let normAlt = 1.2 + (posGd.height / 35786) * 0.4;
-                            if (normAlt > 1.8) normAlt = 1.8;
+                            let normAlt = 2.0 + (posGd.height / 35786) * 0.5;
+                            if (normAlt > 2.8) normAlt = 2.8;
                             points.push({ lat, lng, alt: normAlt });
                         } else {
                             points.push({ lat, lng, alt: 0.005 });
@@ -974,7 +974,7 @@
                 return { 
                     coords: points, 
                     color: isGroundTrack ? '#ef4444' : satColor, 
-                    stroke: isGroundTrack ? 4.0 : 4.5 
+                    stroke: isGroundTrack ? 4.5 : 5.0 
                 };
             } catch(e) { return null; }
         }
@@ -1038,7 +1038,7 @@
 
                 const currentPos = propagateSGP4(id);
                 if (currentPos) {
-                    myGlobe.pointOfView({ lat: currentPos.lat, lng: currentPos.lng, altitude: 2.2 }, 1000);
+                    myGlobe.pointOfView({ lat: currentPos.lat, lng: currentPos.lng, altitude: 2.5 }, 1000);
                 }
             }
 
@@ -1521,7 +1521,7 @@
                 myGlobe = Globe()(container)
                     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
-                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.2 }, 0) 
+                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.5 }, 0) 
                     .showAtmosphere(true)
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.35)
@@ -1595,6 +1595,7 @@
 
         window.addEventListener('resize', resizeGlobe);
 
+        // 🛠️ 100% BULLETPROOF RENDER LOOP: Re-injects objects and paths every tick to force rendering in Globe.gl
         function animateSatellites() {
             if (currentLiveSatObjects.length > 0) {
                 currentLiveSatObjects.forEach(s => {
