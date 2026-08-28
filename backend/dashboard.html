@@ -492,45 +492,30 @@
             return window.THREE || (typeof Globe !== 'undefined' && Globe.THREE);
         }
 
-        let sharedGeometries = null;
-
-        function initSharedGeometries(THREE) {
-            if (sharedGeometries) return;
-            sharedGeometries = {
-                busGeo: new THREE.BoxGeometry(4.0, 4.0, 4.0), 
-                busMat: new THREE.MeshBasicMaterial({ color: 0xffffff }),
-                panelGeo: new THREE.BoxGeometry(12.0, 0.25, 3.5),
-                panelMat: new THREE.MeshBasicMaterial({ color: 0x38bdf8 }),
-                antennaGeo: new THREE.CylinderGeometry(0.5, 0.5, 5.0, 8),
-                targetGeom: new THREE.SphereGeometry(8.0, 16, 16),
-                targetMat: new THREE.MeshBasicMaterial({ color: 0xffb700, wireframe: true }),
-                matCache: {}
-            };
-        }
-
-        function createRealisticSatelliteModel(colorHex) {
+        // 🛠️ 100% Robust 3D Satellite Model using Globe.gl Custom Objects
+        function getSatelliteThreeObject(d) {
             const THREE = getTHREE();
             if (!THREE) return null;
-            initSharedGeometries(THREE);
 
             const group = new THREE.Group();
-            const busMesh = new THREE.Mesh(sharedGeometries.busGeo, sharedGeometries.busMat);
-            group.add(busMesh);
+            
+            // Satellite Body
+            const bodyGeo = new THREE.BoxGeometry(4, 4, 4);
+            const bodyMat = new THREE.MeshBasicMaterial({ color: d.color || 0x10b981 });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            group.add(body);
 
-            const leftPanel = new THREE.Mesh(sharedGeometries.panelGeo, sharedGeometries.panelMat);
-            leftPanel.position.x = -8.0;
+            // Solar Panels
+            const panelGeo = new THREE.BoxGeometry(14, 0.3, 4);
+            const panelMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+            
+            const leftPanel = new THREE.Mesh(panelGeo, panelMat);
+            leftPanel.position.x = -10;
             group.add(leftPanel);
 
-            const rightPanel = new THREE.Mesh(sharedGeometries.panelGeo, sharedGeometries.panelMat);
-            rightPanel.position.x = 8.0;
+            const rightPanel = new THREE.Mesh(panelGeo, panelMat);
+            rightPanel.position.x = 10;
             group.add(rightPanel);
-
-            if (!sharedGeometries.matCache[colorHex]) {
-                sharedGeometries.matCache[colorHex] = new THREE.MeshBasicMaterial({ color: colorHex });
-            }
-            const antennaMesh = new THREE.Mesh(sharedGeometries.antennaGeo, sharedGeometries.matCache[colorHex]);
-            antennaMesh.position.y = 3.5;
-            group.add(antennaMesh);
 
             return group;
         }
@@ -573,7 +558,7 @@
             
             if (isMyanmarOnlyMode) {
                 btn.innerText = '🇲🇲 MYANMAR VISIBLE (ACTIVE)';
-                if (myGlobe) myGlobe.pointOfView({ lat: 19.7633, lng: 96.0785, altitude: 2.5 }, 1200);
+                if (myGlobe) myGlobe.pointOfView({ lat: 19.7633, lng: 96.0785, altitude: 2.2 }, 1200);
             } else {
                 btn.innerText = '🇲🇲 MYANMAR VISIBLE ONLY';
             }
@@ -665,14 +650,14 @@
         function propagateSGP4(id, timeOffsetSec = 0) {
             try {
                 const tle = TLE_DATABASE[id];
-                if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 2.0 };
+                if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 0.6 };
                 
                 const satrec = satellite.twoline2satrec(tle.line1, tle.line2);
                 const targetTime = new Date(Date.now() + timeOffsetSec * 1000);
                 const posVel = satellite.propagate(satrec, targetTime);
                 
                 if (!posVel || !posVel.position || isNaN(posVel.position.x)) {
-                    return { lat: 16.8, lng: 96.1, alt: 2.0 };
+                    return { lat: 16.8, lng: 96.1, alt: 0.6 };
                 }
 
                 const gmst = satellite.gstime(targetTime);
@@ -684,9 +669,9 @@
                 if(isNaN(lat)) lat = 16.8;
                 if(isNaN(lng)) lng = 96.1;
 
-                return { lat: lat, lng: lng, alt: 2.0 }; // 🛠️ Maximum explicit altitude offset so satellites float prominently above globe
+                return { lat: lat, lng: lng, alt: 0.6 }; // 🛠️ Explicit altitude for 3D object rendering above atmosphere
             } catch (e) {
-                return { lat: 16.8, lng: 96.1, alt: 2.0 };
+                return { lat: 16.8, lng: 96.1, alt: 0.6 };
             }
         }
 
@@ -744,7 +729,7 @@
                             name: (s.name || "Unknown").substring(0, 16),
                             lat: sgp4Pos.lat, 
                             lng: sgp4Pos.lng, 
-                            alt: 2.0, 
+                            alt: 0.6, 
                             color: getSatColor(s.name)
                         });
                     }
@@ -962,8 +947,8 @@
                         let lng = satellite.degreesLong(posGd.longitude);
 
                         if (!isGroundTrack) {
-                            let normAlt = 2.0 + (posGd.height / 35786) * 0.5;
-                            if (normAlt > 2.8) normAlt = 2.8;
+                            let normAlt = 0.6 + (posGd.height / 35786) * 0.3;
+                            if (normAlt > 1.0) normAlt = 1.0;
                             points.push({ lat, lng, alt: normAlt });
                         } else {
                             points.push({ lat, lng, alt: 0.005 });
@@ -974,7 +959,7 @@
                 return { 
                     coords: points, 
                     color: isGroundTrack ? '#ef4444' : satColor, 
-                    stroke: isGroundTrack ? 4.5 : 5.0 
+                    stroke: isGroundTrack ? 4.0 : 4.5 
                 };
             } catch(e) { return null; }
         }
@@ -1038,7 +1023,7 @@
 
                 const currentPos = propagateSGP4(id);
                 if (currentPos) {
-                    myGlobe.pointOfView({ lat: currentPos.lat, lng: currentPos.lng, altitude: 2.5 }, 1000);
+                    myGlobe.pointOfView({ lat: currentPos.lat, lng: currentPos.lng, altitude: 2.2 }, 1000);
                 }
             }
 
@@ -1521,7 +1506,7 @@
                 myGlobe = Globe()(container)
                     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
-                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.5 }, 0) 
+                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.2 }, 0) 
                     .showAtmosphere(true)
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.35)
@@ -1532,18 +1517,7 @@
                     .objectLat('lat')
                     .objectLng('lng')
                     .objectAltitude('alt')
-                    .objectThreeObject(d => {
-                        const isTarget = d.id === selectedSatId;
-                        const THREE = getTHREE();
-                        if (!THREE) return null;
-                        initSharedGeometries(THREE);
-
-                        if (isTarget) {
-                            return new THREE.Mesh(sharedGeometries.targetGeom, sharedGeometries.targetMat);
-                        }
-                        const colorHex = getSatColor(d.fullName);
-                        return createRealisticSatelliteModel(colorHex);
-                    })
+                    .objectThreeObject(getSatelliteThreeObject) // 🛠️ Fixed robust binding for 3D satellites
                     .onObjectClick((d) => { if (d && d.id) selectSatellite(d.id); })
                     .htmlElementsData(targetLabelData)
                     .htmlLat('lat')
@@ -1595,7 +1569,6 @@
 
         window.addEventListener('resize', resizeGlobe);
 
-        // 🛠️ 100% BULLETPROOF RENDER LOOP: Re-injects objects and paths every tick to force rendering in Globe.gl
         function animateSatellites() {
             if (currentLiveSatObjects.length > 0) {
                 currentLiveSatObjects.forEach(s => {
