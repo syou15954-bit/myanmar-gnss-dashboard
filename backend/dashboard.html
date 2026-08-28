@@ -492,17 +492,17 @@
             return window.THREE || (typeof Globe !== 'undefined' && Globe.THREE);
         }
 
-        // 🛠️ Highly visible 3D Satellite Geometry Builder with bright MeshBasicMaterials
         let sharedGeometries = null;
+
         function initSharedGeometries(THREE) {
             if (sharedGeometries) return;
             sharedGeometries = {
-                busGeo: new THREE.BoxGeometry(4.0, 4.0, 4.0), 
+                busGeo: new THREE.BoxGeometry(3.5, 3.5, 3.5), 
                 busMat: new THREE.MeshBasicMaterial({ color: 0xffffff }),
-                panelGeo: new THREE.BoxGeometry(12.0, 0.2, 3.5),
+                panelGeo: new THREE.BoxGeometry(10.0, 0.2, 3.0),
                 panelMat: new THREE.MeshBasicMaterial({ color: 0x38bdf8 }),
-                antennaGeo: new THREE.CylinderGeometry(0.5, 0.5, 5.0, 8),
-                targetGeom: new THREE.SphereGeometry(7.0, 16, 16),
+                antennaGeo: new THREE.CylinderGeometry(0.4, 0.4, 4.5, 8),
+                targetGeom: new THREE.SphereGeometry(6.0, 16, 16),
                 targetMat: new THREE.MeshBasicMaterial({ color: 0xffb700, wireframe: true }),
                 matCache: {}
             };
@@ -518,18 +518,18 @@
             group.add(busMesh);
 
             const leftPanel = new THREE.Mesh(sharedGeometries.panelGeo, sharedGeometries.panelMat);
-            leftPanel.position.x = -8.0;
+            leftPanel.position.x = -6.5;
             group.add(leftPanel);
 
             const rightPanel = new THREE.Mesh(sharedGeometries.panelGeo, sharedGeometries.panelMat);
-            rightPanel.position.x = 8.0;
+            rightPanel.position.x = 6.5;
             group.add(rightPanel);
 
             if (!sharedGeometries.matCache[colorHex]) {
                 sharedGeometries.matCache[colorHex] = new THREE.MeshBasicMaterial({ color: colorHex });
             }
             const antennaMesh = new THREE.Mesh(sharedGeometries.antennaGeo, sharedGeometries.matCache[colorHex]);
-            antennaMesh.position.y = 3.5;
+            antennaMesh.position.y = 2.8;
             group.add(antennaMesh);
 
             return group;
@@ -573,7 +573,7 @@
             
             if (isMyanmarOnlyMode) {
                 btn.innerText = '🇲🇲 MYANMAR VISIBLE (ACTIVE)';
-                if (myGlobe) myGlobe.pointOfView({ lat: 19.7633, lng: 96.0785, altitude: 1.5 }, 1200);
+                if (myGlobe) myGlobe.pointOfView({ lat: 19.7633, lng: 96.0785, altitude: 2.2 }, 1200);
             } else {
                 btn.innerText = '🇲🇲 MYANMAR VISIBLE ONLY';
             }
@@ -684,7 +684,7 @@
                 if(isNaN(lat)) lat = 16.8;
                 if(isNaN(lng)) lng = 96.1;
 
-                return { lat: lat, lng: lng, alt: 1.2 }; // 🛠️ Explicit high altitude for maximum satellite visibility
+                return { lat: lat, lng: lng, alt: 1.2 }; // 🛠️ Explicit high altitude offset so objects render well outside surface
             } catch (e) {
                 return { lat: 16.8, lng: 96.1, alt: 1.2 };
             }
@@ -1038,7 +1038,7 @@
 
                 const currentPos = propagateSGP4(id);
                 if (currentPos) {
-                    myGlobe.pointOfView({ lat: currentPos.lat, lng: currentPos.lng, altitude: 1.8 }, 1000);
+                    myGlobe.pointOfView({ lat: currentPos.lat, lng: currentPos.lng, altitude: 2.2 }, 1000);
                 }
             }
 
@@ -1319,9 +1319,7 @@
                     document.body.appendChild(a);
                     a.click();
                     a.remove();
-                } else {
-                    alert("Failed to export CSV from server.");
-                }
+                } else {}
             } catch (err) {}
         }
 
@@ -1347,9 +1345,7 @@
                           `▶ Max Deviation: ${res.metrics.max_error_meters} meters\n` +
                           `▶ System Reliability: ${res.metrics.reliability_percentage} %\n` +
                           `▶ Overall Evaluation: ${res.evaluation}`);
-                } else {
-                    alert("Accuracy test failed: " + res.error);
-                }
+                } else {}
             } catch (err) {}
         }
 
@@ -1525,14 +1521,14 @@
                 myGlobe = Globe()(container)
                     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
-                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 1.8 }, 0) 
+                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.2 }, 0) 
                     .showAtmosphere(true)
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.35)
                     .polygonCapColor(() => 'rgba(56, 189, 248, 0.18)')
                     .polygonSideColor(() => 'rgba(56, 189, 248, 0.05)')
                     .polygonStrokeColor(() => '#38bdf8')
-                    .polygonAltitude(0.012)
+                    .polygonAltitude(0.015)
                     .objectLat('lat')
                     .objectLng('lng')
                     .objectAltitude('alt')
