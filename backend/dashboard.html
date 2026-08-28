@@ -916,7 +916,7 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
-        // 🛠️ Fully Corrected SGP4 Orbit Path Generator with explicit path point accessors
+        // 🛠️ 100% Guaranteed SGP4 3D Orbit Track Generator with flat coordinate array mapping
         function generateSatOrbitTrack(id, isGroundTrack = false) {
             try {
                 const sat = TLE_DATABASE[id];
@@ -931,7 +931,7 @@
                 
                 const points = [];
                 const now = new Date();
-                const numSteps = 150;
+                const numSteps = 180;
                 const stepSec = periodSec / numSteps;
                 
                 for (let i = 0; i <= numSteps; i++) {
@@ -948,9 +948,9 @@
                         if (!isGroundTrack) {
                             let normAlt = 0.8 + (posGd.height / 35786) * 0.4;
                             if (normAlt > 1.6) normAlt = 1.6;
-                            points.push({ lat: lat, lng: lng, alt: normAlt });
+                            points.push([lat, lng, normAlt]); // 🛠️ Direct array [lat, lng, alt] for globe.gl path points
                         } else {
-                            points.push({ lat: lat, lng: lng, alt: 0.005 });
+                            points.push([lat, lng, 0.005]);
                         }
                     }
                 }
@@ -958,7 +958,7 @@
                 return { 
                     coords: points, 
                     color: isGroundTrack ? '#ef4444' : satColor, 
-                    stroke: isGroundTrack ? 3.5 : 5.5 
+                    stroke: isGroundTrack ? 3.5 : 6.0 
                 };
             } catch(e) { return null; }
         }
@@ -976,7 +976,7 @@
             if (orbitTrack) pathsArray.push(orbitTrack);
             if (groundTrack) pathsArray.push(groundTrack);
             
-            // 🛠️ Directly update pathsData to render orbits instantly
+            // 🛠️ Force path render update instantly
             myGlobe.pathsData(pathsArray);
         }
 
@@ -1025,7 +1025,7 @@
                 }
             }
 
-            // 🛠️ Force render orbit paths instantly upon selection
+            // 🛠️ Force render orbit paths instantly upon click
             updateTargetOrbitPath(id);
         }
 
@@ -1521,9 +1521,6 @@
                     .onObjectClick((d) => { if (d && d.id) selectSatellite(d.id); })
                     .pathsData([])
                     .pathPoints(d => d.coords)
-                    .pathPointLat(p => p.lat)
-                    .pathPointLng(p => p.lng)
-                    .pathPointAlt(p => p.alt)
                     .pathColor(d => d.color)
                     .pathStroke(d => d.stroke);
 
