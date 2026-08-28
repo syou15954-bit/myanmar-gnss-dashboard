@@ -492,16 +492,16 @@
             return window.THREE || (typeof Globe !== 'undefined' && Globe.THREE);
         }
 
-        // 🛠️ 100% Guaranteed 3D Satellite Model using Globe.gl customThreeObject
+        // 🛠️ 100% Robust 3D Satellite Model using Globe.gl customThreeObject
         let sharedGeometries = null;
         function initSharedGeometries(THREE) {
             if (sharedGeometries) return;
             sharedGeometries = {
-                busGeo: new THREE.BoxGeometry(3.0, 3.0, 3.0),
+                busGeo: new THREE.BoxGeometry(2.5, 2.5, 2.5),
                 busMat: new THREE.MeshBasicMaterial({ color: 0xffffff }),
-                panelGeo: new THREE.BoxGeometry(10.0, 0.2, 3.0),
+                panelGeo: new THREE.BoxGeometry(9.0, 0.2, 3.0),
                 panelMat: new THREE.MeshBasicMaterial({ color: 0x38bdf8 }),
-                targetGeom: new THREE.SphereGeometry(6.0, 16, 16),
+                targetGeom: new THREE.SphereGeometry(5.0, 16, 16),
                 targetMat: new THREE.MeshBasicMaterial({ color: 0xffb700, wireframe: true }),
                 matCache: {}
             };
@@ -517,11 +517,11 @@
             group.add(busMesh);
 
             const leftPanel = new THREE.Mesh(sharedGeometries.panelGeo, sharedGeometries.panelMat);
-            leftPanel.position.x = -6.5;
+            leftPanel.position.x = -6.0;
             group.add(leftPanel);
 
             const rightPanel = new THREE.Mesh(sharedGeometries.panelGeo, sharedGeometries.panelMat);
-            rightPanel.position.x = 6.5;
+            rightPanel.position.x = 6.0;
             group.add(rightPanel);
 
             return group;
@@ -676,7 +676,7 @@
                 if(isNaN(lat)) lat = 16.8;
                 if(isNaN(lng)) lng = 96.1;
 
-                return { lat: lat, lng: lng, alt: 0.5 };
+                return { lat: lat, lng: lng, alt: 0.5 }; // 🛠️ Explicit altitude offset for 3D object rendering
             } catch (e) {
                 return { lat: 16.8, lng: 96.1, alt: 0.5 };
             }
