@@ -481,7 +481,7 @@
 
         let STATIONS_DATA = {
             yangon: { lat: 16.8661, lng: 96.1951, name: '📡 Yangon (RINEX / Base Station)', color: '#ffb700', size: 3.5 },
-            naypyidaw: { lat: 19.7633, lng: 96.0785, name: '📡 Naypyidaw (Uppatasanti Landmark)', color: '#38bdf8', size: 3.0 },
+            pyidaw: { lat: 19.7633, lng: 96.0785, name: '📡 Naypyidaw (Uppatasanti Landmark)', color: '#38bdf8', size: 3.0 },
             mandalay: { lat: 21.9588, lng: 96.0891, name: '📡 Mandalay Hill Landmark', color: '#10b981', size: 3.0 }
         };
         let currentSelectedStation = 'none';
@@ -499,13 +499,11 @@
 
             const group = new THREE.Group();
             
-            // Satellite Body
             const bodyGeo = new THREE.BoxGeometry(4.0, 4.0, 4.0);
             const bodyMat = new THREE.MeshBasicMaterial({ color: d.color || 0x10b981 });
             const body = new THREE.Mesh(bodyGeo, bodyMat);
             group.add(body);
 
-            // Solar Panels
             const panelGeo = new THREE.BoxGeometry(14.0, 0.3, 4.0);
             const panelMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
             
@@ -918,7 +916,7 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
-        // 🛠️ Robust SGP4 Orbit & Ground Track Generator for 3D Lines
+        // 🛠️ Robust SGP4 Orbit & Ground Track Generator with correct Path Binding Properties
         function generateSatOrbitTrack(id, isGroundTrack = false) {
             try {
                 const sat = TLE_DATABASE[id];
@@ -950,9 +948,9 @@
                         if (!isGroundTrack) {
                             let normAlt = 0.8 + (posGd.height / 35786) * 0.4;
                             if (normAlt > 1.6) normAlt = 1.6;
-                            points.push({ lat, lng, alt: normAlt });
+                            points.push({ lat: lat, lng: lng, alt: normAlt });
                         } else {
-                            points.push({ lat, lng, alt: 0.005 });
+                            points.push({ lat: lng, lng: lat, alt: 0.005 }); // Surface track
                         }
                     }
                 }
@@ -1026,7 +1024,7 @@
                 }
             }
 
-            // 🛠️ Trigger and render orbit path immediately upon satellite selection/click
+            // 🛠️ Force render orbit paths instantly on click
             updateTargetOrbitPath(id);
         }
 
