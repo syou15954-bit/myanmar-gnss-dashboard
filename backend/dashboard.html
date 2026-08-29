@@ -492,7 +492,7 @@
             return window.THREE || (typeof Globe !== 'undefined' && Globe.THREE);
         }
 
-        // 🛠️ Highly Detailed Realistic Satellite 3D Geometry Builder
+        // 🛠️ Realistic 3D Satellite Model Generator
         function createSatelliteThreeObject(d) {
             const THREE = getTHREE();
             if (!THREE) return null;
@@ -1025,7 +1025,7 @@
             }
         }
 
-        // 🛠️ DEFINITIVE FIX: Direct Three.js camera translation to frame the selected satellite model in space
+        // 🛠️ DEFINITIVE FIX: Direct override of Globe.gl camera and controls without triggering surface pov animation
         function selectSatellite(id) {
             if (!id || !TLE_DATABASE[id]) return;
             selectedSatId = id;
@@ -1062,21 +1062,23 @@
                 if (targetObj) {
                     const THREE = getTHREE();
                     if (THREE && myGlobe.controls && myGlobe.camera) {
-                        // 1. Pause auto-rotation completely
+                        // 1. Completely halt globe auto-rotation
                         myGlobe.controls().autoRotate = false;
                         isRotating = false;
                         const btn = document.getElementById('btn-rotation');
                         if (btn) btn.innerText = '▶️';
 
-                        // 2. Calculate satellite position
+                        // 2. Fetch live exact 3D position vector in space
                         const pos = propagateSGP4(id);
                         const satVec = new THREE.Vector3(pos.x, pos.y, pos.z);
 
-                        // 3. Move camera directly to frame the satellite without touching globe surface
-                        myGlobe.controls().target.copy(satVec);
-                        const offset = satVec.clone().normalize().multiplyScalar(25); // Close framing in space
-                        myGlobe.camera().position.copy(satVec.clone().add(offset));
-                        myGlobe.controls().update();
+                        // 3. Bypass globe.gl built-in animation and directly update Three.js camera & OrbitControls
+                        const controls = myGlobe.controls();
+                        controls.target.copy(satVec); // Lock rotation anchor to the satellite
+
+                        const camOffset = satVec.clone().normalize().multiplyScalar(35); // Clear space view distance
+                        myGlobe.camera().position.copy(satVec.clone().add(camOffset));
+                        controls.update();
                     }
                 }
             }
