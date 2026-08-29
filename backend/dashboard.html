@@ -1025,7 +1025,7 @@
             }
         }
 
-        // 🛠️ FIXED: Lock camera focus precisely onto the selected satellite model in space
+        // 🛠️ FIXED: Pause rotation, lock camera target precisely on satellite 3D vector, and position camera so satellite is fully in view
         function selectSatellite(id) {
             if (!id || !TLE_DATABASE[id]) return;
             selectedSatId = id;
@@ -1062,18 +1062,23 @@
                 if (targetObj) {
                     const THREE = getTHREE();
                     if (THREE && myGlobe.controls && myGlobe.camera) {
-                        const satVec = new THREE.Vector3(targetObj.x, targetObj.y, targetObj.z);
-                        
-                        // Temporarily pause auto-rotation so the camera locks nicely on the chosen satellite
+                        // 1. Stop globe auto-rotation so view doesn't drift away
                         myGlobe.controls().autoRotate = false;
-                        document.getElementById('btn-rotation').innerText = '▶️';
                         isRotating = false;
+                        const btn = document.getElementById('btn-rotation');
+                        if (btn) btn.innerText = '▶️';
 
+                        // 2. Get live 3D position vector of the satellite
+                        const pos = propagateSGP4(id);
+                        const satVec = new THREE.Vector3(pos.x, pos.y, pos.z);
+
+                        // 3. Lock controls target exactly to the satellite
                         myGlobe.controls().target.copy(satVec);
-                        
-                        // Position camera close to the satellite in space
-                        const camOffset = satVec.clone().normalize().multiplyScalar(45);
-                        myGlobe.camera().position.copy(satVec.clone().add(camOffset));
+
+                        // 4. Place camera at a comfortable distance in space framing the satellite and its orbit
+                        const direction = satVec.clone().normalize();
+                        const cameraPos = satVec.clone().add(direction.multiplyScalar(22)); // Close-up view in space
+                        myGlobe.camera().position.copy(cameraPos);
                         myGlobe.controls().update();
                     }
                 }
