@@ -499,7 +499,6 @@
 
             const group = new THREE.Group();
             
-            // Satellite Bus (Main Body - Metallic Silver)
             const bodyGeo = new THREE.BoxGeometry(2.8, 2.8, 3.6);
             const bodyMat = new THREE.MeshStandardMaterial({ 
                 color: 0xe2e8f0, 
@@ -509,7 +508,6 @@
             const body = new THREE.Mesh(bodyGeo, bodyMat);
             group.add(body);
 
-            // Solar Panels (Left & Right Wings with Deep Blue Solar Texture)
             const panelGeo = new THREE.BoxGeometry(11.0, 0.15, 3.2);
             const panelMat = new THREE.MeshStandardMaterial({ 
                 color: 0x1d4ed8, 
@@ -527,7 +525,6 @@
             rightWing.position.x = 7.2;
             group.add(rightWing);
 
-            // Panel Connector Booms
             const boomGeo = new THREE.CylinderGeometry(0.15, 0.15, 4.0, 8);
             const boomMat = new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.9 });
             
@@ -541,7 +538,6 @@
             rightBoom.position.x = 3.8;
             group.add(rightBoom);
 
-            // Nadir Antenna Dish
             const dishGeo = new THREE.ConeGeometry(0.8, 0.6, 12);
             const dishMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.8 });
             const antenna = new THREE.Mesh(dishGeo, dishMat);
@@ -1060,10 +1056,11 @@
 
             targetLabelData = currentLiveSatObjects.filter(s => s.id === id);
 
+            // 🛠️ FIXED: Focus camera precisely onto the selected satellite's 3D position in space
             if (myGlobe && currentLiveSatObjects.length > 0) {
                 const targetObj = currentLiveSatObjects.find(s => s.id === id);
                 if (targetObj) {
-                    myGlobe.pointOfView({ lat: targetObj.lat, lng: targetObj.lng, altitude: 1.6 }, 1000);
+                    myGlobe.pointOfView({ lat: targetObj.lat, lng: targetObj.lng, altitude: 0.5 }, 1200);
                 }
             }
 
@@ -1596,7 +1593,7 @@
                     }
                 }
             }
-            requestAnimationFrame(animateSatellites);
+            requestAnimationFrame(animateSatellстер);
         }
         
         setInterval(() => {
