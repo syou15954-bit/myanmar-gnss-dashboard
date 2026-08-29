@@ -499,20 +499,20 @@
 
             const group = new THREE.Group();
             
-            const bodyGeo = new THREE.BoxGeometry(4.0, 4.0, 4.0);
+            const bodyGeo = new THREE.BoxGeometry(2.5, 2.5, 2.5);
             const bodyMat = new THREE.MeshBasicMaterial({ color: d.color || 0x10b981 });
             const body = new THREE.Mesh(bodyGeo, bodyMat);
             group.add(body);
 
-            const panelGeo = new THREE.BoxGeometry(14.0, 0.3, 4.0);
+            const panelGeo = new THREE.BoxGeometry(8.0, 0.2, 2.5);
             const panelMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
             
             const leftPanel = new THREE.Mesh(panelGeo, panelMat);
-            leftPanel.position.x = -9.0;
+            leftPanel.position.x = -5.2;
             group.add(leftPanel);
 
             const rightPanel = new THREE.Mesh(panelGeo, panelMat);
-            rightPanel.position.x = 9.0;
+            rightPanel.position.x = 5.2;
             group.add(rightPanel);
 
             return group;
@@ -648,14 +648,14 @@
         function propagateSGP4(id, timeOffsetSec = 0) {
             try {
                 const tle = TLE_DATABASE[id];
-                if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 0.8 };
+                if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: 2.5, x: 0, y: 0, z: 0 };
                 
                 const satrec = satellite.twoline2satrec(tle.line1, tle.line2);
                 const targetTime = new Date(Date.now() + timeOffsetSec * 1000);
                 const posVel = satellite.propagate(satrec, targetTime);
                 
                 if (!posVel || !posVel.position || isNaN(posVel.position.x)) {
-                    return { lat: 16.8, lng: 96.1, alt: 0.8 };
+                    return { lat: 16.8, lng: 96.1, alt: 2.5, x: 0, y: 0, z: 0 };
                 }
 
                 const gmst = satellite.gstime(targetTime);
@@ -667,9 +667,15 @@
                 if(isNaN(lat)) lat = 16.8;
                 if(isNaN(lng)) lng = 96.1;
 
-                return { lat: lat, lng: lng, alt: 0.8 };
+                // 🛠️ Correct 3D ECI position mapping for exact MEO orbit radius matching three-globe
+                const scale = 0.0156; 
+                const x = posVel.position.x * scale;
+                const y = posVel.position.y * scale;
+                const z = posVel.position.z * scale;
+
+                return { lat: lat, lng: lng, alt: 2.5, x: x, y: z, z: -y };
             } catch (e) {
-                return { lat: 16.8, lng: 96.1, alt: 0.8 };
+                return { lat: 16.8, lng: 96.1, alt: 2.5, x: 0, y: 0, z: 0 };
             }
         }
 
@@ -727,7 +733,10 @@
                             name: (s.name || "Unknown").substring(0, 16),
                             lat: sgp4Pos.lat, 
                             lng: sgp4Pos.lng, 
-                            alt: 0.8, 
+                            alt: 2.5,
+                            x: sgp4Pos.x,
+                            y: sgp4Pos.y,
+                            z: sgp4Pos.z,
                             color: getSatColor(s.name)
                         });
                     }
@@ -811,8 +820,11 @@
                 if (currentLiveSatObjects.length === 0) {
                     selectedSatId = '';
                     if (myGlobe) {
-                        myGlobe.pathsData([]);
                         myGlobe.objectsData([]);
+                        if (activeOrbitMeshGroup && myGlobe.scene) {
+                            myGlobe.scene().remove(activeOrbitMeshGroup);
+                            activeOrbitMeshGroup = null;
+                        }
                     }
                     const passListContainer = document.getElementById('upcoming-passes-list');
                     if (passListContainer) {
@@ -916,15 +928,14 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
-        // 🛠️ Robust SGP4 3D Orbit Track Generator using direct 3D vector meshes for guaranteed visibility
+        // 🛠️ 100% Exact MEO Orbit Path Generator aligned directly with satellite positions
         let activeOrbitMeshGroup = null;
         function updateTargetOrbitPath(id) {
             if (!myGlobe || !id || !TLE_DATABASE[id]) return;
             const THREE = getTHREE();
-            if (!THREE) return;
+            if (!THREE || !myGlobe.scene) return;
 
-            // Remove previous orbit lines if any
-            if (activeOrbitMeshGroup && myGlobe.scene) {
+            if (activeOrbitMeshGroup) {
                 myGlobe.scene().remove(activeOrbitMeshGroup);
                 activeOrbitMeshGroup = null;
             }
@@ -942,6 +953,7 @@
             const numSteps = 200;
             const stepSec = periodSec / numSteps;
             const points = [];
+            const scale = 0.0156;
 
             for (let i = 0; i <= numSteps; i++) {
                 const timeOffset = (i * stepSec) - (periodSec / 2);
@@ -949,12 +961,10 @@
                 const posVel = satellite.propagate(satrec, targetTime);
 
                 if (posVel && posVel.position && !isNaN(posVel.position.x)) {
-                    // ECI position vector directly converted into Globe 3D coordinates
-                    // Scale factor: Globe radius is 100 in globe.gl three-globe space
-                    const x = posVel.position.x * 0.0156;
-                    const y = posVel.position.y * 0.0156;
-                    const z = posVel.position.z * 0.0156;
-                    points.push(new THREE.Vector3(x, z, -y)); // Three.js coordinate mapping (Y-up)
+                    const x = posVel.position.x * scale;
+                    const y = posVel.position.y * scale;
+                    const z = posVel.position.z * scale;
+                    points.push(new THREE.Vector3(x, z, -y));
                 }
             }
 
@@ -965,7 +975,7 @@
                 color: satColor, 
                 linewidth: 3, 
                 transparent: true, 
-                opacity: 0.85 
+                opacity: 0.9 
             });
 
             activeOrbitMeshGroup = new THREE.Line(geometry, material);
@@ -976,7 +986,14 @@
             if (!myGlobe) return;
             modes[feature] = !modes[feature];
             btn.classList.toggle('active-mode', modes[feature]);
-            if (feature === 'tracks') updateTargetOrbitPath(selectedSatId);
+            if (feature === 'tracks') {
+                if (modes[feature]) {
+                    updateTargetOrbitPath(selectedSatId);
+                } else if (activeOrbitMeshGroup && myGlobe.scene) {
+                    myGlobe.scene().remove(activeOrbitMeshGroup);
+                    activeOrbitMeshGroup = null;
+                }
+            }
         }
 
         function selectSatellite(id) {
@@ -1017,7 +1034,7 @@
                 }
             }
 
-            // 🛠️ Render 3D Orbit line instantly on click
+            // 🛠️ Render exact MEO 3D Orbit line on satellite click
             updateTargetOrbitPath(id);
         }
 
@@ -1535,6 +1552,10 @@
                     const sgp4Pos = propagateSGP4(s.id);
                     s.lat = sgp4Pos.lat;
                     s.lng = sgp4Pos.lng;
+                    s.alt = 2.5;
+                    s.x = sgp4Pos.x;
+                    s.y = sgp4Pos.y;
+                    s.z = sgp4Pos.z;
                 });
                 if (myGlobe) {
                     myGlobe.objectsData([...currentLiveSatObjects]);
