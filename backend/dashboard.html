@@ -492,28 +492,62 @@
             return window.THREE || (typeof Globe !== 'undefined' && Globe.THREE);
         }
 
-        // 🛠️ 3D Satellite Model Generator
+        // 🛠️ Highly Detailed Realistic Satellite 3D Geometry Builder
         function createSatelliteThreeObject(d) {
             const THREE = getTHREE();
             if (!THREE) return null;
 
             const group = new THREE.Group();
             
-            const bodyGeo = new THREE.BoxGeometry(2.5, 2.5, 2.5);
-            const bodyMat = new THREE.MeshBasicMaterial({ color: d.color || 0x10b981 });
+            // Satellite Bus (Main Body - Metallic Silver)
+            const bodyGeo = new THREE.BoxGeometry(2.8, 2.8, 3.6);
+            const bodyMat = new THREE.MeshStandardMaterial({ 
+                color: 0xe2e8f0, 
+                metalness: 0.85, 
+                roughness: 0.2 
+            });
             const body = new THREE.Mesh(bodyGeo, bodyMat);
             group.add(body);
 
-            const panelGeo = new THREE.BoxGeometry(8.0, 0.2, 2.5);
-            const panelMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+            // Solar Panels (Left & Right Wings with Deep Blue Solar Texture)
+            const panelGeo = new THREE.BoxGeometry(11.0, 0.15, 3.2);
+            const panelMat = new THREE.MeshStandardMaterial({ 
+                color: 0x1d4ed8, 
+                metalness: 0.5, 
+                roughness: 0.3,
+                emissive: 0x1e40af,
+                emissiveIntensity: 0.2
+            });
             
-            const leftPanel = new THREE.Mesh(panelGeo, panelMat);
-            leftPanel.position.x = -5.2;
-            group.add(leftPanel);
+            const leftWing = new THREE.Mesh(panelGeo, panelMat);
+            leftWing.position.x = -7.2;
+            group.add(leftWing);
 
-            const rightPanel = new THREE.Mesh(panelGeo, panelMat);
-            rightPanel.position.x = 5.2;
-            group.add(rightPanel);
+            const rightWing = new THREE.Mesh(panelGeo, panelMat);
+            rightWing.position.x = 7.2;
+            group.add(rightWing);
+
+            // Panel Connector Booms
+            const boomGeo = new THREE.CylinderGeometry(0.15, 0.15, 4.0, 8);
+            const boomMat = new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.9 });
+            
+            const leftBoom = new THREE.Mesh(boomGeo, boomMat);
+            leftBoom.rotation.z = Math.PI / 2;
+            leftBoom.position.x = -3.8;
+            group.add(leftBoom);
+
+            const rightBoom = new THREE.Mesh(boomGeo, boomMat);
+            rightBoom.rotation.z = Math.PI / 2;
+            rightBoom.position.x = 3.8;
+            group.add(rightBoom);
+
+            // Nadir Antenna Dish
+            const dishGeo = new THREE.ConeGeometry(0.8, 0.6, 12);
+            const dishMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.8 });
+            const antenna = new THREE.Mesh(dishGeo, dishMat);
+            antenna.position.y = -2.0;
+            antenna.rotation.x = Math.PI;
+            group.add(antenna);
 
             return group;
         }
@@ -927,7 +961,7 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
-        // 🛠️ Fixed 3D Orbit Mesh Generator: Focuses camera directly on the selected satellite's 3D position in space
+        // 🛠️ Realistic 3D Orbit Track Mesh Generator
         let activeOrbitMeshGroup = null;
         function updateTargetOrbitPath(id) {
             if (!myGlobe || !id || !TLE_DATABASE[id]) return;
@@ -1026,7 +1060,6 @@
 
             targetLabelData = currentLiveSatObjects.filter(s => s.id === id);
 
-            // 🛠️ FIXED: Focus camera directly onto the satellite's exact 3D position in space rather than zooming down to earth surface
             if (myGlobe && currentLiveSatObjects.length > 0) {
                 const targetObj = currentLiveSatObjects.find(s => s.id === id);
                 if (targetObj) {
