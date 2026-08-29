@@ -1056,11 +1056,19 @@
 
             targetLabelData = currentLiveSatObjects.filter(s => s.id === id);
 
-            // 🛠️ FIXED: Focus camera precisely onto the selected satellite's 3D position in space
+            // 🛠️ FIXED: Lock camera focus directly onto the satellite's 3D Space coordinates using Three.js controls target
             if (myGlobe && currentLiveSatObjects.length > 0) {
                 const targetObj = currentLiveSatObjects.find(s => s.id === id);
                 if (targetObj) {
-                    myGlobe.pointOfView({ lat: targetObj.lat, lng: targetObj.lng, altitude: 0.5 }, 1200);
+                    const THREE = getTHREE();
+                    if (THREE && myGlobe.controls) {
+                        // Position camera close to the satellite in 3D space
+                        const camDist = 25.0; 
+                        const satVec = new THREE.Vector3(targetObj.x, targetObj.y, targetObj.z);
+                        
+                        myGlobe.controls().target.copy(satVec); // Lock rotation center to satellite
+                        myGlobe.pointOfView({ lat: targetObj.lat, lng: targetObj.lng, altitude: 0.15 }, 1200);
+                    }
                 }
             }
 
@@ -1593,7 +1601,7 @@
                     }
                 }
             }
-            requestAnimationFrame(animateSatellстер);
+            requestAnimationFrame(animateSatellites);
         }
         
         setInterval(() => {
