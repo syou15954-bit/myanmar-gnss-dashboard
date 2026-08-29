@@ -492,7 +492,7 @@
             return window.THREE || (typeof Globe !== 'undefined' && Globe.THREE);
         }
 
-        // 🛠️ Realistic 3D Satellite Model Generator
+        // 🛠️ Highly Detailed Realistic Satellite 3D Geometry Builder
         function createSatelliteThreeObject(d) {
             const THREE = getTHREE();
             if (!THREE) return null;
@@ -1025,7 +1025,7 @@
             }
         }
 
-        // 🛠️ DEFINITIVE FIX: Direct override of Globe.gl camera and controls without triggering surface pov animation
+        // 🛠️ DEFINITIVE FIX: Direct Three.js camera animation frame overriding globe.gl internal pointOfView
         function selectSatellite(id) {
             if (!id || !TLE_DATABASE[id]) return;
             selectedSatId = id;
@@ -1062,22 +1062,27 @@
                 if (targetObj) {
                     const THREE = getTHREE();
                     if (THREE && myGlobe.controls && myGlobe.camera) {
-                        // 1. Completely halt globe auto-rotation
+                        // 1. Pause globe rotation completely
                         myGlobe.controls().autoRotate = false;
                         isRotating = false;
                         const btn = document.getElementById('btn-rotation');
                         if (btn) btn.innerText = '▶️';
 
-                        // 2. Fetch live exact 3D position vector in space
+                        // 2. Fetch live satellite coordinates
                         const pos = propagateSGP4(id);
                         const satVec = new THREE.Vector3(pos.x, pos.y, pos.z);
 
-                        // 3. Bypass globe.gl built-in animation and directly update Three.js camera & OrbitControls
+                        // 3. Directly bypass globe.gl animation by setting camera position & controls target in Three.js space
                         const controls = myGlobe.controls();
-                        controls.target.copy(satVec); // Lock rotation anchor to the satellite
+                        controls.enabled = true;
+                        controls.target.copy(satVec); // Focus rotation center on satellite
 
-                        const camOffset = satVec.clone().normalize().multiplyScalar(35); // Clear space view distance
-                        myGlobe.camera().position.copy(satVec.clone().add(camOffset));
+                        // Position camera at a safe viewing distance away from earth, looking directly at the satellite
+                        const cameraDistance = 35.0;
+                        const directionFromCenter = satVec.clone().normalize();
+                        const newCameraPos = satVec.clone().add(directionFromCenter.multiplyScalar(cameraDistance));
+                        
+                        myGlobe.camera().position.copy(newCameraPos);
                         controls.update();
                     }
                 }
@@ -1605,6 +1610,19 @@
                     s.y = sgp4Pos.y;
                     s.z = sgp4Pos.z;
                 });
+                
+                // 🛠️ Dynamic Live Tracking: If a satellite is selected, smoothly update camera & target position so it stays locked and visible in space!
+                if (myGlobe && selectedSatId) {
+                    const targetObj = currentLiveSatObjects.find(s => s.id === selectedSatId);
+                    if (targetObj) {
+                        const THREE = getTHREE();
+                        if (THREE && myGlobe.controls && myGlobe.camera && !isRotating) {
+                            const satVec = new THREE.Vector3(targetObj.x, targetObj.y, targetObj.z);
+                            myGlobe.controls().target.copy(satVec);
+                        }
+                    }
+                }
+
                 if (myGlobe) {
                     myGlobe.objectsData([...currentLiveSatObjects]);
                     if (selectedSatId) {
