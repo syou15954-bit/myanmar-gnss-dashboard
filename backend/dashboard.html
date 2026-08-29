@@ -1025,6 +1025,7 @@
             }
         }
 
+        // 🛠️ FIXED: Proper Space Camera Positioning so selecting a satellite zooms cleanly to its 3D position and orbit without entering earth surface
         function selectSatellite(id) {
             if (!id || !TLE_DATABASE[id]) return;
             selectedSatId = id;
@@ -1056,18 +1057,19 @@
 
             targetLabelData = currentLiveSatObjects.filter(s => s.id === id);
 
-            // 🛠️ FIXED: Lock camera focus directly onto the satellite's 3D Space coordinates using Three.js controls target
             if (myGlobe && currentLiveSatObjects.length > 0) {
                 const targetObj = currentLiveSatObjects.find(s => s.id === id);
                 if (targetObj) {
                     const THREE = getTHREE();
-                    if (THREE && myGlobe.controls) {
-                        // Position camera close to the satellite in 3D space
-                        const camDist = 25.0; 
+                    if (THREE && myGlobe.controls && myGlobe.camera) {
+                        // Position camera precisely in space looking at the satellite's 3D coordinates
                         const satVec = new THREE.Vector3(targetObj.x, targetObj.y, targetObj.z);
+                        myGlobe.controls().target.copy(satVec);
                         
-                        myGlobe.controls().target.copy(satVec); // Lock rotation center to satellite
-                        myGlobe.pointOfView({ lat: targetObj.lat, lng: targetObj.lng, altitude: 0.15 }, 1200);
+                        // Set camera position slightly offset from the satellite in space
+                        const camOffset = satVec.clone().normalize().multiplyScalar(150); // Safe distance in space
+                        myGlobe.camera().position.copy(satVec.clone().add(camOffset));
+                        myGlobe.controls().update();
                     }
                 }
             }
