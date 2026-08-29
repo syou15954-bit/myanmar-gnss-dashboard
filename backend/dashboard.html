@@ -1025,7 +1025,7 @@
             }
         }
 
-        // 🛠️ FIXED: Pause rotation, lock camera target precisely on satellite 3D vector, and position camera so satellite is fully in view
+        // 🛠️ DEFINITIVE FIX: Direct Three.js camera translation to frame the selected satellite model in space
         function selectSatellite(id) {
             if (!id || !TLE_DATABASE[id]) return;
             selectedSatId = id;
@@ -1062,23 +1062,20 @@
                 if (targetObj) {
                     const THREE = getTHREE();
                     if (THREE && myGlobe.controls && myGlobe.camera) {
-                        // 1. Stop globe auto-rotation so view doesn't drift away
+                        // 1. Pause auto-rotation completely
                         myGlobe.controls().autoRotate = false;
                         isRotating = false;
                         const btn = document.getElementById('btn-rotation');
                         if (btn) btn.innerText = '▶️';
 
-                        // 2. Get live 3D position vector of the satellite
+                        // 2. Calculate satellite position
                         const pos = propagateSGP4(id);
                         const satVec = new THREE.Vector3(pos.x, pos.y, pos.z);
 
-                        // 3. Lock controls target exactly to the satellite
+                        // 3. Move camera directly to frame the satellite without touching globe surface
                         myGlobe.controls().target.copy(satVec);
-
-                        // 4. Place camera at a comfortable distance in space framing the satellite and its orbit
-                        const direction = satVec.clone().normalize();
-                        const cameraPos = satVec.clone().add(direction.multiplyScalar(22)); // Close-up view in space
-                        myGlobe.camera().position.copy(cameraPos);
+                        const offset = satVec.clone().normalize().multiplyScalar(25); // Close framing in space
+                        myGlobe.camera().position.copy(satVec.clone().add(offset));
                         myGlobe.controls().update();
                     }
                 }
