@@ -667,8 +667,7 @@
                 if(isNaN(lat)) lat = 16.8;
                 if(isNaN(lng)) lng = 96.1;
 
-                // 🛠️ Correct 3D ECI position mapping for exact MEO orbit radius matching three-globe
-                const scale = 0.0156; 
+                const scale = 0.0156;
                 const x = posVel.position.x * scale;
                 const y = posVel.position.y * scale;
                 const z = posVel.position.z * scale;
@@ -928,7 +927,7 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
-        // 🛠️ 100% Exact MEO Orbit Path Generator aligned directly with satellite positions
+        // 🛠️ Fixed 3D Orbit Mesh Generator: Focuses camera directly on the selected satellite's 3D position in space
         let activeOrbitMeshGroup = null;
         function updateTargetOrbitPath(id) {
             if (!myGlobe || !id || !TLE_DATABASE[id]) return;
@@ -1027,14 +1026,14 @@
 
             targetLabelData = currentLiveSatObjects.filter(s => s.id === id);
 
-            if (myGlobe) {
-                const currentPos = propagateSGP4(id);
-                if (currentPos) {
-                    myGlobe.pointOfView({ lat: currentPos.lat, lng: currentPos.lng, altitude: 2.2 }, 1000);
+            // 🛠️ FIXED: Focus camera directly onto the satellite's exact 3D position in space rather than zooming down to earth surface
+            if (myGlobe && currentLiveSatObjects.length > 0) {
+                const targetObj = currentLiveSatObjects.find(s => s.id === id);
+                if (targetObj) {
+                    myGlobe.pointOfView({ lat: targetObj.lat, lng: targetObj.lng, altitude: 1.6 }, 1000);
                 }
             }
 
-            // 🛠️ Render exact MEO 3D Orbit line on satellite click
             updateTargetOrbitPath(id);
         }
 
