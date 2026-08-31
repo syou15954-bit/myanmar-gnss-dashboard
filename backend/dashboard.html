@@ -453,7 +453,7 @@
                                     <tr><th>SAT</th><th>CODE (C1C)</th><th>CODE (C2W)</th><th>PHASE (L1C)</th><th>SNR (S1C)</th></tr>
                                 </thead>
                                 <tbody id="rinex-obs-table-body">
-                                    <tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No observation data found in file.</td></tr>
+                                    <tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Please select a RINEX file card on the left.</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -957,7 +957,7 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
-        // 🛠️ Professional Clean Orbit Track Mesh Generator
+        // 🛠️ Professional Clean Orbit Track Mesh Generator (Full 3D Orbit Arc around Globe)
         let activeOrbitMeshGroup = null;
         function updateTargetOrbitPath(id) {
             if (!myGlobe || !id || !TLE_DATABASE[id]) return;
@@ -1025,7 +1025,7 @@
             }
         }
 
-        // 🛠️ EXACT MATCH TO REFERENCE SCREENSHOT: Selecting a satellite highlights its full orbital arc around the Earth while keeping the normal, wide Earth view interactive.
+        // 🛠️ REFERENCE SCREENSHOT EXACT MATCH: Clicking a satellite renders its full orbital path arc around the earth while keeping the wide global view fully open and interactive.
         function selectSatellite(id) {
             if (!id || !TLE_DATABASE[id]) return;
             selectedSatId = id;
@@ -1057,7 +1057,7 @@
 
             targetLabelData = currentLiveSatObjects.filter(s => s.id === id);
 
-            // Renders the full orbital arc of the selected satellite around the globe while preserving the default wide global view
+            // Renders the full 3D orbital arc around the Earth while maintaining the normal global view
             updateTargetOrbitPath(id);
         }
 
@@ -1437,7 +1437,7 @@
                         <span style="color: var(--accent-cyan); font-weight: 700;">v${st.version}</span>
                     </div>
                 `;
-                fileListContainer.appendChild(card);
+                fileListContainer.exportCard ? null : fileListContainer.appendChild(card);
             });
         }
 
