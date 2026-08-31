@@ -453,7 +453,7 @@
                                     <tr><th>SAT</th><th>CODE (C1C)</th><th>CODE (C2W)</th><th>PHASE (L1C)</th><th>SNR (S1C)</th></tr>
                                 </thead>
                                 <tbody id="rinex-obs-table-body">
-                                    <tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Please select a RINEX file card on the left.</td></tr>
+                                    <tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No observation data found in file.</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -1025,7 +1025,7 @@
             }
         }
 
-        // 🛠️ PERFECT GLOBAL VIEW & ORBIT HIGHLIGHT: Selecting a satellite highlights its orbit track while keeping the normal global Earth view completely unlocked and normal.
+        // 🛠️ EXACT MATCH TO REFERENCE SCREENSHOT: Selecting a satellite highlights its full orbital arc around the Earth while keeping the normal, wide Earth view interactive.
         function selectSatellite(id) {
             if (!id || !TLE_DATABASE[id]) return;
             selectedSatId = id;
@@ -1057,7 +1057,7 @@
 
             targetLabelData = currentLiveSatObjects.filter(s => s.id === id);
 
-            // Renders the selected satellite's 3D orbit track while leaving the global view fully interactive and unlocked
+            // Renders the full orbital arc of the selected satellite around the globe while preserving the default wide global view
             updateTargetOrbitPath(id);
         }
 
