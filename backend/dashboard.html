@@ -453,7 +453,7 @@
                                     <tr><th>SAT</th><th>CODE (C1C)</th><th>CODE (C2W)</th><th>PHASE (L1C)</th><th>SNR (S1C)</th></tr>
                                 </thead>
                                 <tbody id="rinex-obs-table-body">
-                                    <tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Please select a RINEX file card on the left.</td></tr>
+                                    <tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No observation data found in file.</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -1025,7 +1025,7 @@
             }
         }
 
-        // 🛠️ STANDARD GLOBAL VIEW FIX: Clicking a satellite selects it, highlights its orbit track, but keeps the normal global Earth view intact (No camera locking/freezing)
+        // 🛠️ PERFECT GLOBAL VIEW & ORBIT HIGHLIGHT: Selecting a satellite instantly draws its dedicated 3D Orbit path while keeping the Earth view normal and interactive.
         function selectSatellite(id) {
             if (!id || !TLE_DATABASE[id]) return;
             selectedSatId = id;
@@ -1057,7 +1057,7 @@
 
             targetLabelData = currentLiveSatObjects.filter(s => s.id === id);
 
-            // Keep normal Global View (Globe rotation and free camera movement continue naturally)
+            // Keeps normal Global Earth view intact and renders the selected satellite's 3D orbit line
             updateTargetOrbitPath(id);
         }
 
