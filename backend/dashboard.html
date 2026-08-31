@@ -957,7 +957,7 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
-        // 🛠️ Professional Clean Orbit Track Mesh Generator (Displays dedicated selected orbit line)
+        // 🛠️ Professional Clean Orbit Track Mesh Generator
         let activeOrbitMeshGroup = null;
         function updateTargetOrbitPath(id) {
             if (!myGlobe || !id || !TLE_DATABASE[id]) return;
@@ -1025,7 +1025,7 @@
             }
         }
 
-        // 🛠️ MISSION CONTROL LEVEL CAMERA LOCK: Direct Space Camera positioning to frame the selected satellite perfectly
+        // 🛠️ MISSION CONTROL CAMERA LOCK: Instantly positions the camera right next to the selected satellite in 3D space
         function selectSatellite(id) {
             if (!id || !TLE_DATABASE[id]) return;
             selectedSatId = id;
@@ -1062,22 +1062,22 @@
                 if (targetObj) {
                     const THREE = getTHREE();
                     if (THREE && myGlobe.controls && myGlobe.camera) {
-                        // 1. Pause globe auto-rotation to keep view locked
+                        // 1. Pause auto-rotation
                         myGlobe.controls().autoRotate = false;
                         isRotating = false;
                         const btn = document.getElementById('btn-rotation');
                         if (btn) btn.innerText = '▶️';
 
-                        // 2. Fetch live exact 3D space vector
+                        // 2. Fetch the satellite's 3D position vector
                         const pos = propagateSGP4(id);
                         const satVec = new THREE.Vector3(pos.x, pos.y, pos.z);
 
-                        // 3. Directly position camera & target in space
+                        // 3. Set Controls Target to Satellite & Position Camera close by in space
                         const controls = myGlobe.controls();
                         controls.enabled = true;
                         controls.target.copy(satVec);
 
-                        const camOffset = satVec.clone().normalize().multiplyScalar(30); // Ideal space viewing distance
+                        const camOffset = satVec.clone().normalize().multiplyScalar(18); // Close distance to frame the satellite model & orbit
                         myGlobe.camera().position.copy(satVec.clone().add(camOffset));
                         controls.update();
                     }
@@ -1595,7 +1595,7 @@
 
         window.addEventListener('resize', resizeGlobe);
 
-        // 🛠️ Professional Live Tracking Loop: Fully synchronized with real-time satellite updates
+        // 🛠️ MISSION CONTROL ANIMATION LOOP: Keeps selected satellite and orbit track seamlessly locked in view
         function animateSatellites() {
             if (currentLiveSatObjects.length > 0) {
                 currentLiveSatObjects.forEach(s => {
@@ -1615,7 +1615,7 @@
                         if (THREE && myGlobe.controls && myGlobe.camera && !isRotating) {
                             const satVec = new THREE.Vector3(targetObj.x, targetObj.y, targetObj.z);
                             
-                            // Keep camera cleanly locked onto the moving satellite
+                            // Smooth live camera tracking for the selected spacecraft
                             myGlobe.controls().target.copy(satVec);
                             const offset = satVec.clone().normalize().multiplyScalar(28);
                             myGlobe.camera().position.copy(satVec.clone().add(offset));
