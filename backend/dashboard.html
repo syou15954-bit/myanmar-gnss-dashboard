@@ -1025,7 +1025,7 @@
             }
         }
 
-        // 🛠️ MISSION CONTROL CAMERA LOCK: Instantly positions the camera right next to the selected satellite in 3D space
+        // 🛠️ STANDARD GLOBAL VIEW FIX: Clicking a satellite selects it, highlights its orbit track, but keeps the normal global Earth view intact (No camera locking/freezing)
         function selectSatellite(id) {
             if (!id || !TLE_DATABASE[id]) return;
             selectedSatId = id;
@@ -1057,33 +1057,7 @@
 
             targetLabelData = currentLiveSatObjects.filter(s => s.id === id);
 
-            if (myGlobe && currentLiveSatObjects.length > 0) {
-                const targetObj = currentLiveSatObjects.find(s => s.id === id);
-                if (targetObj) {
-                    const THREE = getTHREE();
-                    if (THREE && myGlobe.controls && myGlobe.camera) {
-                        // 1. Pause auto-rotation
-                        myGlobe.controls().autoRotate = false;
-                        isRotating = false;
-                        const btn = document.getElementById('btn-rotation');
-                        if (btn) btn.innerText = '▶️';
-
-                        // 2. Fetch the satellite's 3D position vector
-                        const pos = propagateSGP4(id);
-                        const satVec = new THREE.Vector3(pos.x, pos.y, pos.z);
-
-                        // 3. Set Controls Target to Satellite & Position Camera close by in space
-                        const controls = myGlobe.controls();
-                        controls.enabled = true;
-                        controls.target.copy(satVec);
-
-                        const camOffset = satVec.clone().normalize().multiplyScalar(18); // Close distance to frame the satellite model & orbit
-                        myGlobe.camera().position.copy(satVec.clone().add(camOffset));
-                        controls.update();
-                    }
-                }
-            }
-
+            // Keep normal Global View (Globe rotation and free camera movement continue naturally)
             updateTargetOrbitPath(id);
         }
 
@@ -1595,7 +1569,6 @@
 
         window.addEventListener('resize', resizeGlobe);
 
-        // 🛠️ MISSION CONTROL ANIMATION LOOP: Keeps selected satellite and orbit track seamlessly locked in view
         function animateSatellites() {
             if (currentLiveSatObjects.length > 0) {
                 currentLiveSatObjects.forEach(s => {
@@ -1607,23 +1580,6 @@
                     s.y = sgp4Pos.y;
                     s.z = sgp4Pos.z;
                 });
-
-                if (myGlobe && selectedSatId) {
-                    const targetObj = currentLiveSatObjects.find(s => s.id === selectedSatId);
-                    if (targetObj) {
-                        const THREE = getTHREE();
-                        if (THREE && myGlobe.controls && myGlobe.camera && !isRotating) {
-                            const satVec = new THREE.Vector3(targetObj.x, targetObj.y, targetObj.z);
-                            
-                            // Smooth live camera tracking for the selected spacecraft
-                            myGlobe.controls().target.copy(satVec);
-                            const offset = satVec.clone().normalize().multiplyScalar(28);
-                            myGlobe.camera().position.copy(satVec.clone().add(offset));
-                            myGlobe.controls().update();
-                        }
-                    }
-                }
-
                 if (myGlobe) {
                     myGlobe.objectsData([...currentLiveSatObjects]);
                     if (selectedSatId) {
