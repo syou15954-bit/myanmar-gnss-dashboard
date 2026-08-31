@@ -492,7 +492,7 @@
             return window.THREE || (typeof Globe !== 'undefined' && Globe.THREE);
         }
 
-        // 🛠️ Highly Detailed Realistic Satellite 3D Geometry Builder
+        // 🛠️ Realistic 3D Satellite Model Generator
         function createSatelliteThreeObject(d) {
             const THREE = getTHREE();
             if (!THREE) return null;
@@ -957,7 +957,7 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
-        // 🛠️ Professional Clean Orbit Track Mesh Generator (Clean 3D Line in Space)
+        // 🛠️ Professional Clean Orbit Track Mesh Generator (Displays dedicated selected orbit line)
         let activeOrbitMeshGroup = null;
         function updateTargetOrbitPath(id) {
             if (!myGlobe || !id || !TLE_DATABASE[id]) return;
@@ -979,7 +979,7 @@
             const periodSec = ((2 * Math.PI) / meanMotionRadMin) * 60;
 
             const now = new Date();
-            const numSteps = 250;
+            const numSteps = 300;
             const stepSec = periodSec / numSteps;
             const points = [];
             const scale = 0.0156;
@@ -1002,9 +1002,9 @@
             const geometry = new THREE.BufferGeometry().setFromPoints(points);
             const material = new THREE.LineBasicMaterial({ 
                 color: satColor, 
-                linewidth: 2.5, 
+                linewidth: 3, 
                 transparent: true, 
-                opacity: 0.85 
+                opacity: 0.95 
             });
 
             activeOrbitMeshGroup = new THREE.Line(geometry, material);
@@ -1025,7 +1025,7 @@
             }
         }
 
-        // 🛠️ ULTIMATE PROFESSIONAL FIX: Smoothly and cleanly snap the space camera right to the selected satellite and its orbit track
+        // 🛠️ MISSION CONTROL LEVEL CAMERA LOCK: Direct Space Camera positioning to frame the selected satellite perfectly
         function selectSatellite(id) {
             if (!id || !TLE_DATABASE[id]) return;
             selectedSatId = id;
@@ -1062,23 +1062,23 @@
                 if (targetObj) {
                     const THREE = getTHREE();
                     if (THREE && myGlobe.controls && myGlobe.camera) {
-                        // 1. Pause globe rotation so view is stable
+                        // 1. Pause globe auto-rotation to keep view locked
                         myGlobe.controls().autoRotate = false;
                         isRotating = false;
                         const btn = document.getElementById('btn-rotation');
                         if (btn) btn.innerText = '▶️';
 
-                        // 2. Fetch active 3D space vector of the satellite
+                        // 2. Fetch live exact 3D space vector
                         const pos = propagateSGP4(id);
                         const satVec = new THREE.Vector3(pos.x, pos.y, pos.z);
 
-                        // 3. Set camera target to the satellite
+                        // 3. Directly position camera & target in space
                         const controls = myGlobe.controls();
+                        controls.enabled = true;
                         controls.target.copy(satVec);
 
-                        // 4. Place camera right beside the satellite in space (Distance = 28 units)
-                        const offset = satVec.clone().normalize().multiplyScalar(28);
-                        myGlobe.camera().position.copy(satVec.clone().add(offset));
+                        const camOffset = satVec.clone().normalize().multiplyScalar(30); // Ideal space viewing distance
+                        myGlobe.camera().position.copy(satVec.clone().add(camOffset));
                         controls.update();
                     }
                 }
@@ -1595,7 +1595,7 @@
 
         window.addEventListener('resize', resizeGlobe);
 
-        // 🛠️ Professional Live Tracking Loop: Smoothly updates camera & target position every frame so the selected satellite stays locked and centered in view
+        // 🛠️ Professional Live Tracking Loop: Fully synchronized with real-time satellite updates
         function animateSatellites() {
             if (currentLiveSatObjects.length > 0) {
                 currentLiveSatObjects.forEach(s => {
@@ -1615,7 +1615,7 @@
                         if (THREE && myGlobe.controls && myGlobe.camera && !isRotating) {
                             const satVec = new THREE.Vector3(targetObj.x, targetObj.y, targetObj.z);
                             
-                            // Smoothly track the moving satellite in real-time
+                            // Keep camera cleanly locked onto the moving satellite
                             myGlobe.controls().target.copy(satVec);
                             const offset = satVec.clone().normalize().multiplyScalar(28);
                             myGlobe.camera().position.copy(satVec.clone().add(offset));
