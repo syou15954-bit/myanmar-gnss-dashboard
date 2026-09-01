@@ -492,41 +492,14 @@
             return window.THREE || (typeof Globe !== 'undefined' && Globe.THREE);
         }
 
-        // 🛠️ Simple & Clean 3D Satellite Model to fit nicely on the orbit
+        // 🛠️ CRITICAL FIX: Removed heavy 3D solar panels. Replaced with simple dots to reduce clutter!
         function createSatelliteThreeObject(d) {
             const THREE = getTHREE();
             if (!THREE) return null;
-
-            const group = new THREE.Group();
-            group.scale.set(0.2, 0.2, 0.2); // Scaled down to look realistic on the global orbit track
-            
-            const bodyGeo = new THREE.BoxGeometry(2.8, 2.8, 3.6);
-            const bodyMat = new THREE.MeshStandardMaterial({ 
-                color: 0xe2e8f0, 
-                metalness: 0.85, 
-                roughness: 0.2 
-            });
-            const body = new THREE.Mesh(bodyGeo, bodyMat);
-            group.add(body);
-
-            const panelGeo = new THREE.BoxGeometry(11.0, 0.15, 3.2);
-            const panelMat = new THREE.MeshStandardMaterial({ 
-                color: 0x1d4ed8, 
-                metalness: 0.5, 
-                roughness: 0.3,
-                emissive: 0x1e40af,
-                emissiveIntensity: 0.2
-            });
-            
-            const leftWing = new THREE.Mesh(panelGeo, panelMat);
-            leftWing.position.x = -7.2;
-            group.add(leftWing);
-
-            const rightWing = new THREE.Mesh(panelGeo, panelMat);
-            rightWing.position.x = 7.2;
-            group.add(rightWing);
-
-            return group;
+            // Draw unselected satellites as simple tiny spheres to keep the view clean like the screenshot
+            const geometry = new THREE.SphereGeometry(0.35, 8, 8);
+            const material = new THREE.MeshBasicMaterial({ color: getSatColor(d.name) });
+            return new THREE.Mesh(geometry, material);
         }
 
         function getSatColor(satName) {
@@ -630,6 +603,9 @@
                         json.data.all.forEach(s => { TLE_DATABASE[s.id] = s; });
                         document.getElementById('tle-status-badge') && (document.getElementById('tle-status-badge').innerText = `● LIVE SYNC (${json.data.all.length} SATS)`);
                         renderCustomSelection();
+                        if (currentLiveSatObjects.length > 0) {
+                            selectSatellite(currentLiveSatObjects[0].id);
+                        }
                         return; 
                     }
                 }
@@ -640,6 +616,9 @@
             categorizeSatsList(fallbackList);
             document.getElementById('tle-status-badge') && (document.getElementById('tle-status-badge').innerHTML = `<span style="color:var(--accent-yellow);">● LIVE SIMULATION</span>`);
             renderCustomSelection();
+            if (currentLiveSatObjects.length > 0) {
+                selectSatellite(currentLiveSatObjects[0].id);
+            }
         }
 
         function getFilteredSatellites() {
@@ -815,14 +794,17 @@
                 }
 
                 if (myGlobe) {
-                    myGlobe.objectsData(currentLiveSatObjects);
+                    // Update only non-selected satellites with the basic object rendering.
+                    // The selected satellite will use HTML HUD Label!
+                    const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
+                    myGlobe.objectsData(unselectedSats);
                 }
 
                 if (currentLiveSatObjects.length === 0) {
                     selectedSatId = '';
                     if (myGlobe) {
                         myGlobe.pathsData([]);
-                        myGlobe.labelsData([]);
+                        myGlobe.htmlElementsData([]);
                     }
                     const passListContainer = document.getElementById('upcoming-passes-list');
                     if (passListContainer) {
@@ -851,7 +833,6 @@
                     .ringMaxRadius(d => d.size)
                     .ringPropagationSpeed(2.5)
                     .ringRepeatPeriod(800);
-                // Gently pan to station but keep global view
                 myGlobe.pointOfView({ lat: st.lat, lng: st.lng, altitude: 2.5 }, 1200);
             }
         }
@@ -917,7 +898,8 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
-        // 🛠️ PERFECT GLOBAL ORBIT PATH: Uses Globe.gl's native pathsData to perfectly wrap the glowing green orbit around the earth!
+        // 🛠️ CRITICAL FIX: To fix the "weird figure 8" orbit ring from earlier, we freeze the time (GMST) across the loop!
+        // This calculates a perfect solid orbital ring in space directly around the globe exactly like the screenshot.
         function updateTargetOrbitPath(id) {
             if (!myGlobe || !id || !TLE_DATABASE[id]) return;
 
@@ -933,35 +915,38 @@
             const periodSec = ((2 * Math.PI) / meanMotionRadMin) * 60;
 
             const now = new Date();
-            const numSteps = 200;
+            // 🌟 Use a FIXED GMST for all points to draw a clean circular ring relative to current earth orientation
+            const currentGmst = satellite.gstime(now); 
+            const numSteps = 250;
             const stepSec = periodSec / numSteps;
             const orbitPoints = [];
 
-            for (let i = -100; i <= 100; i++) {
+            for (let i = 0; i <= numSteps; i++) {
                 const targetTime = new Date(now.getTime() + (i * stepSec) * 1000);
                 const posVel = satellite.propagate(satrec, targetTime);
 
-                if (posVel && posVel.position && !isNaN(posVel.position.x)) {
-                    const gmst = satellite.gstime(targetTime);
-                    const posGd = satellite.eciToGeodetic(posVel.position, gmst);
+                if (posVel && posVel.position) {
+                    // Use fixed currentGmst instead of future GMST to prevent ground-track shifting
+                    const posGd = satellite.eciToGeodetic(posVel.position, currentGmst);
                     orbitPoints.push([
                         satellite.degreesLat(posGd.latitude),
                         satellite.degreesLong(posGd.longitude),
-                        posGd.height / 6371.0 // Accurate altitude scale
+                        posGd.height / 6371.0 
                     ]);
                 }
             }
 
-            // Draw the smooth, glowing green orbit line using native pathsData!
+            // Draw the perfect neon green orbit line using native pathsData!
             myGlobe.pathsData([{ coords: orbitPoints }])
                    .pathPoints('coords')
                    .pathPointLat(p => p[0])
                    .pathPointLng(p => p[1])
                    .pathPointAlt(p => p[2])
-                   .pathColor(() => '#10b981') // Bright Neon Green
+                   .pathColor(() => '#10b981') // Bright Neon Green!
                    .pathStroke(1.5)
-                   .pathDashLength(0.01)
-                   .pathDashAnimateTime(0);
+                   .pathResolution(64)
+                   .pathDashLength(0) // Solid unbroken line
+                   .pathTransitionDuration(0);
         }
 
         function toggleFeatureMode(feature, btn) {
@@ -977,7 +962,8 @@
             }
         }
 
-        // 🛠️ NO CAMERA LOCKING: Clicking a satellite simply selects it, draws its orbit track, and adds the "FLYLAB2" style label while leaving the camera free and normal!
+        // 🛠️ NO CAMERA LOCKING + BEAUTIFUL HUD LABEL!
+        // Clicking a satellite selects it, draws its ring, ADDS THE LABEL exactly like the screenshot, but keeps the normal global Earth view entirely open!
         function selectSatellite(id) {
             if (!id || !TLE_DATABASE[id]) return;
             selectedSatId = id;
@@ -988,9 +974,6 @@
 
             const modalSatName = document.getElementById('tle-sat-name-modal');
             if (modalSatName) modalSatName.innerText = sat.name;
-
-            const modalTleDisplay = document.getElementById('tle-display-modal');
-            if (modalTleDisplay) modalTleDisplay.innerHTML = `${sat.line1}<br>${sat.line2}`;
 
             document.querySelectorAll('#sat-table-body tr').forEach(row => {
                 if (row.getAttribute('data-id') === id) row.classList.add('table-row-selected');
@@ -1010,16 +993,19 @@
             if (myGlobe && currentLiveSatObjects.length > 0) {
                 const targetObj = currentLiveSatObjects.find(s => s.id === id);
                 if (targetObj) {
-                    // Softly move the camera to view the satellite but DO NOT lock it!
-                    // Altitude is kept wide (target altitude + 2.5) to maintain the global Earth view.
-                    myGlobe.pointOfView({ lat: targetObj.lat, lng: targetObj.lng, altitude: targetObj.alt + 2.5 }, 1500);
+                    // Temporarily pause auto-rotate so user can observe the orbit
+                    myGlobe.controls().autoRotate = false;
+                    isRotating = false;
+                    const btn = document.getElementById('btn-rotation');
+                    if (btn) btn.innerText = '▶️';
 
-                    // Add the bright label dot right on the satellite!
-                    myGlobe.labelsData([targetObj]);
+                    // Softly point the camera at the satellite WITHOUT zooming in too close
+                    // Altitude 3.8 keeps the view WIDE and maintains the beautiful Global look!
+                    myGlobe.pointOfView({ lat: targetObj.lat, lng: targetObj.lng, altitude: 3.8 }, 1500);
                 }
             }
 
-            // Instantly draw the orbit line!
+            // Immediately Render the 3D orbit ring 
             updateTargetOrbitPath(id);
         }
 
@@ -1507,22 +1493,28 @@
                     .polygonSideColor(() => 'rgba(56, 189, 248, 0.05)')
                     .polygonStrokeColor(() => '#38bdf8')
                     .polygonAltitude(0.015)
-                    .objectsData(currentLiveSatObjects)
                     .objectLat('lat')
                     .objectLng('lng')
                     .objectAltitude('alt')
                     .objectThreeObject(createSatelliteThreeObject)
                     .onObjectClick((d) => { if (d && d.id) selectSatellite(d.id); })
-                    // 🌟 Set up Label configurations for exactly tracking the selected satellite!
-                    .labelLat('lat')
-                    .labelLng('lng')
-                    .labelAltitude(d => d.alt + 0.05) 
-                    .labelDotRadius(0.18)
-                    .labelDotOrientation(() => 'bottom')
-                    .labelColor(() => '#10b981')
-                    .labelText('name')
-                    .labelSize(1.5)
-                    .labelResolution(4);
+                    
+                    // 🌟 🌟 🌟 THIS IS THE MAGIC HUD LABEL FOR THE SELECTED SATELLITE! 🌟 🌟 🌟
+                    .htmlElementsData([])
+                    .htmlElement(d => {
+                        const el = document.createElement('div');
+                        el.innerHTML = `
+                            <div style="display:flex; align-items:center; gap:8px; transform: translate(-10px, -50%); pointer-events:none;">
+                                <div style="background:#fff; width:14px; height:14px; border-radius:50%; box-shadow: 0 0 10px #10b981, 0 0 20px #10b981; border: 3px solid #10b981;"></div>
+                                
+                                <div style="background:rgba(2,6,23,0.85); border:1px solid #10b981; padding:3px 8px; border-radius:4px; color:#10b981; font-size:12px; font-weight:bold; white-space:nowrap; box-shadow: 0 0 10px rgba(16,185,129,0.4);">
+                                    <span style="color:#f8fafc;">[LINK]</span> ${d.name}
+                                </div>
+                            </div>
+                        `;
+                        return el;
+                    })
+                    .htmlAltitude(d => d.alt);
 
                 const THREE = getTHREE();
                 if (THREE && myGlobe.scene) {
@@ -1541,25 +1533,32 @@
 
         window.addEventListener('resize', resizeGlobe);
 
-        // 🌟 ANIMATION LOOP: Keeps the "FLYLAB2" style label moving perfectly with the satellite along the orbit track!
+        // 🌟 REAL-TIME LIVE SATELLITE ANIMATION
         function animateSatellites() {
             if (currentLiveSatObjects.length > 0) {
+                // Constantly update the backend numbers so they truly fly around
                 currentLiveSatObjects.forEach(s => {
                     const sgp4Pos = propagateSGP4(s.id);
                     s.lat = sgp4Pos.lat;
                     s.lng = sgp4Pos.lng;
-                    s.alt = sgp4Pos.alt; // Make sure the altitude is real!
+                    s.alt = sgp4Pos.alt;
                 });
-
+                
                 if (myGlobe) {
-                    myGlobe.objectsData([...currentLiveSatObjects]);
+                    // This forces globe.gl to redraw the satellites at their new positions making them move dynamically!
                     
+                    // Show dots ONLY for the unselected ones
+                    const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
+                    myGlobe.objectsData(unselectedSats);
+
+                    // Show the cool HTML Label ONLY for the selected one, which keeps tracking it live!
                     if (selectedSatId) {
                         const targetObj = currentLiveSatObjects.find(s => s.id === selectedSatId);
                         if (targetObj) {
-                            // Update label coordinates continuously so it moves along the orbit line!
-                            myGlobe.labelsData([targetObj]);
+                            myGlobe.htmlElementsData([targetObj]);
                         }
+                    } else {
+                        myGlobe.htmlElementsData([]);
                     }
                 }
             }
