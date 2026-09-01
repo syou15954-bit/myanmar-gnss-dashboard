@@ -492,11 +492,11 @@
             return window.THREE || (typeof Globe !== 'undefined' && Globe.THREE);
         }
 
-        // 🛠️ CRITICAL FIX: Removed heavy 3D solar panels. Replaced with simple dots to reduce clutter!
+        // 🛠️ Unselected Satellites are just simple dots to keep the display clean.
         function createSatelliteThreeObject(d) {
             const THREE = getTHREE();
             if (!THREE) return null;
-            // Draw unselected satellites as simple tiny spheres to keep the view clean like the screenshot
+
             const geometry = new THREE.SphereGeometry(0.35, 8, 8);
             const material = new THREE.MeshBasicMaterial({ color: getSatColor(d.name) });
             return new THREE.Mesh(geometry, material);
@@ -540,7 +540,7 @@
             
             if (isMyanmarOnlyMode) {
                 btn.innerText = '🇲🇲 MYANMAR VISIBLE (ACTIVE)';
-                if (myGlobe) myGlobe.pointOfView({ lat: 19.7633, lng: 96.0785, altitude: 2.2 }, 1200);
+                if (myGlobe) myGlobe.pointOfView({ lat: 19.7633, lng: 96.0785, altitude: 6.0 }, 1200);
             } else {
                 btn.innerText = '🇲🇲 MYANMAR VISIBLE ONLY';
             }
@@ -645,7 +645,8 @@
                 const gmst = satellite.gstime(targetTime);
                 const posGd = satellite.eciToGeodetic(posVel.position, gmst);
                 
-                // Keep the true altitude scaled correctly relative to Earth's radius (6371km)
+                // 🛠️ CRITICAL FIX: GNSS Satellites orbit at roughly 20,000 km altitude.
+                // Earth's radius is ~6371 km. So altitude in Globe.gl (which expects Earth Radii) is ~3.14.
                 const alt = posGd.height / 6371.0;
 
                 return { 
@@ -654,7 +655,7 @@
                     alt: alt 
                 };
             } catch (e) {
-                return { lat: 16.8, lng: 96.1, alt: 1.0 };
+                return { lat: 16.8, lng: 96.1, alt: 3.14 };
             }
         }
 
@@ -794,8 +795,6 @@
                 }
 
                 if (myGlobe) {
-                    // Update only non-selected satellites with the basic object rendering.
-                    // The selected satellite will use HTML HUD Label!
                     const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
                     myGlobe.objectsData(unselectedSats);
                 }
@@ -833,7 +832,6 @@
                     .ringMaxRadius(d => d.size)
                     .ringPropagationSpeed(2.5)
                     .ringRepeatPeriod(800);
-                myGlobe.pointOfView({ lat: st.lat, lng: st.lng, altitude: 2.5 }, 1200);
             }
         }
 
@@ -898,8 +896,7 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
-        // 🛠️ CRITICAL FIX: To fix the "weird figure 8" orbit ring from earlier, we freeze the time (GMST) across the loop!
-        // This calculates a perfect solid orbital ring in space directly around the globe exactly like the screenshot.
+        // 🛠️ PERFECT SOLID ORBIT RING AROUND THE EARTH
         function updateTargetOrbitPath(id) {
             if (!myGlobe || !id || !TLE_DATABASE[id]) return;
 
@@ -915,7 +912,7 @@
             const periodSec = ((2 * Math.PI) / meanMotionRadMin) * 60;
 
             const now = new Date();
-            // 🌟 Use a FIXED GMST for all points to draw a clean circular ring relative to current earth orientation
+            // 🌟 Use a FIXED GMST to draw a perfect circular/elliptical ring without the figure-8 issue!
             const currentGmst = satellite.gstime(now); 
             const numSteps = 250;
             const stepSec = periodSec / numSteps;
@@ -926,7 +923,6 @@
                 const posVel = satellite.propagate(satrec, targetTime);
 
                 if (posVel && posVel.position) {
-                    // Use fixed currentGmst instead of future GMST to prevent ground-track shifting
                     const posGd = satellite.eciToGeodetic(posVel.position, currentGmst);
                     orbitPoints.push([
                         satellite.degreesLat(posGd.latitude),
@@ -944,8 +940,7 @@
                    .pathPointAlt(p => p[2])
                    .pathColor(() => '#10b981') // Bright Neon Green!
                    .pathStroke(1.5)
-                   .pathResolution(64)
-                   .pathDashLength(0) // Solid unbroken line
+                   .pathDashLength(0) 
                    .pathTransitionDuration(0);
         }
 
@@ -962,8 +957,7 @@
             }
         }
 
-        // 🛠️ NO CAMERA LOCKING + BEAUTIFUL HUD LABEL!
-        // Clicking a satellite selects it, draws its ring, ADDS THE LABEL exactly like the screenshot, but keeps the normal global Earth view entirely open!
+        // 🛠️ NO CAMERA LOCKING: Clicking a satellite simply selects it, draws its orbit track, and adds the "FLYLAB2" style label while leaving the camera free and normal!
         function selectSatellite(id) {
             if (!id || !TLE_DATABASE[id]) return;
             selectedSatId = id;
@@ -990,20 +984,7 @@
                 }
             });
 
-            if (myGlobe && currentLiveSatObjects.length > 0) {
-                const targetObj = currentLiveSatObjects.find(s => s.id === id);
-                if (targetObj) {
-                    // Temporarily pause auto-rotate so user can observe the orbit
-                    myGlobe.controls().autoRotate = false;
-                    isRotating = false;
-                    const btn = document.getElementById('btn-rotation');
-                    if (btn) btn.innerText = '▶️';
-
-                    // Softly point the camera at the satellite WITHOUT zooming in too close
-                    // Altitude 3.8 keeps the view WIDE and maintains the beautiful Global look!
-                    myGlobe.pointOfView({ lat: targetObj.lat, lng: targetObj.lng, altitude: 3.8 }, 1500);
-                }
-            }
+            // 🛑 CAMERA IS DELIBERATELY NOT MOVED OR LOCKED HERE. USER RETAINS FULL MANUAL CONTROL.
 
             // Immediately Render the 3D orbit ring 
             updateTargetOrbitPath(id);
@@ -1485,7 +1466,8 @@
                 myGlobe = Globe()(container)
                     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
-                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.2 }, 0) 
+                    // 🌟 6.0 Altitude puts the camera in deep space, comfortably outside the GNSS satellite orbits!
+                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 6.0 }, 0) 
                     .showAtmosphere(true)
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.35)
@@ -1499,15 +1481,15 @@
                     .objectThreeObject(createSatelliteThreeObject)
                     .onObjectClick((d) => { if (d && d.id) selectSatellite(d.id); })
                     
-                    // 🌟 🌟 🌟 THIS IS THE MAGIC HUD LABEL FOR THE SELECTED SATELLITE! 🌟 🌟 🌟
+                    // 🌟 THE "FLYLAB2" STYLE HUD LABEL 🌟
                     .htmlElementsData([])
                     .htmlElement(d => {
                         const el = document.createElement('div');
                         el.innerHTML = `
                             <div style="display:flex; align-items:center; gap:8px; transform: translate(-10px, -50%); pointer-events:none;">
-                                <div style="background:#fff; width:14px; height:14px; border-radius:50%; box-shadow: 0 0 10px #10b981, 0 0 20px #10b981; border: 3px solid #10b981;"></div>
+                                <div style="background:#fff; width:10px; height:10px; border-radius:50%; box-shadow: 0 0 10px #10b981, 0 0 20px #10b981; border: 2px solid #10b981;"></div>
                                 
-                                <div style="background:rgba(2,6,23,0.85); border:1px solid #10b981; padding:3px 8px; border-radius:4px; color:#10b981; font-size:12px; font-weight:bold; white-space:nowrap; box-shadow: 0 0 10px rgba(16,185,129,0.4);">
+                                <div style="background:rgba(2,6,23,0.85); border:1px solid #10b981; padding:3px 8px; border-radius:4px; color:#10b981; font-size:11px; font-weight:bold; white-space:nowrap; box-shadow: 0 0 10px rgba(16,185,129,0.4);">
                                     <span style="color:#f8fafc;">[LINK]</span> ${d.name}
                                 </div>
                             </div>
@@ -1533,10 +1515,10 @@
 
         window.addEventListener('resize', resizeGlobe);
 
-        // 🌟 REAL-TIME LIVE SATELLITE ANIMATION
+        // 🌟 REAL-TIME SATELLITE ANIMATION LOOP
         function animateSatellites() {
             if (currentLiveSatObjects.length > 0) {
-                // Constantly update the backend numbers so they truly fly around
+                // Continuously update the live coordinates
                 currentLiveSatObjects.forEach(s => {
                     const sgp4Pos = propagateSGP4(s.id);
                     s.lat = sgp4Pos.lat;
@@ -1545,13 +1527,11 @@
                 });
                 
                 if (myGlobe) {
-                    // This forces globe.gl to redraw the satellites at their new positions making them move dynamically!
-                    
-                    // Show dots ONLY for the unselected ones
+                    // Update unselected satellites (the small dots)
                     const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
                     myGlobe.objectsData(unselectedSats);
 
-                    // Show the cool HTML Label ONLY for the selected one, which keeps tracking it live!
+                    // Update the selected satellite (the HUD Label) so it actually moves along the orbit path!
                     if (selectedSatId) {
                         const targetObj = currentLiveSatObjects.find(s => s.id === selectedSatId);
                         if (targetObj) {
