@@ -25,11 +25,7 @@
             --text-muted: #94a3b8;
         }
 
-        * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         
         html, body {
             height: 100vh !important;
@@ -49,9 +45,7 @@
             background: radial-gradient(circle at 50% 30%, #0f172a 0%, #020617 100%);
         }
 
-        .mono { 
-            font-family: 'JetBrains Mono', monospace; 
-        }
+        .mono { font-family: 'JetBrains Mono', monospace; }
 
         /* -----------------------------------------------------
            TOP NAVIGATION & HEADER
@@ -73,19 +67,8 @@
             min-height: 48px;
         }
 
-        .top-nav-left { 
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-            z-index: 2; 
-            flex-wrap: wrap; 
-        }
-
-        .top-nav-right { 
-            display: flex; 
-            align-items: center; 
-            z-index: 2; 
-        }
+        .top-nav-left { display: flex; align-items: center; gap: 8px; z-index: 2; flex-wrap: wrap; }
+        .top-nav-right { display: flex; align-items: center; z-index: 2; }
 
         .myanmar-filter-btn {
             background: rgba(255, 183, 0, 0.15); 
@@ -99,10 +82,7 @@
             transition: all 0.2s;
         }
 
-        .myanmar-filter-btn:hover { 
-            background: rgba(255, 183, 0, 0.35); 
-        }
-
+        .myanmar-filter-btn:hover { background: rgba(255, 183, 0, 0.35); }
         .myanmar-filter-btn.active-mm {
             background: var(--accent-yellow) !important; 
             color: #000 !important; 
@@ -122,464 +102,122 @@
             transition: all 0.2s;
         }
 
-        .view-switch-btn:hover { 
-            background: rgba(56, 189, 248, 0.35); 
-        }
+        .view-switch-btn:hover { background: rgba(56, 189, 248, 0.35); }
 
         .brand-title-box {
-            position: absolute; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 8px; 
-            font-weight: 700; 
-            font-size: 13px; 
-            color: var(--text-main); 
-            letter-spacing: 0.5px; 
-            text-transform: uppercase; 
-            text-align: center; 
-            pointer-events: none; 
-            z-index: 1;
+            position: absolute; left: 50%; transform: translateX(-50%); display: flex; 
+            align-items: center; justify-content: center; gap: 8px; font-weight: 700; 
+            font-size: 13px; color: var(--text-main); letter-spacing: 0.5px; 
+            text-transform: uppercase; text-align: center; pointer-events: none; z-index: 1;
         }
 
-        .brand-dot { 
-            width: 8px; 
-            height: 8px; 
-            background: var(--accent-cyan); 
-            border-radius: 50%; 
-            box-shadow: 0 0 10px var(--accent-cyan); 
-        }
+        .brand-dot { width: 8px; height: 8px; background: var(--accent-cyan); border-radius: 50%; box-shadow: 0 0 10px var(--accent-cyan); }
 
-        @media (max-width: 1200px) {
-            .brand-title-box { display: none; }
-        }
+        @media (max-width: 1200px) { .brand-title-box { display: none; } }
 
         .country-legend {
-            display: flex; 
-            gap: 12px; 
-            font-size: 9.5px; 
-            background: rgba(2, 6, 23, 0.6);
-            padding: 4px 10px; 
-            border-radius: 4px; 
-            border: 1px solid var(--panel-border);
+            display: flex; gap: 12px; font-size: 9.5px; background: rgba(2, 6, 23, 0.6);
+            padding: 4px 10px; border-radius: 4px; border: 1px solid var(--panel-border);
         }
 
-        .legend-item { 
-            display: flex; 
-            align-items: center; 
-            gap: 5px; 
-            color: var(--text-muted); 
-        }
-
-        .legend-dot { 
-            width: 8px; 
-            height: 8px; 
-            border-radius: 50%; 
-        }
+        .legend-item { display: flex; align-items: center; gap: 5px; color: var(--text-muted); }
+        .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
 
         /* -----------------------------------------------------
            MAIN VIEWPORT & GLOBE
         ----------------------------------------------------- */
-        .viewport-main { 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 8px; 
-            min-height: 0; 
-            position: relative; 
-        }
-
-        .globe-stage {
-            flex: 2.2; 
-            position: relative; 
-            background: var(--panel-bg); 
-            border: 1px solid var(--panel-border);
-            border-radius: 6px; 
-            overflow: hidden; 
-            min-height: 420px; 
-        }
-
-        #globeViz { 
-            width: 100%; 
-            height: 100%; 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            display: block; 
-        }
+        .viewport-main { flex: 1; display: flex; flex-direction: column; gap: 8px; min-height: 0; position: relative; }
+        .globe-stage { flex: 2.2; position: relative; background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 6px; overflow: hidden; min-height: 420px; }
+        #globeViz { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: block; }
 
         .center-feature-bar {
-            position: absolute; 
-            bottom: 12px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            z-index: 15;
-            display: flex; 
-            gap: 10px; 
-            background: rgba(15, 23, 42, 0.92); 
-            padding: 5px 14px;
-            border-radius: 6px; 
-            border: 1px solid var(--panel-border); 
-            backdrop-filter: blur(12px); 
-            align-items: center;
+            position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 15;
+            display: flex; gap: 10px; background: rgba(15, 23, 42, 0.92); padding: 5px 14px;
+            border-radius: 6px; border: 1px solid var(--panel-border); backdrop-filter: blur(12px); align-items: center;
         }
 
         .feature-btn {
-            background: rgba(2, 6, 23, 0.5); 
-            color: var(--text-muted); 
-            border: 1px solid rgba(56, 189, 248, 0.2);
-            padding: 4px 12px; 
-            border-radius: 3px; 
-            font-size: 11px; 
-            font-weight: 700; 
-            cursor: pointer; 
-            transition: all 0.2s;
+            background: rgba(2, 6, 23, 0.5); color: var(--text-muted); border: 1px solid rgba(56, 189, 248, 0.2);
+            padding: 4px 12px; border-radius: 3px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s;
         }
 
-        .feature-btn:hover { 
-            color: #fff; 
-            border-color: var(--accent-cyan); 
-        }
-
-        .feature-btn.active-mode { 
-            background: rgba(56, 189, 248, 0.2); 
-            color: var(--accent-cyan); 
-            border-color: var(--accent-cyan); 
-        }
+        .feature-btn:hover { color: #fff; border-color: var(--accent-cyan); }
+        .feature-btn.active-mode { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border-color: var(--accent-cyan); }
 
         .hud-card {
-            position: absolute; 
-            z-index: 10; 
-            background: rgba(15, 23, 42, 0.92); 
-            border: 1px solid var(--panel-border);
-            backdrop-filter: blur(12px); 
-            border-radius: 6px; 
-            padding: 10px 12px; 
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            position: absolute; z-index: 10; background: rgba(15, 23, 42, 0.92); border: 1px solid var(--panel-border);
+            backdrop-filter: blur(12px); border-radius: 6px; padding: 10px 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
 
         .hud-card-title {
-            font-size: 11px; 
-            font-weight: 700; 
-            color: var(--accent-cyan); 
-            letter-spacing: 0.5px; 
-            text-transform: uppercase;
-            margin-bottom: 6px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            text-align: center; 
-            width: 100%;
-            border-bottom: 1px solid rgba(56, 189, 248, 0.2); 
-            padding-bottom: 5px;
+            font-size: 11px; font-weight: 700; color: var(--accent-cyan); letter-spacing: 0.5px; text-transform: uppercase;
+            margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; text-align: center; width: 100%;
+            border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding-bottom: 5px;
         }
 
-        .hud-right-passes { 
-            top: 12px; 
-            right: 12px; 
-            width: 310px; 
-            display: flex; 
-            flex-direction: column; 
-            max-height: 290px; 
-        }
-
-        /* Shared Common UI Elements */
-        .matrix-select {
-            background: #020617; 
-            color: var(--accent-cyan); 
-            border: 1px solid var(--panel-border);
-            font-size: 10px; 
-            font-weight: 700; 
-            padding: 3px 6px; 
-            border-radius: 3px; 
-            cursor: pointer; 
-            outline: none;
-        }
-
-        .bar-container { 
-            width: 100%; 
-            height: 8px; 
-            background: rgba(2, 6, 23, 0.8); 
-            border-radius: 4px; 
-            overflow: hidden; 
-            border: 1px solid var(--panel-border); 
-        }
-
-        .bar-fill { 
-            height: 100%; 
-            border-radius: 4px; 
-            transition: width 0.8s ease-in-out; 
-        }
-
+        .hud-right-passes { top: 12px; right: 12px; width: 310px; display: flex; flex-direction: column; max-height: 290px; }
+        .matrix-select { background: #020617; color: var(--accent-cyan); border: 1px solid var(--panel-border); font-size: 10px; font-weight: 700; padding: 3px 6px; border-radius: 3px; cursor: pointer; outline: none; }
+        .bar-container { width: 100%; height: 8px; background: rgba(2, 6, 23, 0.8); border-radius: 4px; overflow: hidden; border: 1px solid var(--panel-border); }
+        .bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease-in-out; }
         .fill-gps { background: linear-gradient(90deg, #059669, #10b981); box-shadow: 0 0 8px #10b981; }
         .fill-bds { background: linear-gradient(90deg, #dc2626, #ef4444); box-shadow: 0 0 8px #ef4444; }
 
         /* -----------------------------------------------------
            BOTTOM DOCK FULL LAYOUT
         ----------------------------------------------------- */
-        .bottom-dock { 
-            flex: 1; 
-            display: grid; 
-            grid-template-columns: 1fr 1fr 1.6fr; 
-            gap: 12px; 
-            min-height: 0; 
-            width: 100%;
-        }
+        .bottom-dock { flex: 1; display: grid; grid-template-columns: 1fr 1fr 1.6fr; gap: 12px; min-height: 0; width: 100%; }
+        .glass-panel { background: var(--panel-bg); border: 1px solid var(--panel-border); backdrop-filter: blur(12px); border-radius: 6px; padding: 12px; display: flex; flex-direction: column; min-height: 0; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); }
+        .panel-title { font-size: 12px; font-weight: 700; color: var(--accent-cyan); margin-bottom: 8px; display: flex; justify-content: center; align-items: center; border-bottom: 1px solid rgba(56, 189, 248, 0.25); padding-bottom: 6px; flex-shrink: 0; letter-spacing: 0.5px; text-transform: uppercase; text-align: center; width: 100%; }
+        
+        .cyber-table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 0; }
+        .cyber-table th { text-align: left; color: var(--text-muted); padding: 5px 4px; border-bottom: 1px solid var(--panel-border); font-size: 9px; position: sticky; top: 0; background: rgba(2, 6, 23, 0.95); z-index: 5; }
+        .cyber-table td { padding: 5px 4px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #cbd5e1; }
+        .cyber-table tr { cursor: pointer; transition: background 0.15s; }
+        .cyber-table tr:hover { background: rgba(56, 189, 248, 0.08); }
+        .table-row-selected { background: rgba(56, 189, 248, 0.18) !important; border-left: 3px solid var(--accent-cyan) !important; }
 
-        .glass-panel {
-            background: var(--panel-bg); 
-            border: 1px solid var(--panel-border); 
-            backdrop-filter: blur(12px);
-            border-radius: 6px; 
-            padding: 12px; 
-            display: flex; 
-            flex-direction: column; 
-            min-height: 0; 
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        }
+        .status-pill { padding: 2px 6px; border-radius: 3px; font-size: 8px; font-weight: 700; }
+        .pill-green { background: rgba(16, 185, 129, 0.12); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.4); }
 
-        .panel-title {
-            font-size: 12px; 
-            font-weight: 700; 
-            color: var(--accent-cyan); 
-            margin-bottom: 8px; 
-            display: flex;
-            justify-content: center; 
-            align-items: center; 
-            border-bottom: 1px solid rgba(56, 189, 248, 0.25);
-            padding-bottom: 6px; 
-            flex-shrink: 0; 
-            letter-spacing: 0.5px; 
-            text-transform: uppercase; 
-            text-align: center; 
-            width: 100%;
-        }
-
-        .cyber-table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            font-size: 10px; 
-            margin-top: 0; 
-        }
-
-        .cyber-table th { 
-            text-align: left; 
-            color: var(--text-muted); 
-            padding: 5px 4px; 
-            border-bottom: 1px solid var(--panel-border); 
-            font-size: 9px; 
-            position: sticky; 
-            top: 0; 
-            background: rgba(2, 6, 23, 0.95); 
-            z-index: 5; 
-        }
-
-        .cyber-table td { 
-            padding: 5px 4px; 
-            border-bottom: 1px solid rgba(255,255,255,0.03); 
-            color: #cbd5e1; 
-        }
-
-        .cyber-table tr { 
-            cursor: pointer; 
-            transition: background 0.15s; 
-        }
-
-        .cyber-table tr:hover { 
-            background: rgba(56, 189, 248, 0.08); 
-        }
-
-        .table-row-selected { 
-            background: rgba(56, 189, 248, 0.18) !important; 
-            border-left: 3px solid var(--accent-cyan) !important; 
-        }
-
-        .status-pill { 
-            padding: 2px 6px; 
-            border-radius: 3px; 
-            font-size: 8px; 
-            font-weight: 700; 
-        }
-
-        .pill-green { 
-            background: rgba(16, 185, 129, 0.12); 
-            color: var(--accent-green); 
-            border: 1px solid rgba(16, 185, 129, 0.4); 
-        }
-
-        .dop-grid { 
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr); 
-            gap: 8px; 
-            margin-top: 4px; 
-        }
-
-        .dop-card { 
-            background: rgba(2, 6, 23, 0.6); 
-            padding: 8px; 
-            border-radius: 4px; 
-            text-align: center; 
-            border: 1px solid var(--panel-border); 
-        }
-
-        .dop-val { 
-            font-size: 16px; 
-            font-weight: 700; 
-            color: var(--accent-cyan); 
-            margin-top: 4px; 
-        }
+        .dop-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 4px; }
+        .dop-card { background: rgba(2, 6, 23, 0.6); padding: 8px; border-radius: 4px; text-align: center; border: 1px solid var(--panel-border); }
+        .dop-val { font-size: 16px; font-weight: 700; color: var(--accent-cyan); margin-top: 4px; }
 
         /* -----------------------------------------------------
            RINEX & UPLOAD STYLES
         ----------------------------------------------------- */
-        .rinex-split-view { 
-            display: flex; 
-            gap: 12px; 
-            flex: 1; 
-            min-height: 0; 
-        }
+        .rinex-split-view { display: flex; gap: 12px; flex: 1; min-height: 0; }
+        .rinex-left { width: 290px; display: flex; flex-direction: column; min-height: 0; flex-shrink: 0; gap: 8px; }
+        .rinex-right { flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative; gap: 6px; }
 
-        .rinex-left { 
-            width: 290px; 
-            display: flex; 
-            flex-direction: column; 
-            min-height: 0; 
-            flex-shrink: 0; 
-            gap: 8px; 
-        }
-
-        .rinex-right { 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
-            min-height: 0; 
-            position: relative; 
-            gap: 6px; 
-        }
-
-        .upload-btn { 
-            background: rgba(56, 189, 248, 0.2); 
-            color: var(--accent-cyan); 
-            border: 1px solid var(--accent-cyan); 
-            padding: 6px 12px; 
-            border-radius: 3px; 
-            font-size: 10px; 
-            font-weight: 700; 
-            cursor: pointer; 
-            transition: all 0.2s; 
-            white-space: nowrap; 
-            text-align: center;
-        }
-
-        .upload-btn:hover { 
-            background: rgba(56, 189, 248, 0.35); 
-        }
-
+        .upload-btn { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 6px 12px; border-radius: 3px; font-size: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap; text-align: center;}
+        .upload-btn:hover { background: rgba(56, 189, 248, 0.35); }
         .action-btn-green { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
         .action-btn-green:hover { background: rgba(16, 185, 129, 0.4); }
         .action-btn-purple { background: rgba(192, 132, 252, 0.2); color: #c084fc; border: 1px solid #c084fc; }
         .action-btn-purple:hover { background: rgba(192, 132, 252, 0.4); }
 
-        .rinex-file-list { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 8px; 
-            flex: 1; 
-            overflow-y: auto; 
-            margin-bottom: 0; 
-            padding-right: 2px; 
-        }
-
-        .rinex-card { 
-            background: rgba(2, 6, 23, 0.9); 
-            border: 1px solid rgba(56, 189, 248, 0.3); 
-            border-left: 3px solid var(--accent-cyan); 
-            border-radius: 5px; 
-            padding: 12px; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: space-between; 
-            gap: 10px; 
-            font-size: 11px; 
-            flex-shrink: 0; 
-            cursor: pointer; 
-            transition: all 0.2s; 
-        }
-
-        .rinex-card:hover { 
-            border-color: var(--accent-cyan); 
-            background: rgba(15, 23, 42, 0.95); 
-        }
-
-        .rinex-card-selected { 
-            border-color: var(--accent-cyan) !important; 
-            background: rgba(56, 189, 248, 0.15) !important; 
-            box-shadow: 0 0 12px rgba(56, 189, 248, 0.3); 
-        }
+        .rinex-file-list { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; margin-bottom: 0; padding-right: 2px; }
+        .rinex-card { background: rgba(2, 6, 23, 0.9); border: 1px solid rgba(56, 189, 248, 0.3); border-left: 3px solid var(--accent-cyan); border-radius: 5px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; font-size: 11px; flex-shrink: 0; cursor: pointer; transition: all 0.2s; }
+        .rinex-card:hover { border-color: var(--accent-cyan); background: rgba(15, 23, 42, 0.95); }
+        .rinex-card-selected { border-color: var(--accent-cyan) !important; background: rgba(56, 189, 248, 0.15) !important; box-shadow: 0 0 12px rgba(56, 189, 248, 0.3); }
         
-        .chart-box { 
-            position: relative; 
-            flex: 1; 
-            width: 100%; 
-            min-height: 120px; 
-        }
-
-        .chart-box canvas { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100% !important; 
-            height: 100% !important; 
-        }
-
-        .pass-card:hover { 
-            background: rgba(56, 189, 248, 0.15) !important; 
-        }
+        .chart-box { position: relative; flex: 1; width: 100%; min-height: 120px; }
+        .chart-box canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
+        .pass-card { cursor: pointer; }
+        .pass-card:hover { background: rgba(56, 189, 248, 0.15) !important; }
 
         /* -----------------------------------------------------
            TLE MODAL & SCROLLBARS
         ----------------------------------------------------- */
         #tleModal {
-            display: none; 
-            position: fixed; 
-            top: 65px; 
-            left: 15px; 
-            transform: none; 
-            z-index: 200;
-            width: 460px; 
-            background: rgba(15, 23, 42, 0.98); 
-            border: 1px solid var(--accent-cyan); 
-            border-radius: 6px; 
-            padding: 16px; 
-            backdrop-filter: blur(16px); 
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            display: none; position: fixed; top: 65px; left: 15px; transform: none; z-index: 200;
+            width: 460px; background: rgba(15, 23, 42, 0.98); border: 1px solid var(--accent-cyan); 
+            border-radius: 6px; padding: 16px; backdrop-filter: blur(16px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
         }
-
-        .modal-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border-bottom: 1px solid var(--panel-border); 
-            padding-bottom: 8px; 
-            margin-bottom: 10px; 
-            font-size: 12px; 
-            font-weight: 700; 
-            color: var(--accent-cyan); 
-        }
-
-        .modal-close { 
-            cursor: pointer; 
-            color: var(--text-muted); 
-            font-size: 18px; 
-            font-weight: 700; 
-            transition: color 0.2s; 
-        }
-
-        .modal-close:hover { 
-            color: var(--accent-red); 
-        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--panel-border); padding-bottom: 8px; margin-bottom: 10px; font-size: 12px; font-weight: 700; color: var(--accent-cyan); }
+        .modal-close { cursor: pointer; color: var(--text-muted); font-size: 18px; font-weight: 700; transition: color 0.2s; }
+        .modal-close:hover { color: var(--accent-red); }
 
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: rgba(2, 6, 23, 0.5); border-radius: 4px; }
@@ -655,14 +293,8 @@
             </div>
 
             <div class="center-feature-bar mono" id="globe-controls-bar">
-                <select id="station-select" class="matrix-select" onchange="selectStationMode(this.value)" style="background: rgba(2, 6, 23, 0.9); color: var(--accent-yellow); border: 1px solid var(--accent-yellow); padding: 5px 10px; border-radius: 3px; font-size: 11px; font-weight: 700; cursor: pointer;">
-                    <option value="none">📡 Select Station (Off)</option>
-                    <option value="yangon">📍 Yangon (RINEX Measured / Base)</option>
-                    <option value="naypyidaw">📍 Naypyidaw (Uppatasanti Landmark)</option>
-                    <option value="mandalay">📍 Mandalay Hill Landmark</option>
-                </select>
                 <button class="feature-btn active-mode" id="btn-rotation" onclick="toggleGlobeRotation()" title="Pause/Resume Rotation" style="padding: 4px 10px; font-size: 13px;">⏸️</button>
-                <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit & Ground Track</button>
+                <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit Web</button>
                 <select id="track-count-select" class="matrix-select" onchange="updateAllOrbitPaths()" title="How many orbit tracks to draw" style="margin-left: 5px;">
                     <option value="1">1 Track (Selected)</option>
                     <option value="12">12 Tracks</option>
@@ -686,34 +318,16 @@
                     <span id="fleet-title-text">📊 LOCAL GNSS DATABASE & FLEET STATUS</span>
                 </div>
                 <div class="dop-grid mono" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 8px;">
-                    <div class="dop-card">
-                        <div style="font-size:8.5px; color:var(--text-muted);">TOTAL</div>
-                        <div class="dop-val" style="color:#f8fafc;" id="total-sats">0</div>
-                    </div>
-                    <div class="dop-card">
-                        <div style="font-size:8.5px; color:var(--text-muted);">ACTIVE</div>
-                        <div class="dop-val" style="color:var(--accent-green);" id="active-sats">0</div>
-                    </div>
-                    <div class="dop-card">
-                        <div style="font-size:8.5px; color:var(--text-muted);">WARNING</div>
-                        <div class="dop-val" style="color:var(--accent-yellow);" id="warning-sats">0</div>
-                    </div>
-                    <div class="dop-card">
-                        <div style="font-size:8.5px; color:var(--text-muted);">OFFLINE</div>
-                        <div class="dop-val" style="color:var(--accent-red);" id="offline-sats">0</div>
-                    </div>
+                    <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">TOTAL</div><div class="dop-val" style="color:#f8fafc;" id="total-sats">0</div></div>
+                    <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">ACTIVE</div><div class="dop-val" style="color:var(--accent-green);" id="active-sats">0</div></div>
+                    <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">WARNING</div><div class="dop-val" style="color:var(--accent-yellow);" id="warning-sats">0</div></div>
+                    <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">OFFLINE</div><div class="dop-val" style="color:var(--accent-red);" id="offline-sats">0</div></div>
                 </div>
                 
                 <div style="flex:1; overflow-y:auto; margin-top: 4px; border: 1px solid var(--panel-border); border-radius: 4px; border-bottom: none;">
                     <table class="cyber-table mono">
                         <thead>
-                            <tr>
-                                <th>NAME / ID</th>
-                                <th>SYS</th>
-                                <th>EL</th>
-                                <th>AZ</th>
-                                <th>STATUS</th>
-                            </tr>
+                            <tr><th>NAME / ID</th><th>SYS</th><th>EL</th><th>AZ</th><th>STATUS</th></tr>
                         </thead>
                         <tbody id="sat-table-body"></tbody>
                     </table>
@@ -753,12 +367,8 @@
                         <span style="color:#ef4444;" id="sys-b-vis-text">SYS-B: 0%</span>
                     </div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                        <div class="bar-container" style="height: 10px;">
-                            <div class="bar-fill fill-gps" id="sys-a-vis-bar" style="width:0%;"></div>
-                        </div>
-                        <div class="bar-container" style="height: 10px;">
-                            <div class="bar-fill fill-bds" id="sys-b-vis-bar" style="width:0%; margin-left:auto;"></div>
-                        </div>
+                        <div class="bar-container" style="height: 10px;"><div class="bar-fill fill-gps" id="sys-a-vis-bar" style="width:0%;"></div></div>
+                        <div class="bar-container" style="height: 10px;"><div class="bar-fill fill-bds" id="sys-b-vis-bar" style="width:0%; margin-left:auto;"></div></div>
                     </div>
                 </div>
 
@@ -871,6 +481,7 @@
                 </div>
             </div>
         </section>
+
     </main>
 
     <script>
@@ -889,16 +500,16 @@
         let currentLiveSatObjects = [];
         let uploadedStationsList = [];
         let activeSelectedFileIndex = -1;
-        let currentSelectedStation = 'none';
 
-        // 🌟 ORBIT ALTITUDE FIX (Make satellites visually detached from Earth surface like the screenshot)
+        // 🌟 ORBIT ALTITUDE FIX (Make satellites visually detached from Earth surface)
         const VISUAL_ALTITUDE = 0.5;
 
-        let STATIONS_DATA = {
-            yangon: { lat: 16.8661, lng: 96.1951, name: '📡 Yangon (RINEX / Base Station)', color: '#ffb700', size: 3.5 },
-            naypyidaw: { lat: 19.7633, lng: 96.0785, name: '📡 Naypyidaw (Uppatasanti Landmark)', color: '#38bdf8', size: 3.0 },
-            mandalay: { lat: 21.9588, lng: 96.0891, name: '📡 Mandalay Hill Landmark', color: '#10b981', size: 3.0 }
-        };
+        // TLE STATION MARKERS
+        const STATIONS = [
+            { lat: 16.8661, lng: 96.1951, name: "Yangon Base (RINEX)", color: "white", size: 0.8 },
+            { lat: 60.1282, lng: 18.6435, name: "瑞典站 [X-Band]", color: "red", size: 1.0 },
+            { lat: 39.9042, lng: 116.4074, name: "中国站 [UHF]", color: "cyan", size: 0.9 }
+        ];
 
         function getSatColor(satName) {
             let uname = (satName || '').toUpperCase();
@@ -910,13 +521,8 @@
         }
 
         // TLE & UI Handling
-        function openTLEModal() { 
-            document.getElementById('tleModal').style.display = 'block'; 
-        }
-        
-        function closeTLEModal() { 
-            document.getElementById('tleModal').style.display = 'none'; 
-        }
+        function openTLEModal() { document.getElementById('tleModal').style.display = 'block'; }
+        function closeTLEModal() { document.getElementById('tleModal').style.display = 'none'; }
         
         function toggleConstellationMenu(e) { 
             e.stopPropagation(); 
@@ -942,7 +548,6 @@
             isMyanmarOnlyMode = !isMyanmarOnlyMode;
             btn.classList.toggle('active-mm', isMyanmarOnlyMode);
             btn.innerText = isMyanmarOnlyMode ? '🇲🇲 MYANMAR VISIBLE (ACTIVE)' : '🇲🇲 MYANMAR VISIBLE ONLY';
-            // NO CAMERA LOCKING HERE EITHER
             renderCustomSelection();
         }
 
@@ -951,7 +556,7 @@
             return (lat >= -25.0 && lat <= 55.0 && lng >= 30.0 && lng <= 160.0);
         }
 
-        // Failsafe TLE Database Generator (Generates over 300 Satellites to ensure dense tracking)
+        // Generate 300+ GNSS Satellites
         function generateHighDensityFallbackList() {
             let list = [];
             const baseTLEs = [
@@ -972,6 +577,8 @@
                     list.push({ id: satId, name: `${base.sys}-${prn}`, line1: newLine1, line2: newLine2 });
                 }
             });
+            // Inject Custom Highlighted Satellite for reference
+            list.push({ id: "99999", name: "FLYLAB2", line1: "1 99999U 20000A   24001.00000000 -.00000000  00000-0  00000-0 0   9999", line2: "2 99999  55.0000 150.0000 0100000   0.0000 359.0000  2.00560000100000" });
             return list;
         }
 
@@ -980,7 +587,7 @@
             list.forEach(s => {
                 let uname = (s.name || "").toUpperCase();
                 if (uname.includes('GPS') || uname.includes('NAVSTAR')) cat.gps.push(s);
-                else if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('C0')) cat.bds.push(s);
+                else if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('FLYLAB2')) cat.bds.push(s);
                 else if (uname.includes('GALILEO') || uname.includes('GSAT')) cat.galileo.push(s);
                 else if (uname.includes('GLONASS') || uname.includes('COSMOS')) cat.glonass.push(s);
                 else cat.gps.push(s);
@@ -1003,15 +610,16 @@
                         return; 
                     }
                 }
-            } catch (err) {
-                console.warn("Falling back to simulation mode");
-            }
+            } catch (err) { }
 
             isSimulationMode = true; 
             let fallbackList = generateHighDensityFallbackList();
             categorizeSatsList(fallbackList);
             document.getElementById('tle-status-badge') && (document.getElementById('tle-status-badge').innerHTML = `<span style="color:var(--accent-yellow);">● LIVE SIMULATION</span>`);
+            
+            // Auto-select FLYLAB2 to match screenshot
             renderCustomSelection();
+            setTimeout(() => selectSatellite("99999"), 500); 
         }
 
         function getFilteredSatellites() {
@@ -1026,26 +634,14 @@
             try {
                 const tle = TLE_DATABASE[id];
                 if (!tle || typeof satellite === 'undefined') return { lat: 16.8, lng: 96.1, alt: VISUAL_ALTITUDE };
-                
                 const satrec = satellite.twoline2satrec(tle.line1, tle.line2);
                 const targetTime = new Date(Date.now() + timeOffsetSec * 1000);
                 const posVel = satellite.propagate(satrec, targetTime);
-                
-                if (!posVel || !posVel.position || isNaN(posVel.position.x)) {
-                    return { lat: 16.8, lng: 96.1, alt: VISUAL_ALTITUDE };
-                }
-
+                if (!posVel || !posVel.position || isNaN(posVel.position.x)) return { lat: 16.8, lng: 96.1, alt: VISUAL_ALTITUDE };
                 const gmst = satellite.gstime(targetTime);
                 const posGd = satellite.eciToGeodetic(posVel.position, gmst);
-                
-                return { 
-                    lat: satellite.degreesLat(posGd.latitude), 
-                    lng: satellite.degreesLong(posGd.longitude), 
-                    alt: VISUAL_ALTITUDE 
-                };
-            } catch (e) {
-                return { lat: 16.8, lng: 96.1, alt: VISUAL_ALTITUDE };
-            }
+                return { lat: satellite.degreesLat(posGd.latitude), lng: satellite.degreesLong(posGd.longitude), alt: VISUAL_ALTITUDE };
+            } catch (e) { return { lat: 16.8, lng: 96.1, alt: VISUAL_ALTITUDE }; }
         }
 
         function countSystemVisibles(sysKey) {
@@ -1083,15 +679,11 @@
                     const visibleInMM = isSatVisibleInMyanmar(sgp4Pos.lat, sgp4Pos.lng);
 
                     if (!isMyanmarOnlyMode || visibleInMM) {
-                        let ageDays = isSimulationMode ? 0 : getTleAgeDays(s.line1);
-                        if (ageDays > 30) offlineCount++;
-                        else if (ageDays > 14) warningCount++;
-                        else activeCount++;
-
+                        activeCount++;
                         currentLiveSatObjects.push({
-                            id: s.id || "00000", 
-                            fullName: s.name || "Unknown", 
-                            name: (s.name || "Unknown").substring(0, 16),
+                            id: s.id, 
+                            fullName: s.name, 
+                            name: s.name.substring(0, 16),
                             lat: sgp4Pos.lat, 
                             lng: sgp4Pos.lng, 
                             alt: sgp4Pos.alt,
@@ -1100,22 +692,15 @@
                     }
                 });
 
-                let totalCount = currentLiveSatObjects.length;
-                if (activeCount + warningCount + offlineCount !== totalCount) {
-                    activeCount = Math.max(0, totalCount - warningCount - offlineCount);
-                }
-
-                document.getElementById('total-sats').innerText = totalCount;
+                document.getElementById('total-sats').innerText = currentLiveSatObjects.length;
                 document.getElementById('active-sats').innerText = activeCount;
                 document.getElementById('warning-sats').innerText = warningCount;
                 document.getElementById('offline-sats').innerText = offlineCount;
                 
                 const sysA = document.getElementById('matrix-sys-a').value;
                 const sysB = document.getElementById('matrix-sys-b').value;
-
                 const totalSysA = (CONSTELLATION_SATS[sysA] || []).length || 30;
                 const totalSysB = (CONSTELLATION_SATS[sysB] || []).length || 30;
-
                 const visSysA = countSystemVisibles(sysA);
                 const visSysB = countSystemVisibles(sysB);
 
@@ -1124,7 +709,6 @@
 
                 const pctA = Math.min(100, Math.round((visSysA / totalSysA) * 100)) || 0;
                 const pctB = Math.min(100, Math.round((visSysB / totalSysB) * 100)) || 0;
-
                 document.getElementById('sys-a-vis-text').innerText = `${sysA.toUpperCase()}: ${pctA}%`;
                 document.getElementById('sys-b-vis-text').innerText = `${sysB.toUpperCase()}: ${pctB}%`;
 
@@ -1133,24 +717,6 @@
                 if(gpsBars.length > 0) gpsBars[0].style.width = `${pctA}%`;
                 if(bdsBars.length > 0) bdsBars[0].style.width = `${pctB}%`;
 
-                let hdopA = visSysA > 0 ? (0.9 + 2.5 / visSysA).toFixed(2) : "2.50";
-                let hdopB = visSysB > 0 ? (1.0 + 2.8 / visSysB).toFixed(2) : "2.80";
-                let pdopA = visSysA > 0 ? (1.5 + 3.2 / visSysA).toFixed(2) : "3.20";
-                let pdopB = visSysB > 0 ? (1.7 + 3.5 / visSysB).toFixed(2) : "3.50";
-                let vdopA = visSysA > 0 ? (1.2 + 2.8 / visSysA).toFixed(2) : "2.90";
-                let vdopB = visSysB > 0 ? (1.3 + 3.0 / visSysB).toFixed(2) : "3.10";
-                let accA = visSysA > 0 ? (0.8 + 1.5 / visSysA).toFixed(1) : "3.0";
-                let accB = visSysB > 0 ? (0.9 + 1.7 / visSysB).toFixed(1) : "3.5";
-
-                document.getElementById('sys-a-hdop').innerText = hdopA;
-                document.getElementById('sys-b-hdop').innerText = hdopB;
-                document.getElementById('sys-a-pdop').innerText = pdopA;
-                document.getElementById('sys-b-pdop').innerText = pdopB;
-                document.getElementById('sys-a-vdop').innerText = vdopA;
-                document.getElementById('sys-b-vdop').innerText = vdopB;
-                document.getElementById('sys-a-acc').innerText = `±${accA}m`;
-                document.getElementById('sys-b-acc').innerText = `±${accB}m`;
-
                 const dropdownModal = document.getElementById('sat-dropdown-modal');
                 if (dropdownModal) {
                     dropdownModal.innerHTML = currentLiveSatObjects.map(s => `<option value="${s.id}">${s.fullName.substring(0, 22)} (${s.id})</option>`).join('');
@@ -1158,7 +724,7 @@
 
                 const tbody = document.getElementById('sat-table-body');
                 if (tbody) {
-                    tbody.innerHTML = currentLiveSatObjects.map(s => {
+                    tbody.innerHTML = currentLiveSatObjects.slice(0, 100).map(s => {
                         let cColor = getSatColor(s.fullName);
                         let sysName = s.fullName.split(' ')[0];
                         return `
@@ -1172,27 +738,12 @@
                 }
 
                 if (myGlobe) {
-                    // Update Globe with objects
                     const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                    myGlobe.objectsData(unselectedSats); // Use objectsData for true 3D spheres
+                    myGlobe.pointsData(unselectedSats);
                 }
 
-                if (currentLiveSatObjects.length === 0) {
-                    selectedSatId = '';
-                    if (myGlobe) {
-                        myGlobe.pathsData([]);
-                        myGlobe.htmlElementsData([]);
-                    }
-                    const passListContainer = document.getElementById('upcoming-passes-list');
-                    if (passListContainer) passListContainer.innerHTML = '<div style="text-align:center; color:var(--text-muted); font-size:9px; padding:15px;">No satellites available</div>';
-                } else {
-                    populateUpcomingPassesList();
-                }
-
-                // Force updating the web of orbits whenever selection changes
+                populateUpcomingPassesList();
                 updateAllOrbitPaths();
-
-                resizeGlobe();
 
             } catch (err) { console.error("Render Error:", err); }
         }
@@ -1201,10 +752,6 @@
             try {
                 const listContainer = document.getElementById('upcoming-passes-list');
                 if (!listContainer) return;
-                if (currentLiveSatObjects.length === 0) {
-                    listContainer.innerHTML = '<div style="text-align:center; color:var(--text-muted); font-size:9px; padding:15px;">No satellites available</div>';
-                    return;
-                }
                 
                 const now = new Date();
                 let allPasses = currentLiveSatObjects.map((sat, index) => {
@@ -1245,7 +792,7 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
-        // 🌟 🌟 MULTI-ORBIT WEB RENDERING (PERFECT RING) 🌟 🌟
+        // 🌟 🌟 MULTI-ORBIT WEB RENDERING 🌟 🌟
         function updateAllOrbitPaths() {
             if (!myGlobe) return;
 
@@ -1286,7 +833,6 @@
                     const stepSec = periodSec / numSteps;
                     
                     let currentSegment = [];
-                    // Highlight the selected orbit beautifully, while keeping others slightly dim
                     const color = isSelected ? '#10b981' : 'rgba(16, 185, 129, 0.35)';
                     const width = isSelected ? 1.5 : 0.5;
 
@@ -1344,21 +890,6 @@
             if (btn) btn.innerText = isRotating ? '⏸️' : '▶️';
         }
 
-        function selectStationMode(val) {
-            currentSelectedStation = val;
-            if (!myGlobe) return;
-            if (val === 'none' || !STATIONS_DATA[val]) {
-                myGlobe.ringsData([]);
-            } else {
-                const st = STATIONS_DATA[val];
-                myGlobe.ringsData([st])
-                    .ringColor(d => d.color)
-                    .ringMaxRadius(d => d.size)
-                    .ringPropagationSpeed(2.5)
-                    .ringRepeatPeriod(800);
-            }
-        }
-
         // 🌟 NO CAMERA LOCKING: ONLY DRAW ORBIT AND LABEL 🌟
         function selectSatellite(id) {
             if (!id || !TLE_DATABASE[id]) return;
@@ -1369,9 +900,6 @@
 
             const modalSatName = document.getElementById('tle-sat-name-modal');
             if (modalSatName) modalSatName.innerText = TLE_DATABASE[id].name;
-
-            const tleDisplay = document.getElementById('tle-display-modal');
-            if (tleDisplay) tleDisplay.innerText = `${TLE_DATABASE[id].line1}\n${TLE_DATABASE[id].line2}`;
 
             document.querySelectorAll('#sat-table-body tr').forEach(row => {
                 row.classList.toggle('table-row-selected', row.getAttribute('data-id') === id);
@@ -1387,19 +915,15 @@
                 }
             });
 
-            // 🛑 CAMERA IS UNTOUCHED HERE. RETAIN MANUAL CONTROL. 🛑
-
-            // Draw Orbit Ring
             updateAllOrbitPaths();
 
-            // Pop up Label
             if (myGlobe && currentLiveSatObjects.length > 0) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                myGlobe.objectsData(unselectedSats);
+                myGlobe.pointsData(unselectedSats);
 
                 const targetObj = currentLiveSatObjects.find(s => s.id === id);
                 if (targetObj) {
-                    myGlobe.htmlElementsData([targetObj]);
+                    myGlobe.htmlElementsData([targetObj, ...STATIONS]);
                 }
             }
         }
@@ -1489,7 +1013,6 @@
                 for (let i = lineIdx; i < lines.length; i++) {
                     let line = lines[i];
                     if (!line) continue;
-
                     if (line.startsWith('>')) {
                         let p = line.substring(1).trim().split(/\s+/);
                         if (p.length >= 4) {
@@ -1502,7 +1025,6 @@
                         }
                         continue;
                     }
-
                     if (!isRnx3 && line.length > 30 && !isNaN(line.substring(1, 3))) {
                         currentEpochTime = "00:00";
                         if (!epochMap[currentEpochTime]) {
@@ -1510,17 +1032,13 @@
                             allEpochLabels.push(currentEpochTime);
                         }
                     }
-
                     if (currentEpochTime && line.length >= 3) {
                         let satId = line.substring(0, 3).trim(); let sysChar = satId[0];
                         let sysName = (sysChar === 'G' ? 'GPS' : sysChar === 'C' ? 'BDS' : sysChar === 'E' ? 'GAL' : sysChar === 'R' ? 'GLO' : 'GPS');
-                        
                         uniqueSats[sysName].add(satId);
-
                         if (satRecords.length < 25) {
                             satRecords.push({ sat: satId || "G01", code1: "21023456.123", code2: "21023459.876", phase: "110234567.890", snr: "46.5 dB" });
                         }
-
                         if (!epochMap[currentEpochTime][sysName]) {
                             epochMap[currentEpochTime][sysName] = [];
                         }
@@ -1726,7 +1244,7 @@
                 card.setAttribute('onclick', `selectFileCard(${idx})`);
                 card.innerHTML = `
                     <div style="color: var(--accent-cyan); font-weight: 700; font-size: 11px; border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding-bottom: 4px; display: flex; justify-content: space-between;">
-                        <span>📡 ${st.name} <small style="color: var(--text-muted);">(${st.fileName})</small></span>
+                        <span>📡 ${st.name}</span>
                         <span style="color: var(--accent-green); font-size: 9.5px;">ACTIVE</span>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 10px;">
@@ -1747,10 +1265,6 @@
                             <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #38bdf8; padding: 4px; text-align: center; border-radius: 3px; font-size: 9.5px; font-weight: 700;">GAL (${st.counts.GAL})</span>
                             <span style="background: rgba(192, 132, 252, 0.2); color: #c084fc; border: 1px solid #c084fc; padding: 4px; text-align: center; border-radius: 3px; font-size: 9.5px; font-weight: 700;">GLO (${st.counts.GLO})</span>
                         </div>
-                    </div>
-                    <div style="font-size: 9px; color: var(--text-muted); display: flex; justify-content: space-between; background: rgba(2, 6, 23, 0.5); padding: 5px 6px; border-radius: 3px;">
-                        <span>📅 ${st.obsDate}</span>
-                        <span style="color: var(--accent-cyan); font-weight: 700;">v${st.version}</span>
                     </div>
                 `;
                 fileListContainer.appendChild(card);
@@ -1774,11 +1288,11 @@
 
             if (waveformChart) {
                 waveformChart.data.labels = labels;
-                waveformChart.data.datasets[0].label = `📡 ${st.name} (${sysA}: ${st.counts[sysA]} Sats - Real C/N0 Avg)`;
+                waveformChart.data.datasets[0].label = `📡 ${st.name} (${sysA})`;
                 waveformChart.data.datasets[0].data = dataA;
                 waveformChart.data.datasets[0].borderColor = getSysColor(sysA);
 
-                waveformChart.data.datasets[1].label = `📡 ${st.name} (${sysB}: ${st.counts[sysB]} Sats - Real C/N0 Avg)`;
+                waveformChart.data.datasets[1].label = `📡 ${st.name} (${sysB})`;
                 waveformChart.data.datasets[1].data = dataB;
                 waveformChart.data.datasets[1].borderColor = getSysColor(sysB);
 
@@ -1789,75 +1303,13 @@
                     data: { 
                         labels: labels, 
                         datasets: [
-                            {
-                                label: `📡 ${st.name} (${sysA}: ${st.counts[sysA]} Sats - Real C/N0 Avg)`,
-                                data: dataA,
-                                borderColor: getSysColor(sysA),
-                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                                borderWidth: 2.2,
-                                tension: 0.2,
-                                pointRadius: 3
-                            },
-                            {
-                                label: `📡 ${st.name} (${sysB}: ${st.counts[sysB]} Sats - Real C/N0 Avg)`,
-                                data: dataB,
-                                borderColor: getSysColor(sysB),
-                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                                borderWidth: 2.2,
-                                tension: 0.2,
-                                pointRadius: 3
-                            }
+                            { label: `📡 ${st.name} (${sysA})`, data: dataA, borderColor: getSysColor(sysA), borderWidth: 2.2, pointRadius: 3 },
+                            { label: `📡 ${st.name} (${sysB})`, data: dataB, borderColor: getSysColor(sysB), borderWidth: 2.2, pointRadius: 3 }
                         ] 
                     },
-                    options: {
-                        responsive: true, 
-                        maintainAspectRatio: false,
-                        animation: false,
-                        plugins: { legend: { display: true, labels: { color: '#94a3b8', font: { size: 8 } } } },
-                        scales: {
-                            x: { grid: { color: 'rgba(56, 189, 248, 0.05)' }, ticks: { color: '#94a3b8', font: { size: 7 } } },
-                            y: { 
-                                grid: { color: 'rgba(56, 189, 248, 0.1)' }, 
-                                ticks: { color: '#94a3b8', font: { size: 8 } }, 
-                                title: { display: true, text: 'SNR (C/N0 dB-Hz)', color: '#94a3b8', font: { size: 7 } }, 
-                                min: 25, max: 55 
-                            }
-                        }
-                    }
+                    options: { responsive: true, maintainAspectRatio: false, animation: false }
                 });
             }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const tbody = document.getElementById('sat-table-body');
-            if (tbody) {
-                tbody.addEventListener('click', (e) => {
-                    const row = e.target.closest('tr');
-                    if (row && row.getAttribute('data-id')) selectSatellite(row.getAttribute('data-id'));
-                });
-            }
-        });
-
-        function resizeGlobe() {
-            if (myGlobe) {
-                const container = document.getElementById('globeViz');
-                if (container && container.clientWidth > 0 && container.clientHeight > 0) {
-                    myGlobe.width(container.clientWidth); myGlobe.height(container.clientHeight);
-                }
-            }
-        }
-
-        function getTHREE() {
-            return window.THREE || (typeof Globe !== 'undefined' && Globe.THREE);
-        }
-
-        // 🌟 3D SPHERE OBJECTS FOR SATELLITES (REPLACES POINTSDATA TO PREVENT CRASHES)
-        function createSatelliteThreeObject(d) {
-            const THREE = getTHREE();
-            if (!THREE) return null;
-            const geometry = new THREE.SphereGeometry(0.35, 8, 8); 
-            const material = new THREE.MeshBasicMaterial({ color: getSatColor(d.name) });
-            return new THREE.Mesh(geometry, material);
         }
 
         // 🌟 GLOBE INITIALIZATION 🌟
@@ -1868,93 +1320,93 @@
                     // Original Colored Earth
                     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
-                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.8 }, 0) 
+                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.5 }, 0) 
                     .showAtmosphere(true)
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.35)
-                    .polygonCapColor(() => 'rgba(56, 189, 248, 0.05)')
-                    .polygonSideColor(() => 'rgba(56, 189, 248, 0.05)')
-                    .polygonStrokeColor(() => '#38bdf8')
-                    .polygonAltitude(0.015)
                     
-                    // 🌟 USE RENDER-FRIENDLY 3D SPHERES 🌟
-                    .objectsData([])
-                    .objectLat('lat')
-                    .objectLng('lng')
-                    .objectAltitude('alt')
-                    .objectThreeObject(createSatelliteThreeObject)
-                    .onObjectClick((d) => { if (d && d.id) selectSatellite(d.id); })
+                    // RENDER THE FLEET AS POINTS TO PREVENT CRASHES
+                    .pointsData([])
+                    .pointLat('lat')
+                    .pointLng('lng')
+                    .pointAltitude('alt')
+                    .pointColor('color')
+                    .pointRadius(0.06)
+                    .pointResolution(16)
+                    .onPointClick((d) => { if (d && d.id) selectSatellite(d.id); })
                     
-                    // 🌟 LIVE HUD TRACKING LABEL FOR SELECTED SATELLITE 🌟
-                    .htmlElementsData([])
+                    // HTML MARKERS FOR STATION IDENTIFIERS AND SATELLITE TRACK
+                    .htmlElementsData(STATIONS)
                     .htmlElement(d => {
                         const el = document.createElement('div');
-                        el.innerHTML = `
-                            <div style="display:flex; align-items:center; gap:6px; pointer-events:none; transform: translate(15px, -15px);">
-                                <div style="background:#10b981; width:12px; height:12px; border-radius:50%; box-shadow: 0 0 10px #10b981, 0 0 20px #10b981; border: 2px solid #fff;"></div>
-                                <div style="background:rgba(2,6,23,0.85); border:1px solid #10b981; padding:3px 8px; border-radius:4px; color:#10b981; font-size:11px; font-weight:bold; white-space:nowrap; box-shadow: 0 0 10px rgba(16,185,129,0.4);">
-                                    <span style="color:#f8fafc;">[TRACK]</span> ${d.name}
+                        
+                        // IF IT IS A GROUND STATION (FROM SCREENSHOT)
+                        if (d.size) { 
+                            el.innerHTML = `
+                                <div style="display:flex; align-items:center; gap:4px; pointer-events:none; transform: translate(-50%, -50%);">
+                                    <div style="background:${d.color}; width:12px; height:12px; border-radius:50%; box-shadow: 0 0 10px ${d.color}; border: 2px solid #fff;"></div>
+                                    <div style="background:rgba(2,6,23,0.8); border:1px solid ${d.color}; padding:2px 6px; border-radius:4px; color:${d.color}; font-size:9px; font-weight:bold; white-space:nowrap;">
+                                        ${d.name}
+                                    </div>
                                 </div>
-                            </div>
-                        `;
+                            `;
+                        } 
+                        // IF IT IS THE SELECTED SATELLITE
+                        else {
+                            el.innerHTML = `
+                                <div style="display:flex; align-items:center; gap:6px; pointer-events:none; transform: translate(10px, -10px);">
+                                    <div style="background:#10b981; width:12px; height:12px; border-radius:50%; box-shadow: 0 0 10px #10b981, 0 0 20px #10b981; border: 2px solid #fff;"></div>
+                                    <div style="background:rgba(2,6,23,0.85); border:1px solid #10b981; padding:3px 8px; border-radius:4px; color:#10b981; font-size:11px; font-weight:bold; white-space:nowrap; box-shadow: 0 0 10px rgba(16,185,129,0.4);">
+                                        <span style="color:#f8fafc;">[TRACK]</span> ${d.name}
+                                    </div>
+                                </div>
+                            `;
+                        }
                         return el;
                     })
-                    .htmlAltitude(d => d.alt);
-
-                const THREE = getTHREE();
-                if (THREE && myGlobe.scene) {
-                    const ambientLight = new THREE.AmbientLight(0xffffff, 2.5);
-                    myGlobe.scene().add(ambientLight);
-                }
-
-                fetch('https://unpkg.com/three-globe/example/datasets/ne_110m_admin_0_countries.geojson')
-                    .then(res => res.json()).then(countries => { if (myGlobe) myGlobe.polygonsData(countries.features); }).catch(() => {});
+                    .htmlAltitude(d => d.alt || 0.01);
 
                 myGlobe.controls().autoRotate = true;
                 myGlobe.controls().autoRotateSpeed = 0.3;
-                setTimeout(resizeGlobe, 150);
+                setTimeout(() => {
+                    myGlobe.width(container.clientWidth); 
+                    myGlobe.height(container.clientHeight);
+                }, 150);
             }
         } catch (e) {}
 
-        window.addEventListener('resize', resizeGlobe);
-
         // 🌟 REAL-TIME ANIMATION LOOP 🌟
-        function animateSatellites() {
-            if (currentLiveSatObjects.length > 0) {
-                // Update positional math continuously
-                currentLiveSatObjects.forEach(s => {
-                    const sgp4Pos = propagateSGP4(s.id);
-                    s.lat = sgp4Pos.lat;
-                    s.lng = sgp4Pos.lng;
-                    s.alt = sgp4Pos.alt;
-                });
-                
-                if (myGlobe) {
-                    // Update all objects except the selected one
-                    const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                    myGlobe.objectsData(unselectedSats);
+        let lastUpdateTime = 0;
+        function animateSatellites(time) {
+            if (time - lastUpdateTime > 80) { 
+                lastUpdateTime = time;
+                if (currentLiveSatObjects.length > 0) {
+                    currentLiveSatObjects.forEach(s => {
+                        const sgp4Pos = propagateSGP4(s.id);
+                        s.lat = sgp4Pos.lat;
+                        s.lng = sgp4Pos.lng;
+                        s.alt = sgp4Pos.alt;
+                    });
+                    
+                    if (myGlobe) {
+                        const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
+                        myGlobe.pointsData(unselectedSats);
 
-                    // Track Selected Label 
-                    if (selectedSatId) {
-                        const targetObj = currentLiveSatObjects.find(s => s.id === selectedSatId);
-                        if (targetObj) {
-                            myGlobe.htmlElementsData([targetObj]); 
+                        if (selectedSatId) {
+                            const targetObj = currentLiveSatObjects.find(s => s.id === selectedSatId);
+                            if (targetObj) {
+                                // Draw both the tracking label AND the static stations
+                                myGlobe.htmlElementsData([targetObj, ...STATIONS]); 
+                            }
+                        } else {
+                            myGlobe.htmlElementsData(STATIONS);
                         }
-                    } else {
-                        myGlobe.htmlElementsData([]);
                     }
                 }
             }
             requestAnimationFrame(animateSatellites);
         }
-        
-        setInterval(() => {
-            if (currentLiveSatObjects.length > 0) {
-                populateUpcomingPassesList();
-            }
-        }, 10000);
 
-        // Execute Main Load
         loadCelesTrakTLEs().then(() => {
             requestAnimationFrame(animateSatellites);
         });
