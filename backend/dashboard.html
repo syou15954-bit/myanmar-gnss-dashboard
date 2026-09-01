@@ -138,13 +138,6 @@
         }
 
         .hud-right-passes { top: 12px; right: 12px; width: 310px; display: flex; flex-direction: column; max-height: 290px; }
-        .hud-sat-info { top: 314px; right: 12px; width: 310px; }
-        .hud-left-tle { top: 12px; left: 12px; width: 280px; }
-
-        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 10.5px; }
-        .info-row:last-child { border-bottom: none; }
-        .info-label { color: var(--text-muted); letter-spacing: 0.3px; }
-        .info-val { color: var(--text-main); font-weight: 700; }
 
         .matrix-select {
             background: #020617; color: var(--accent-cyan); border: 1px solid var(--panel-border);
@@ -294,23 +287,6 @@
                 </select>
                 <button class="feature-btn active-mode" id="btn-rotation" onclick="toggleGlobeRotation()" title="Pause/Resume Rotation" style="padding: 4px 10px; font-size: 13px;">⏸️</button>
                 <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit & Ground Track</button>
-                <select id="track-count-select" class="matrix-select" onchange="onTrackCountChange()" title="How many orbit tracks to draw">
-                    <option value="1" selected>1 Track (Selected)</option>
-                    <option value="6">6 Tracks</option>
-                    <option value="12">12 Tracks</option>
-                    <option value="24">24 Tracks</option>
-                </select>
-            </div>
-
-            <div class="hud-card hud-left-tle mono">
-                <div class="hud-card-title">
-                    <span>📡 TLE INPUT / SOURCE</span>
-                </div>
-                <div id="tle-sources-body" style="font-size: 10.5px; display:flex; flex-direction:column; gap:4px;">
-                    <div class="info-row"><span class="info-label">SOURCE</span><span class="info-val" id="tle-source-val">CelesTrak (Live)</span></div>
-                    <div class="info-row"><span class="info-label">SELECTED</span><span class="info-val" id="tle-source-selected">--</span></div>
-                    <div class="info-row"><span class="info-label">TRACKED SATS</span><span class="info-val" id="tle-source-tracked">0</span></div>
-                </div>
             </div>
 
             <div class="hud-card hud-right-passes mono">
@@ -318,15 +294,6 @@
                     <span id="pass-title">⏱️ UPCOMING SATELLITE PASSES (MMT)</span>
                 </div>
                 <div id="upcoming-passes-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;">
-                </div>
-            </div>
-
-            <div class="hud-card hud-sat-info mono">
-                <div class="hud-card-title">
-                    <span>🛰️ SATELLITE INFO</span>
-                </div>
-                <div id="sat-info-body" style="font-size:10.5px; display:flex; flex-direction:column; gap:2px;">
-                    <div style="text-align:center; color:var(--text-muted); padding:10px 0;">Select a satellite to inspect</div>
                 </div>
             </div>
         </section>
@@ -505,7 +472,6 @@
         let myGlobe = null;
         let modes = { tracks: true };
         let isRotating = true;
-        let maxOrbitTracks = 1; // Default to 1 selected orbit line
         let uploadedStationsList = [];
         let activeSelectedFileIndex = -1;
         let currentSelectedStation = 'none';
@@ -521,7 +487,8 @@
             mandalay: { lat: 21.9588, lng: 96.0891, name: '📡 Mandalay Hill Landmark', color: '#10b981', size: 3.0 }
         };
 
-        const VISUAL_ALTITUDE = 0.5; // Perfectly matches the satellite dots and orbit height
+        // VISUAL ALTITUDE - Adjusts how far satellites and orbits look from earth!
+        const VISUAL_ALTITUDE = 0.5;
 
         function getSatColor(satName) {
             let uname = (satName || '').toUpperCase();
@@ -555,18 +522,14 @@
             renderCustomSelection();
         }
 
-        function onTrackCountChange() {
-            const sel = document.getElementById('track-count-select');
-            maxOrbitTracks = parseInt(sel.value) || 1;
-            updateAllOrbitPaths();
-        }
-
         function toggleMyanmarVisibleOnly(btn) {
             isMyanmarOnlyMode = !isMyanmarOnlyMode;
             btn.classList.toggle('active-mm', isMyanmarOnlyMode);
             
             if (isMyanmarOnlyMode) {
                 btn.innerText = '🇲🇲 MYANMAR VISIBLE (ACTIVE)';
+                // Don't zoom in! Keep standard global view
+                if (myGlobe) myGlobe.pointOfView({ lat: 19.7633, lng: 96.0785, altitude: 2.5 }, 1200);
             } else {
                 btn.innerText = '🇲🇲 MYANMAR VISIBLE ONLY';
             }
@@ -798,9 +761,6 @@
                     `;}).join('');
                 }
 
-                const trackedEl = document.getElementById('tle-source-tracked');
-                if (trackedEl) trackedEl.innerText = totalCount;
-
                 if (myGlobe) {
                     const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
                     myGlobe.pointsData(unselectedSats);
@@ -816,14 +776,8 @@
                     if (passListContainer) {
                         passListContainer.innerHTML = '<div style="text-align:center; color:var(--text-muted); font-size:9px; padding:15px;">No satellites available</div>';
                     }
-                    updateSatInfoPanel('');
                 } else {
                     populateUpcomingPassesList();
-                    if (!selectedSatId || !TLE_DATABASE[selectedSatId]) {
-                        selectSatellite(currentLiveSatObjects[0].id);
-                    } else {
-                        updateAllOrbitPaths();
-                    }
                 }
 
                 resizeGlobe();
@@ -850,10 +804,16 @@
                     const maxEl = 45 + (idNum % 42); 
                     
                     const aosTime = new Date(now.getTime() + offsetMinutes * 60000);
-                    const formatTime = (d) => d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0') + ':' + d.getSeconds().toString().padStart(2, '0');
+                    const formatTime = (d) => {
+                        return d.getHours().toString().padStart(2, '0') + ':' + 
+                               d.getMinutes().toString().padStart(2, '0') + ':' + 
+                               d.getSeconds().toString().padStart(2, '0');
+                    };
+                    
                     const dirs = ['NW -> SE', 'SW -> NE', 'N -> S', 'S -> N', 'W -> E'];
+                    const dir = dirs[idNum % dirs.length];
 
-                    return { sat, aosTime, durMins, maxEl, timeStr: formatTime(aosTime), dir: dirs[idNum % dirs.length] };
+                    return { sat, aosTime, durMins, maxEl, timeStr: formatTime(aosTime), dir };
                 });
 
                 allPasses.sort((a, b) => a.aosTime - b.aosTime);
@@ -878,82 +838,61 @@
             } catch(e) { console.error("Error populating passes", e); }
         }
 
-        // 🌟 🌟 MULTI-SATELLITE ORBIT RENDERING (PERFECT RING) 🌟 🌟
-        function computeOrbitPath(id, isSelected) {
-            const tle = TLE_DATABASE[id];
-            if (!tle) return [];
-            try {
-                const satrec = satellite.twoline2satrec(tle.line1, tle.line2);
-                const meanMotionRadMin = satrec.no_kozai || satrec.no || 0.004;
-                const periodSec = ((2 * Math.PI) / meanMotionRadMin) * 60;
+        // 🌟 PERFECT 3D ORBIT RING IN SPACE 🌟
+        function updateTargetOrbitPath(id) {
+            if (!myGlobe || !id || !TLE_DATABASE[id]) return;
 
-                const now = new Date();
-                const fixedGmst = satellite.gstime(now); // Fixed GMST prevents figure-8 wrap
-                const numSteps = 140;
-                const stepSec = periodSec / numSteps;
-
-                let segments = [];
-                let currentSegment = [];
-                const color = isSelected ? '#10b981' : getSatColor(tle.name);
-                const width = isSelected ? 2.2 : 1.1;
-
-                for (let i = 0; i <= numSteps; i++) {
-                    const targetTime = new Date(now.getTime() + (i * stepSec) * 1000);
-                    const posVel = satellite.propagate(satrec, targetTime);
-
-                    if (posVel && posVel.position) {
-                        const posGd = satellite.eciToGeodetic(posVel.position, fixedGmst);
-                        const lat = satellite.degreesLat(posGd.latitude);
-                        const lng = satellite.degreesLong(posGd.longitude);
-
-                        if (currentSegment.length > 0) {
-                            const prevLng = currentSegment[currentSegment.length - 1][1];
-                            if (Math.abs(lng - prevLng) > 180) {
-                                segments.push({ coords: currentSegment, color, width });
-                                currentSegment = [];
-                            }
-                        }
-                        currentSegment.push([lat, lng, VISUAL_ALTITUDE]);
-                    }
-                }
-                if (currentSegment.length > 0) segments.push({ coords: currentSegment, color, width });
-                return segments;
-            } catch (e) {
-                return [];
-            }
-        }
-
-        function updateAllOrbitPaths() {
-            if (!myGlobe) return;
-
-            if (!modes.tracks || currentLiveSatObjects.length === 0) {
+            if (!modes.tracks) {
                 myGlobe.pathsData([]);
                 return;
             }
 
-            let idsToTrack = [];
-            if (selectedSatId && TLE_DATABASE[selectedSatId]) idsToTrack.push(selectedSatId);
+            const sat = TLE_DATABASE[id];
+            const satrec = satellite.twoline2satrec(sat.line1, sat.line2);
 
-            let pool = currentLiveSatObjects.map(s => s.id).filter(id => id !== selectedSatId);
-            const stepPick = Math.max(1, Math.floor(pool.length / Math.max(1, maxOrbitTracks)));
-            for (let i = 0; i < pool.length && idsToTrack.length < maxOrbitTracks; i += stepPick) {
-                idsToTrack.push(pool[i]);
+            const meanMotionRadMin = satrec.no_kozai || satrec.no || 0.004;
+            const periodSec = ((2 * Math.PI) / meanMotionRadMin) * 60;
+
+            const now = new Date();
+            // Fixed GMST prevents the path from squiggling like a figure-8
+            const fixedGmst = satellite.gstime(now); 
+            const numSteps = 200;
+            const stepSec = periodSec / numSteps;
+            
+            let orbitPaths = [];
+            let currentSegment = [];
+
+            for (let i = 0; i <= numSteps; i++) {
+                const targetTime = new Date(now.getTime() + (i * stepSec) * 1000);
+                const posVel = satellite.propagate(satrec, targetTime);
+
+                if (posVel && posVel.position) {
+                    const posGd = satellite.eciToGeodetic(posVel.position, fixedGmst);
+                    const lat = satellite.degreesLat(posGd.latitude);
+                    const lng = satellite.degreesLong(posGd.longitude);
+                    
+                    // Anti-Meridian Wrap Fix to prevent lines slicing through Earth
+                    if (currentSegment.length > 0) {
+                        const prevLng = currentSegment[currentSegment.length - 1][1];
+                        if (Math.abs(lng - prevLng) > 180) {
+                            orbitPaths.push({ coords: currentSegment });
+                            currentSegment = [];
+                        }
+                    }
+                    currentSegment.push([lat, lng, VISUAL_ALTITUDE]);
+                }
             }
+            if (currentSegment.length > 0) orbitPaths.push({ coords: currentSegment });
 
-            let allPaths = [];
-            idsToTrack.forEach(id => {
-                const isSelected = (id === selectedSatId);
-                allPaths = allPaths.concat(computeOrbitPath(id, isSelected));
-            });
-
-            myGlobe.pathsData(allPaths)
+            // Draw bright glowing green ring perfectly wrapped around the earth!
+            myGlobe.pathsData(orbitPaths)
                    .pathPoints('coords')
                    .pathPointLat(p => p[0])
                    .pathPointLng(p => p[1])
                    .pathPointAlt(p => p[2])
-                   .pathColor(d => d.color)
-                   .pathStroke(d => d.width)
-                   .pathDashLength(0)
+                   .pathColor(() => '#10b981')
+                   .pathStroke(1.8)
+                   .pathDashLength(0) 
                    .pathTransitionDuration(0);
         }
 
@@ -962,7 +901,7 @@
             modes[feature] = !modes[feature];
             btn.classList.toggle('active-mode', modes[feature]);
             if (feature === 'tracks') {
-                if (modes[feature]) updateAllOrbitPaths();
+                if (modes[feature]) updateTargetOrbitPath(selectedSatId);
                 else myGlobe.pathsData([]);
             }
         }
@@ -990,67 +929,17 @@
             }
         }
 
-        // 🌟 SATELLITE INFO PANEL 🌟
-        function updateSatInfoPanel(id) {
-            const body = document.getElementById('sat-info-body');
-            if (!body) return;
-            const tle = TLE_DATABASE[id];
-            if (!id || !tle) {
-                body.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:10px 0;">Select a satellite to inspect</div>';
-                return;
-            }
-
-            try {
-                const satrec = satellite.twoline2satrec(tle.line1, tle.line2);
-                const now = new Date();
-                const posVel = satellite.propagate(satrec, now);
-                if (!posVel || !posVel.position) throw new Error('no position');
-
-                const gmst = satellite.gstime(now);
-                const posGd = satellite.eciToGeodetic(posVel.position, gmst);
-                const lat = satellite.degreesLat(posGd.latitude);
-                const lng = satellite.degreesLong(posGd.longitude);
-                const altKm = posGd.height.toFixed(1);
-
-                const v = posVel.velocity;
-                const velKmS = (v ? Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z) : 0).toFixed(2);
-
-                const meanMotionRadMin = satrec.no_kozai || satrec.no || 0.004;
-                const periodMin = ((2 * Math.PI) / meanMotionRadMin).toFixed(2);
-                const inclDeg = (satrec.inclo * 180 / Math.PI).toFixed(2);
-                const color = getSatColor(tle.name);
-
-                body.innerHTML = `
-                    <div class="info-row"><span class="info-label">NAME</span><span class="info-val" style="color:${color};">${tle.name}</span></div>
-                    <div class="info-row"><span class="info-label">LATITUDE</span><span class="info-val">${lat.toFixed(4)}°</span></div>
-                    <div class="info-row"><span class="info-label">LONGITUDE</span><span class="info-val">${lng.toFixed(4)}°</span></div>
-                    <div class="info-row"><span class="info-label">ALTITUDE</span><span class="info-val">${altKm} km</span></div>
-                    <div class="info-row"><span class="info-label">VELOCITY</span><span class="info-val">${velKmS} km/s</span></div>
-                    <div class="info-row"><span class="info-label">PERIOD</span><span class="info-val">${periodMin} min</span></div>
-                    <div class="info-row"><span class="info-label">INCLINATION</span><span class="info-val">${inclDeg}°</span></div>
-                `;
-            } catch (e) {
-                body.innerHTML = '<div style="text-align:center;color:var(--accent-red);padding:10px 0;">Unable to compute orbit data</div>';
-            }
-        }
-
-        // 🌟 SELECT SATELLITE -> NO CAMERA LOCK, HUD LABEL APPEARS 🌟
+        // 🌟 SELECT SATELLITE -> NO CAMERA MOVEMENT, JUST ORBIT AND LABEL 🌟
         function selectSatellite(id) {
             if (!id || !TLE_DATABASE[id]) return;
             selectedSatId = id;
-            const sat = TLE_DATABASE[id];
             
+            // UI Update
             const dropdownModal = document.getElementById('sat-dropdown-modal');
             if (dropdownModal && dropdownModal.value !== id) dropdownModal.value = id;
 
             const modalSatName = document.getElementById('tle-sat-name-modal');
-            if (modalSatName) modalSatName.innerText = sat.name;
-
-            const tleDisplay = document.getElementById('tle-display-modal');
-            if (tleDisplay) tleDisplay.innerText = `${sat.line1}\n${sat.line2}`;
-
-            const sourceSelected = document.getElementById('tle-source-selected');
-            if (sourceSelected) sourceSelected.innerText = sat.name.substring(0, 22);
+            if (modalSatName) modalSatName.innerText = TLE_DATABASE[id].name;
 
             document.querySelectorAll('#sat-table-body tr').forEach(row => {
                 row.classList.toggle('table-row-selected', row.getAttribute('data-id') === id);
@@ -1066,13 +955,10 @@
                 }
             });
 
-            // Draw the Orbit Ring
-            updateAllOrbitPaths();
+            // Immediately Draw the Orbit Track
+            updateTargetOrbitPath(id);
 
-            // Populate Info HUD
-            updateSatInfoPanel(id);
-
-            // Show HUD Label on Selected Satellite
+            // Immediately Render the HUD Label
             if (myGlobe && currentLiveSatObjects.length > 0) {
                 const targetObj = currentLiveSatObjects.find(s => s.id === id);
                 if (targetObj) {
@@ -1081,6 +967,7 @@
             }
         }
 
+        // 🌟 RINEX & OTHER UI FUNCTIONS 🌟
         function switchRinexView(view) {
             const chartContainer = document.getElementById('rinex-chart-container');
             const tableContainer = document.getElementById('rinex-table-container');
@@ -1545,7 +1432,7 @@
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
                 myGlobe = Globe()(container)
-                    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg') // Cyber topology Earth
+                    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg')
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
                     .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.5 }, 0) 
                     .showAtmosphere(true)
@@ -1556,8 +1443,8 @@
                     .polygonStrokeColor(() => '#38bdf8')
                     .polygonAltitude(0.015)
                     
-                    // 🌟 HIGH-PERFORMANCE POINTS DATA FOR SATELLITE FLEET 🌟
-                    .pointsData(currentLiveSatObjects)
+                    // 🌟 RENDER THE FLEET OF SATELLITES AS NEON DOTS 🌟
+                    .pointsData([])
                     .pointLat('lat')
                     .pointLng('lng')
                     .pointAltitude('alt')
@@ -1572,7 +1459,7 @@
                         const el = document.createElement('div');
                         el.innerHTML = `
                             <div style="display:flex; align-items:center; gap:6px; pointer-events:none; transform: translate(10px, -10px);">
-                                <div style="background:#ef4444; width:12px; height:12px; border-radius:50%; box-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444; border: 2px solid #fff;"></div>
+                                <div style="background:#10b981; width:12px; height:12px; border-radius:50%; box-shadow: 0 0 10px #10b981, 0 0 20px #10b981; border: 2px solid #fff;"></div>
                                 <div style="background:rgba(2,6,23,0.85); border:1px solid #10b981; padding:3px 8px; border-radius:4px; color:#10b981; font-size:11px; font-weight:bold; white-space:nowrap; box-shadow: 0 0 10px rgba(16,185,129,0.4);">
                                     <span style="color:#f8fafc;">[TRACK]</span> ${d.name}
                                 </div>
@@ -1596,7 +1483,7 @@
         // 🌟 REAL-TIME ANIMATION LOOP 🌟
         let lastUpdateTime = 0;
         function animateSatellites(time) {
-            if (time - lastUpdateTime > 50) { // Throttle slightly to keep browser smooth at 20fps
+            if (time - lastUpdateTime > 100) { // Stable 10 FPS to prevent crashing
                 lastUpdateTime = time;
                 if (currentLiveSatObjects.length > 0) {
                     currentLiveSatObjects.forEach(s => {
@@ -1613,7 +1500,7 @@
                         if (selectedSatId) {
                             const targetObj = currentLiveSatObjects.find(s => s.id === selectedSatId);
                             if (targetObj) {
-                                myGlobe.htmlElementsData([targetObj]); // Move label live along the orbit
+                                myGlobe.htmlElementsData([targetObj]); // Move the label along the orbit!
                             }
                         } else {
                             myGlobe.htmlElementsData([]);
@@ -1629,13 +1516,6 @@
                 populateUpcomingPassesList();
             }
         }, 10000);
-
-        setInterval(() => {
-            if (selectedSatId) {
-                updateSatInfoPanel(selectedSatId);
-                updateAllOrbitPaths();
-            }
-        }, 5000);
 
         loadCelesTrakTLEs().then(() => {
             requestAnimationFrame(animateSatellites);
