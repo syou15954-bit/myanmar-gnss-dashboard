@@ -285,8 +285,39 @@
             max-height: 290px; 
         }
 
+        /* Shared Common UI Elements */
+        .matrix-select {
+            background: #020617; 
+            color: var(--accent-cyan); 
+            border: 1px solid var(--panel-border);
+            font-size: 10px; 
+            font-weight: 700; 
+            padding: 3px 6px; 
+            border-radius: 3px; 
+            cursor: pointer; 
+            outline: none;
+        }
+
+        .bar-container { 
+            width: 100%; 
+            height: 8px; 
+            background: rgba(2, 6, 23, 0.8); 
+            border-radius: 4px; 
+            overflow: hidden; 
+            border: 1px solid var(--panel-border); 
+        }
+
+        .bar-fill { 
+            height: 100%; 
+            border-radius: 4px; 
+            transition: width 0.8s ease-in-out; 
+        }
+
+        .fill-gps { background: linear-gradient(90deg, #059669, #10b981); box-shadow: 0 0 8px #10b981; }
+        .fill-bds { background: linear-gradient(90deg, #dc2626, #ef4444); box-shadow: 0 0 8px #ef4444; }
+
         /* -----------------------------------------------------
-           BOTTOM DOCK (3 PANELS)
+           BOTTOM DOCK FULL LAYOUT
         ----------------------------------------------------- */
         .bottom-dock { 
             flex: 1; 
@@ -326,60 +357,6 @@
             width: 100%;
         }
 
-        /* Shared Common UI Elements */
-        .matrix-select {
-            background: #020617; 
-            color: var(--accent-cyan); 
-            border: 1px solid var(--panel-border);
-            font-size: 10px; 
-            font-weight: 700; 
-            padding: 3px 6px; 
-            border-radius: 3px; 
-            cursor: pointer; 
-            outline: none;
-        }
-
-        .bar-container { 
-            width: 100%; 
-            height: 8px; 
-            background: rgba(2, 6, 23, 0.8); 
-            border-radius: 4px; 
-            overflow: hidden; 
-            border: 1px solid var(--panel-border); 
-        }
-
-        .bar-fill { 
-            height: 100%; 
-            border-radius: 4px; 
-            transition: width 0.8s ease-in-out; 
-        }
-
-        .fill-gps { background: linear-gradient(90deg, #059669, #10b981); box-shadow: 0 0 8px #10b981; }
-        .fill-bds { background: linear-gradient(90deg, #dc2626, #ef4444); box-shadow: 0 0 8px #ef4444; }
-
-        .dop-grid { 
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr); 
-            gap: 8px; 
-            margin-top: 4px; 
-        }
-
-        .dop-card { 
-            background: rgba(2, 6, 23, 0.6); 
-            padding: 8px; 
-            border-radius: 4px; 
-            text-align: center; 
-            border: 1px solid var(--panel-border); 
-        }
-
-        .dop-val { 
-            font-size: 16px; 
-            font-weight: 700; 
-            color: var(--accent-cyan); 
-            margin-top: 4px; 
-        }
-
-        /* Cyber Table styling */
         .cyber-table { 
             width: 100%; 
             border-collapse: collapse; 
@@ -430,6 +407,28 @@
             background: rgba(16, 185, 129, 0.12); 
             color: var(--accent-green); 
             border: 1px solid rgba(16, 185, 129, 0.4); 
+        }
+
+        .dop-grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 8px; 
+            margin-top: 4px; 
+        }
+
+        .dop-card { 
+            background: rgba(2, 6, 23, 0.6); 
+            padding: 8px; 
+            border-radius: 4px; 
+            text-align: center; 
+            border: 1px solid var(--panel-border); 
+        }
+
+        .dop-val { 
+            font-size: 16px; 
+            font-weight: 700; 
+            color: var(--accent-cyan); 
+            margin-top: 4px; 
         }
 
         /* -----------------------------------------------------
@@ -663,9 +662,7 @@
                     <option value="mandalay">📍 Mandalay Hill Landmark</option>
                 </select>
                 <button class="feature-btn active-mode" id="btn-rotation" onclick="toggleGlobeRotation()" title="Pause/Resume Rotation" style="padding: 4px 10px; font-size: 13px;">⏸️</button>
-                
                 <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit & Ground Track</button>
-                
                 <select id="track-count-select" class="matrix-select" onchange="updateAllOrbitPaths()" title="How many orbit tracks to draw" style="margin-left: 5px;">
                     <option value="1">1 Track (Selected)</option>
                     <option value="12">12 Tracks</option>
@@ -874,7 +871,6 @@
                 </div>
             </div>
         </section>
-
     </main>
 
     <script>
@@ -955,7 +951,7 @@
             return (lat >= -25.0 && lat <= 55.0 && lng >= 30.0 && lng <= 160.0);
         }
 
-        // Failsafe TLE Database Generator (Over 300+ Satellites generated to ensure it is fully populated)
+        // Failsafe TLE Database Generator (Generates over 300 Satellites to ensure dense tracking)
         function generateHighDensityFallbackList() {
             let list = [];
             const baseTLEs = [
@@ -966,7 +962,7 @@
             ];
 
             baseTLEs.forEach((base) => {
-                for(let i=1; i<=75; i++) { // Generate 75 per system = 300 total sats
+                for(let i=1; i<=75; i++) { 
                     let satId = (parseInt(base.line1.substring(2,7)) + i).toString().padStart(5, '0');
                     let prn = i.toString().padStart(2, '0');
                     let newRaan = ((i * 12.0) % 360).toFixed(4).padStart(8, ' ');
@@ -1075,7 +1071,7 @@
             } catch (e) { return 0; }
         }
 
-        // FULL RENDER FUNCTION
+        // FULL RENDER FUNCTION FOR UI
         function renderCustomSelection() {
             try {
                 let satList = getFilteredSatellites();
@@ -1176,9 +1172,9 @@
                 }
 
                 if (myGlobe) {
-                    // Update only non-selected satellites with the basic object rendering.
+                    // Update Globe with objects
                     const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                    myGlobe.pointsData(unselectedSats);
+                    myGlobe.objectsData(unselectedSats); // Use objectsData for true 3D spheres
                 }
 
                 if (currentLiveSatObjects.length === 0) {
@@ -1259,12 +1255,12 @@
             }
 
             let idsToTrack = [];
-            // Always track selected
+            // Always track selected if present
             if (selectedSatId && TLE_DATABASE[selectedSatId]) {
                 idsToTrack.push(selectedSatId);
             }
 
-            // Also track a subset of other satellites to create that cool "Web of Orbits" effect
+            // Create Web of Orbits using Multiple Satellites
             const maxRings = parseInt(document.getElementById('track-count-select')?.value) || 24; 
             let pool = currentLiveSatObjects.map(s => s.id).filter(id => id !== selectedSatId);
             const stepPick = Math.max(1, Math.floor(pool.length / Math.max(1, maxRings)));
@@ -1316,12 +1312,9 @@
                     if (currentSegment.length > 0) {
                         allPaths.push({ coords: currentSegment, color, width });
                     }
-                } catch (e) {
-                    // Ignore propagation errors for specific faulty TLEs
-                }
+                } catch (e) {}
             });
 
-            // Draw bright glowing green rings perfectly wrapped around the earth!
             myGlobe.pathsData(allPaths)
                    .pathPoints('coords')
                    .pathPointLat(p => p[0])
@@ -1396,13 +1389,13 @@
 
             // 🛑 CAMERA IS UNTOUCHED HERE. RETAIN MANUAL CONTROL. 🛑
 
-            // Draw Orbit Ring (Web effect will prioritize selected sat)
+            // Draw Orbit Ring
             updateAllOrbitPaths();
 
             // Pop up Label
             if (myGlobe && currentLiveSatObjects.length > 0) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                myGlobe.pointsData(unselectedSats);
+                myGlobe.objectsData(unselectedSats);
 
                 const targetObj = currentLiveSatObjects.find(s => s.id === id);
                 if (targetObj) {
@@ -1590,7 +1583,10 @@
 
         async function uploadAndCompare() {
             const fileInput = document.getElementById('rinexFileInput');
-            if (!fileInput || !fileInput.files || fileInput.files.length === 0) { alert('Please select RINEX (.rnx / .obs) files.'); return; }
+            if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                alert('Please select RINEX (.rnx / .obs) files.');
+                return;
+            }
 
             const fileListContainer = document.getElementById('rinex-file-list');
             fileListContainer.innerHTML = ''; 
@@ -1633,20 +1629,30 @@
 
         async function downloadCSV() {
             const fileInput = document.getElementById('rinexFileInput');
-            if (!fileInput || !fileInput.files || fileInput.files.length === 0) { alert("Please upload and analyze a RINEX file first."); return; }
+            if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                alert("Please upload and analyze a RINEX file first.");
+                return;
+            }
 
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
 
             try {
-                const response = await fetch('/api/v1/gnss/export/csv', { method: 'POST', body: formData });
+                const response = await fetch('/api/v1/gnss/export/csv', {
+                    method: 'POST',
+                    body: formData
+                });
+
                 if (response.ok) {
                     const blob = await response.blob();
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
-                    a.href = url; a.download = 'gnss_comparison_report.csv';
-                    document.body.appendChild(a); a.click(); a.remove();
-                }
+                    a.href = url;
+                    a.download = 'gnss_comparison_report.csv';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                } else {}
             } catch (err) {}
         }
 
@@ -1655,12 +1661,23 @@
                 predicted: [[16.8661, 96.1951], [16.8665, 96.1955]],
                 actual: [[16.8660, 96.1950], [16.8664, 96.1956]]
             };
+
             try {
-                const response = await fetch('/api/v1/gnss/accuracy-test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const response = await fetch('/api/v1/gnss/accuracy-test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
                 const res = await response.json();
+                
                 if (res.status === 'success') {
-                    alert(`🎯 ACCURACY VERIFICATION REPORT:\n\n▶ RMSE: ${res.metrics.rmse_meters} meters\n▶ Mean Error: ${res.metrics.mean_error_meters} meters\n▶ System Reliability: ${res.metrics.reliability_percentage} %\n▶ Overall Evaluation: ${res.evaluation}`);
-                }
+                    alert(`🎯 ACCURACY VERIFICATION REPORT:\n\n` +
+                          `▶ Root Mean Square Error (RMSE): ${res.metrics.rmse_meters} meters\n` +
+                          `▶ Mean Error: ${res.metrics.mean_error_meters} meters\n` +
+                          `▶ System Reliability: ${res.metrics.reliability_percentage} %\n` +
+                          `▶ Overall Evaluation: ${res.evaluation}`);
+                } else {}
             } catch (err) {}
         }
 
@@ -1670,8 +1687,11 @@
             if (!st) return;
 
             document.querySelectorAll('.rinex-card').forEach((card, idx) => {
-                if (idx === index) card.classList.add('rinex-card-selected');
-                else card.classList.remove('rinex-card-selected');
+                if (idx === index) {
+                    card.classList.add('rinex-card-selected');
+                } else {
+                    card.classList.remove('rinex-card-selected');
+                }
             });
 
             document.getElementById('active-file-indicator').innerText = `📡 Active: ${st.name}`;
@@ -1727,6 +1747,10 @@
                             <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #38bdf8; padding: 4px; text-align: center; border-radius: 3px; font-size: 9.5px; font-weight: 700;">GAL (${st.counts.GAL})</span>
                             <span style="background: rgba(192, 132, 252, 0.2); color: #c084fc; border: 1px solid #c084fc; padding: 4px; text-align: center; border-radius: 3px; font-size: 9.5px; font-weight: 700;">GLO (${st.counts.GLO})</span>
                         </div>
+                    </div>
+                    <div style="font-size: 9px; color: var(--text-muted); display: flex; justify-content: space-between; background: rgba(2, 6, 23, 0.5); padding: 5px 6px; border-radius: 3px;">
+                        <span>📅 ${st.obsDate}</span>
+                        <span style="color: var(--accent-cyan); font-weight: 700;">v${st.version}</span>
                     </div>
                 `;
                 fileListContainer.appendChild(card);
@@ -1823,35 +1847,51 @@
             }
         }
 
+        function getTHREE() {
+            return window.THREE || (typeof Globe !== 'undefined' && Globe.THREE);
+        }
+
+        // 🌟 3D SPHERE OBJECTS FOR SATELLITES (REPLACES POINTSDATA TO PREVENT CRASHES)
+        function createSatelliteThreeObject(d) {
+            const THREE = getTHREE();
+            if (!THREE) return null;
+            const geometry = new THREE.SphereGeometry(0.35, 8, 8); 
+            const material = new THREE.MeshBasicMaterial({ color: getSatColor(d.name) });
+            return new THREE.Mesh(geometry, material);
+        }
+
         // 🌟 GLOBE INITIALIZATION 🌟
         try {
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
                 myGlobe = Globe()(container)
-                    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg') 
+                    // Original Colored Earth
+                    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
-                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.5 }, 0) 
+                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.8 }, 0) 
                     .showAtmosphere(true)
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.35)
+                    .polygonCapColor(() => 'rgba(56, 189, 248, 0.05)')
+                    .polygonSideColor(() => 'rgba(56, 189, 248, 0.05)')
+                    .polygonStrokeColor(() => '#38bdf8')
+                    .polygonAltitude(0.015)
                     
-                    // Render simple neon dots for unselected satellites
-                    .pointsData([])
-                    .pointLat('lat')
-                    .pointLng('lng')
-                    .pointAltitude('alt')
-                    .pointColor('color')
-                    .pointRadius(0.06)
-                    .pointResolution(16)
-                    .onPointClick((d) => { if (d && d.id) selectSatellite(d.id); })
+                    // 🌟 USE RENDER-FRIENDLY 3D SPHERES 🌟
+                    .objectsData([])
+                    .objectLat('lat')
+                    .objectLng('lng')
+                    .objectAltitude('alt')
+                    .objectThreeObject(createSatelliteThreeObject)
+                    .onObjectClick((d) => { if (d && d.id) selectSatellite(d.id); })
                     
-                    // Render Live Moving HTML label for the specifically selected satellite
+                    // 🌟 LIVE HUD TRACKING LABEL FOR SELECTED SATELLITE 🌟
                     .htmlElementsData([])
                     .htmlElement(d => {
                         const el = document.createElement('div');
                         el.innerHTML = `
-                            <div style="display:flex; align-items:center; gap:6px; pointer-events:none; transform: translate(10px, -10px);">
-                                <div style="background:#ef4444; width:12px; height:12px; border-radius:50%; box-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444; border: 2px solid #fff;"></div>
+                            <div style="display:flex; align-items:center; gap:6px; pointer-events:none; transform: translate(15px, -15px);">
+                                <div style="background:#10b981; width:12px; height:12px; border-radius:50%; box-shadow: 0 0 10px #10b981, 0 0 20px #10b981; border: 2px solid #fff;"></div>
                                 <div style="background:rgba(2,6,23,0.85); border:1px solid #10b981; padding:3px 8px; border-radius:4px; color:#10b981; font-size:11px; font-weight:bold; white-space:nowrap; box-shadow: 0 0 10px rgba(16,185,129,0.4);">
                                     <span style="color:#f8fafc;">[TRACK]</span> ${d.name}
                                 </div>
@@ -1867,6 +1907,9 @@
                     myGlobe.scene().add(ambientLight);
                 }
 
+                fetch('https://unpkg.com/three-globe/example/datasets/ne_110m_admin_0_countries.geojson')
+                    .then(res => res.json()).then(countries => { if (myGlobe) myGlobe.polygonsData(countries.features); }).catch(() => {});
+
                 myGlobe.controls().autoRotate = true;
                 myGlobe.controls().autoRotateSpeed = 0.3;
                 setTimeout(resizeGlobe, 150);
@@ -1875,35 +1918,30 @@
 
         window.addEventListener('resize', resizeGlobe);
 
-        // 🌟 REAL-TIME ANIMATION LOOP WITH THROTTLE 🌟
-        // Smooth UI and stable Memory (Limits rendering to ~12 FPS)
-        let lastUpdateTime = 0;
-        function animateSatellites(time) {
-            if (time - lastUpdateTime > 80) { 
-                lastUpdateTime = time;
-                if (currentLiveSatObjects.length > 0) {
-                    // Always propagate new math positions
-                    currentLiveSatObjects.forEach(s => {
-                        const sgp4Pos = propagateSGP4(s.id);
-                        s.lat = sgp4Pos.lat;
-                        s.lng = sgp4Pos.lng;
-                        s.alt = sgp4Pos.alt;
-                    });
-                    
-                    if (myGlobe) {
-                        // Render Unselected
-                        const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                        myGlobe.pointsData(unselectedSats);
+        // 🌟 REAL-TIME ANIMATION LOOP 🌟
+        function animateSatellites() {
+            if (currentLiveSatObjects.length > 0) {
+                // Update positional math continuously
+                currentLiveSatObjects.forEach(s => {
+                    const sgp4Pos = propagateSGP4(s.id);
+                    s.lat = sgp4Pos.lat;
+                    s.lng = sgp4Pos.lng;
+                    s.alt = sgp4Pos.alt;
+                });
+                
+                if (myGlobe) {
+                    // Update all objects except the selected one
+                    const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
+                    myGlobe.objectsData(unselectedSats);
 
-                        // Track Selected Label 
-                        if (selectedSatId) {
-                            const targetObj = currentLiveSatObjects.find(s => s.id === selectedSatId);
-                            if (targetObj) {
-                                myGlobe.htmlElementsData([targetObj]); 
-                            }
-                        } else {
-                            myGlobe.htmlElementsData([]);
+                    // Track Selected Label 
+                    if (selectedSatId) {
+                        const targetObj = currentLiveSatObjects.find(s => s.id === selectedSatId);
+                        if (targetObj) {
+                            myGlobe.htmlElementsData([targetObj]); 
                         }
+                    } else {
+                        myGlobe.htmlElementsData([]);
                     }
                 }
             }
@@ -1916,6 +1954,7 @@
             }
         }, 10000);
 
+        // Execute Main Load
         loadCelesTrakTLEs().then(() => {
             requestAnimationFrame(animateSatellites);
         });
