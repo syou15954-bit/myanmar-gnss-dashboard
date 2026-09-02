@@ -1,27 +1,26 @@
 <!DOCTYPE html>
-<html lang="my">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GNSS Tactical Mission Control Center</title>
+    <title>GNSS Mission Control - Advanced Telemetry</title>
 
     <!-- Required Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.min.js"></script>
     <script src="https://unpkg.com/globe.gl@2.25.3/dist/globe.gl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/satellite.js@4.1.3/dist/satellite.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg-dark: #030712;
-            --panel-bg: rgba(15, 23, 42, 0.92);
-            --panel-border: rgba(56, 189, 248, 0.25);
-            --accent-cyan: #38bdf8;
+            --bg-base: #050914;
+            --glass-bg: rgba(16, 24, 43, 0.65);
+            --glass-border: rgba(56, 189, 248, 0.15);
+            --accent-cyan: #00f0ff;
+            --accent-blue: #3b82f6;
             --accent-green: #10b981;
-            --accent-red: #ef4444;
-            --accent-yellow: #ffb700;
-            --accent-purple: #c084fc;
+            --accent-red: #f43f5e;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
         }
@@ -29,430 +28,273 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         html, body {
-            height: 100vh !important;
-            width: 100vw !important;
-            overflow: hidden !important;
-            background-color: var(--bg-dark); 
+            height: 100vh; width: 100vw; overflow: hidden;
+            background-color: var(--bg-base); 
+            background-image: radial-gradient(circle at 50% 50%, #0a1128 0%, #02040a 100%);
             color: var(--text-main); 
-            font-family: 'Inter', -apple-system, sans-serif; 
-            font-size: 13px;
-        }
-
-        body {
-            display: flex;
-            flex-direction: column;
-            padding: 8px;
-            gap: 8px;
-            background: radial-gradient(circle at 50% 30%, #0f172a 0%, #020617 100%);
+            font-family: 'Space Grotesk', sans-serif; 
+            font-size: 14px;
         }
 
         .mono { font-family: 'JetBrains Mono', monospace; }
 
+        /* GLOBE BACKGROUND */
+        #globeViz { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+
+        /* MAIN LAYOUT */
+        .dashboard-wrapper {
+            position: relative; z-index: 10; display: grid;
+            grid-template-columns: 360px 1fr 340px;
+            grid-template-rows: 70px 1fr 220px;
+            height: 100vh; width: 100vw; padding: 20px; gap: 20px;
+            pointer-events: none; /* Let clicks pass through to globe */
+        }
+        
+        .panel {
+            background: var(--glass-bg); border: 1px solid var(--glass-border);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border-radius: 24px; padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+            pointer-events: auto; /* Enable clicks inside panels */
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+
         /* -----------------------------------------------------
-           TOP NAVIGATION & HEADER
+           TOP NAVIGATION (Spans full width)
         ----------------------------------------------------- */
         .top-nav {
-            display: flex; justify-content: space-between; align-items: center;
-            background: var(--panel-bg); border: 1px solid var(--panel-border);
-            backdrop-filter: blur(12px); border-radius: 6px; padding: 6px 16px;
-            flex-shrink: 0; gap: 15px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-            position: relative; z-index: 100; min-height: 48px;
+            grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center;
+            background: transparent; border: none; box-shadow: none; pointer-events: auto; padding: 0;
         }
 
-        .top-nav-left, .top-nav-right { display: flex; align-items: center; gap: 8px; z-index: 2; flex-wrap: wrap; }
-
-        .myanmar-filter-btn {
-            background: rgba(255, 183, 0, 0.15); color: var(--accent-yellow); border: 1px solid var(--accent-yellow);
-            padding: 4px 12px; border-radius: 4px; font-size: 10.5px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+        .nav-pill {
+            background: rgba(16, 24, 43, 0.8); border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px); border-radius: 40px; padding: 8px 24px;
+            color: var(--text-main); font-weight: 600; cursor: pointer; transition: 0.3s;
         }
-        .myanmar-filter-btn:hover { background: rgba(255, 183, 0, 0.35); }
-        .myanmar-filter-btn.active-mm { background: var(--accent-yellow) !important; color: #000 !important; font-weight: 700 !important; box-shadow: 0 0 12px rgba(255, 183, 0, 0.6) !important; }
-
-        .view-switch-btn {
-            background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan); border: 1px solid var(--accent-cyan);
-            padding: 4px 12px; border-radius: 4px; font-size: 10.5px; font-weight: 700; cursor: pointer; transition: all 0.2s;
-        }
-        .view-switch-btn:hover { background: rgba(56, 189, 248, 0.35); }
-
-        .brand-title-box {
-            position: absolute; left: 50%; transform: translateX(-50%); display: flex; 
-            align-items: center; justify-content: center; gap: 8px; font-weight: 700; 
-            font-size: 13px; color: var(--text-main); letter-spacing: 0.5px; text-transform: uppercase; 
-        }
-        .brand-dot { width: 8px; height: 8px; background: var(--accent-cyan); border-radius: 50%; box-shadow: 0 0 10px var(--accent-cyan); }
-        @media (max-width: 1200px) { .brand-title-box { display: none; } }
-
-        .country-legend { display: flex; gap: 12px; font-size: 9.5px; background: rgba(2, 6, 23, 0.6); padding: 4px 10px; border-radius: 4px; border: 1px solid var(--panel-border); }
-        .legend-item { display: flex; align-items: center; gap: 5px; color: var(--text-muted); }
-        .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
-
-        /* -----------------------------------------------------
-           MAIN VIEWPORT & GLOBE
-        ----------------------------------------------------- */
-        .viewport-main { flex: 1; display: flex; flex-direction: column; gap: 8px; min-height: 0; position: relative; }
-        .globe-stage { flex: 2.2; position: relative; background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 6px; overflow: hidden; min-height: 420px; }
-        #globeViz { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: block; }
-
-        .center-feature-bar {
-            position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 15;
-            display: flex; gap: 10px; background: rgba(15, 23, 42, 0.92); padding: 5px 14px;
-            border-radius: 6px; border: 1px solid var(--panel-border); backdrop-filter: blur(12px); align-items: center;
-        }
-
-        .feature-btn {
-            background: rgba(2, 6, 23, 0.5); color: var(--text-muted); border: 1px solid rgba(56, 189, 248, 0.2);
-            padding: 4px 12px; border-radius: 3px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s;
-        }
-        .feature-btn:hover { color: #fff; border-color: var(--accent-cyan); }
-        .feature-btn.active-mode { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border-color: var(--accent-cyan); }
-
-        .hud-card {
-            position: absolute; z-index: 10; background: rgba(15, 23, 42, 0.92); border: 1px solid var(--panel-border);
-            backdrop-filter: blur(12px); border-radius: 6px; padding: 10px 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-        }
-
-        .hud-card-title {
-            font-size: 11px; font-weight: 700; color: var(--accent-cyan); letter-spacing: 0.5px; text-transform: uppercase;
-            margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding-bottom: 5px;
-        }
-
-        .hud-right-passes { top: 12px; right: 12px; width: 310px; display: flex; flex-direction: column; max-height: 290px; }
-        .pass-card { cursor: pointer; transition: all 0.2s; }
-        .pass-card:hover { background: rgba(56, 189, 248, 0.15) !important; }
-
-        /* -----------------------------------------------------
-           BOTTOM DOCK FULL LAYOUT
-        ----------------------------------------------------- */
-        .bottom-dock { flex: 1; display: grid; grid-template-columns: 1fr 1fr 1.6fr; gap: 12px; min-height: 0; width: 100%; }
-        .glass-panel { background: var(--panel-bg); border: 1px solid var(--panel-border); backdrop-filter: blur(12px); border-radius: 6px; padding: 12px; display: flex; flex-direction: column; min-height: 0; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); }
-        .panel-title { font-size: 12px; font-weight: 700; color: var(--accent-cyan); margin-bottom: 8px; display: flex; justify-content: center; align-items: center; border-bottom: 1px solid rgba(56, 189, 248, 0.25); padding-bottom: 6px; text-transform: uppercase; text-align: center; }
+        .nav-pill:hover, .nav-pill.active { background: rgba(0, 240, 255, 0.1); border-color: var(--accent-cyan); color: var(--accent-cyan); }
         
-        .matrix-select { background: #020617; color: var(--accent-cyan); border: 1px solid var(--panel-border); font-size: 10px; font-weight: 700; padding: 3px 6px; border-radius: 3px; cursor: pointer; outline: none; }
-        .bar-container { width: 100%; height: 8px; background: rgba(2, 6, 23, 0.8); border-radius: 4px; overflow: hidden; border: 1px solid var(--panel-border); }
-        .bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease-in-out; }
-        .fill-gps { background: linear-gradient(90deg, #059669, #10b981); box-shadow: 0 0 8px #10b981; }
-        .fill-bds { background: linear-gradient(90deg, #dc2626, #ef4444); box-shadow: 0 0 8px #ef4444; }
-
-        .cyber-table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 0; }
-        .cyber-table th { text-align: left; color: var(--text-muted); padding: 5px 4px; border-bottom: 1px solid var(--panel-border); font-size: 9px; position: sticky; top: 0; background: rgba(2, 6, 23, 0.95); z-index: 5; }
-        .cyber-table td { padding: 5px 4px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #cbd5e1; }
-        .cyber-table tr { cursor: pointer; transition: background 0.15s; }
-        .cyber-table tr:hover { background: rgba(56, 189, 248, 0.08); }
-        .table-row-selected { background: rgba(56, 189, 248, 0.18) !important; border-left: 3px solid var(--accent-cyan) !important; }
-        .status-pill { padding: 2px 6px; border-radius: 3px; font-size: 8px; font-weight: 700; }
-        .pill-green { background: rgba(16, 185, 129, 0.12); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.4); }
-
-        .dop-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 4px; }
-        .dop-card { background: rgba(2, 6, 23, 0.6); padding: 8px; border-radius: 4px; text-align: center; border: 1px solid var(--panel-border); }
-        .dop-val { font-size: 16px; font-weight: 700; color: var(--accent-cyan); margin-top: 4px; }
+        .status-badge {
+            background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--accent-green); border-radius: 40px; padding: 6px 16px; font-size: 11px; font-weight: 700;
+        }
 
         /* -----------------------------------------------------
-           RINEX & UPLOAD STYLES
+           LEFT SIDEBAR (Fleet & Passes)
         ----------------------------------------------------- */
-        .rinex-split-view { display: flex; gap: 12px; flex: 1; min-height: 0; }
-        .rinex-left { width: 290px; display: flex; flex-direction: column; min-height: 0; flex-shrink: 0; gap: 8px; }
-        .rinex-right { flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative; gap: 6px; }
-
-        .upload-btn { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 6px 12px; border-radius: 3px; font-size: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap; text-align: center;}
-        .upload-btn:hover { background: rgba(56, 189, 248, 0.35); }
-        .action-btn-green { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
-        .action-btn-green:hover { background: rgba(16, 185, 129, 0.4); }
-        .action-btn-purple { background: rgba(192, 132, 252, 0.2); color: #c084fc; border: 1px solid #c084fc; }
-        .action-btn-purple:hover { background: rgba(192, 132, 252, 0.4); }
-
-        .rinex-file-list { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; margin-bottom: 0; padding-right: 2px; }
-        .rinex-card { background: rgba(2, 6, 23, 0.9); border: 1px solid rgba(56, 189, 248, 0.3); border-left: 3px solid var(--accent-cyan); border-radius: 5px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; font-size: 11px; flex-shrink: 0; cursor: pointer; transition: all 0.2s; }
-        .rinex-card:hover { border-color: var(--accent-cyan); background: rgba(15, 23, 42, 0.95); }
-        .rinex-card-selected { border-color: var(--accent-cyan) !important; background: rgba(56, 189, 248, 0.15) !important; box-shadow: 0 0 12px rgba(56, 189, 248, 0.3); }
+        .left-sidebar { grid-column: 1; grid-row: 2 / -1; gap: 20px; display: flex; flex-direction: column; background: transparent; border: none; box-shadow: none; padding: 0; }
         
-        .chart-box { position: relative; flex: 1; width: 100%; min-height: 120px; }
-        .chart-box canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
+        .card-container { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 15px; }
+        .section-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; margin-bottom: 5px; }
 
-        /* Modals */
-        #tleModal {
-            display: none; position: fixed; top: 65px; left: 15px; transform: none; z-index: 200;
-            width: 460px; background: rgba(15, 23, 42, 0.98); border: 1px solid var(--accent-cyan); 
-            border-radius: 6px; padding: 16px; backdrop-filter: blur(16px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.3); border-radius: 4px; }
+
+        /* Fleet Table */
+        .cyber-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .cyber-table th { text-align: left; color: var(--text-muted); padding: 8px 4px; font-weight: 600; position: sticky; top: 0; background: rgba(10, 15, 25, 0.9); z-index: 5; }
+        .cyber-table td { padding: 8px 4px; border-bottom: 1px solid rgba(255,255,255,0.02); }
+        .cyber-table tr { cursor: pointer; transition: 0.2s; }
+        .cyber-table tr:hover { background: rgba(0, 240, 255, 0.05); }
+
+        /* Passes Cards */
+        .pass-card {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.8) 100%);
+            border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 16px;
+            cursor: pointer; transition: 0.3s; margin-bottom: 10px; position: relative; overflow: hidden;
         }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--panel-border); padding-bottom: 8px; margin-bottom: 10px; font-size: 12px; font-weight: 700; color: var(--accent-cyan); }
-        .modal-close { cursor: pointer; color: var(--text-muted); font-size: 18px; font-weight: 700; transition: color 0.2s; }
-        .modal-close:hover { color: var(--accent-red); }
+        .pass-card:hover { border-color: var(--accent-cyan); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,240,255,0.1); }
+        .pass-card::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; background: var(--accent-cyan); }
 
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(2, 6, 23, 0.5); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.3); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(56, 189, 248, 0.6); }
+        /* -----------------------------------------------------
+           RIGHT SIDEBAR (Target Telemetry)
+        ----------------------------------------------------- */
+        .right-sidebar { grid-column: 3; grid-row: 2; display: flex; flex-direction: column; gap: 20px; }
+
+        .target-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .target-code { font-size: 24px; font-weight: 700; color: #fff; letter-spacing: 1px; }
+        .target-sys { font-size: 11px; background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 20px; }
+
+        .telemetry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .tel-box { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; border: 1px solid rgba(255,255,255,0.03); }
+        .tel-label { font-size: 10px; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; }
+        .tel-val { font-size: 20px; font-weight: 700; color: var(--accent-cyan); }
+
+        /* RADAR ANIMATION */
+        .radar-container {
+            width: 100%; height: 180px; background: rgba(0, 15, 30, 0.5); border-radius: 16px;
+            border: 1px solid rgba(0, 240, 255, 0.2); position: relative; overflow: hidden;
+            display: flex; justify-content: center; align-items: center; margin-top: auto;
+        }
+        .radar-circle {
+            width: 140px; height: 140px; border-radius: 50%; border: 1px dashed rgba(0, 240, 255, 0.3);
+            position: relative; box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+        }
+        .radar-circle::before { content: ''; position: absolute; top: 0; left: 50%; width: 1px; height: 100%; background: rgba(0, 240, 255, 0.2); }
+        .radar-circle::after { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: rgba(0, 240, 255, 0.2); }
+        .radar-sweep {
+            position: absolute; top: 0; left: 50%; width: 50%; height: 50%;
+            background: linear-gradient(90deg, rgba(0,240,255,0.8), rgba(0,240,255,0));
+            transform-origin: bottom left; animation: sweep 2s infinite linear;
+        }
+        @keyframes sweep { to { transform: rotate(360deg); } }
+        .radar-dot {
+            position: absolute; width: 6px; height: 6px; background: #fff; border-radius: 50%;
+            box-shadow: 0 0 10px #fff, 0 0 20px var(--accent-cyan); top: 30%; left: 60%;
+            animation: ping 2s infinite;
+        }
+        @keyframes ping { 0% { opacity: 0; transform: scale(0.5); } 50% { opacity: 1; transform: scale(1.2); } 100% { opacity: 0; transform: scale(0.5); } }
+
+        /* -----------------------------------------------------
+           BOTTOM CENTER (Controls & RINEX)
+        ----------------------------------------------------- */
+        .bottom-panel { grid-column: 2 / 4; grid-row: 3; display: flex; gap: 20px; background: transparent; border:none; box-shadow:none; padding:0;}
+        .center-controls {
+            position: absolute; bottom: 250px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 12px; background: var(--glass-bg); padding: 10px 20px;
+            border-radius: 40px; border: 1px solid var(--glass-border); backdrop-filter: blur(16px);
+            pointer-events: auto;
+        }
+        .ctrl-select { background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 6px 15px; font-family: 'Space Grotesk'; outline: none; cursor: pointer; }
+        
+        .rinex-box { flex: 1; }
 
     </style>
 </head>
 <body>
 
-    <header class="top-nav">
-        <div class="top-nav-left">
-            <button class="view-switch-btn mono" onclick="openTLEModal()">📋 VIEW TLE DATA</button>
-            <button class="myanmar-filter-btn mono" id="mm-only-btn" onclick="toggleMyanmarVisibleOnly(this)">🇲🇲 MYANMAR VISIBLE ONLY</button>
-            <div id="tle-status-badge" class="mono" style="font-size: 9px; color: var(--accent-yellow); background: rgba(255, 183, 0, 0.15); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(255, 183, 0, 0.3); display: flex; align-items: center;">
-                ● CHECKING...
+    <!-- 3D GLOBE BACKGROUND -->
+    <div id="globeViz"></div>
+
+    <!-- UI OVERLAY -->
+    <div class="dashboard-wrapper">
+        
+        <!-- TOP NAVIGATION -->
+        <header class="top-nav">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="width: 32px; height: 32px; background: var(--accent-cyan); border-radius: 50%; box-shadow: 0 0 20px var(--accent-cyan); display: flex; align-items: center; justify-content: center;">
+                    <span style="color: #000; font-weight: bold;">G</span>
+                </div>
+                <h1 style="font-size: 16px; letter-spacing: 2px;">GNSS COMMAND</h1>
             </div>
             
-            <div style="position: relative;" id="constellation-dropdown-container">
-                <button class="view-switch-btn mono" onclick="toggleConstellationMenu(event)" style="background: rgba(2,6,23,0.8); border-color: var(--accent-cyan); color: var(--accent-cyan);">
-                    🛰️ CONSTELLATIONS ▾
-                </button>
-                <div id="constellation-menu-box" class="mono" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; background: rgba(15, 23, 42, 0.98); border: 1px solid var(--accent-cyan); border-radius: 6px; padding: 10px; width: 170px; z-index: 300; box-shadow: 0 10px 25px rgba(0,0,0,0.8);">
-                    <div style="font-size: 8.5px; color: var(--text-muted); margin-bottom: 6px; border-bottom: 1px solid var(--panel-border); padding-bottom: 4px;">SELECT SYSTEMS:</div>
-                    <label style="display: flex; align-items: center; gap: 6px; font-size: 9.5px; color: #10b981; padding: 3px 0; cursor: pointer;">
-                        <input type="checkbox" value="gps" checked onchange="onConstellationCheckboxChange()"> 🛰️ GPS
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 6px; font-size: 9.5px; color: #ef4444; padding: 3px 0; cursor: pointer;">
-                        <input type="checkbox" value="bds" checked onchange="onConstellationCheckboxChange()"> 🛰️ BEIDOU
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 6px; font-size: 9.5px; color: #38bdf8; padding: 3px 0; cursor: pointer;">
-                        <input type="checkbox" value="galileo" checked onchange="onConstellationCheckboxChange()"> 🇪🇺 GALILEO
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 6px; font-size: 9.5px; color: #c084fc; padding: 3px 0; cursor: pointer;">
-                        <input type="checkbox" value="glonass" checked onchange="onConstellationCheckboxChange()"> 🇷🇺 GLONASS
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        <div class="brand-title-box">
-            <div class="brand-dot"></div>
-            <span>GNSS Tactical Mission Control</span>
-        </div>
-
-        <div class="top-nav-right country-legend mono">
-            <div class="legend-item"><div class="legend-dot" style="background:#10b981;"></div><span>🇺🇸 GPS</span></div>
-            <div class="legend-item"><div class="legend-dot" style="background:#ef4444;"></div><span>🇨🇳 BDS</span></div>
-            <div class="legend-item"><div class="legend-dot" style="background:#38bdf8;"></div><span>🇪🇺 GAL</span></div>
-            <div class="legend-item"><div class="legend-dot" style="background:#c084fc;"></div><span>🇷🇺 GLO</span></div>
-        </div>
-    </header>
-
-    <main class="viewport-main">
-        
-        <!-- GLOBE SECTION -->
-        <section class="globe-stage">
-            <div id="globeViz"></div>
-
-            <div id="tleModal" class="mono">
-                <div class="modal-header">
-                    <span>📋 NORAD TLE DATA INSPECTION</span>
-                    <span class="modal-close" onclick="closeTLEModal()">✕</span>
-                </div>
-                <div class="hud-stat-line" style="margin-bottom: 8px;">
-                    <span>TARGET SAT:</span>
-                    <select id="sat-dropdown-modal" class="mono" style="background:#020617; color:var(--accent-cyan); border:1px solid var(--panel-border); font-size:10px; padding:4px 8px; border-radius:3px; cursor:pointer; width:220px;" onchange="selectSatellite(this.value)">
-                        <option value="">Loading...</option>
-                    </select>
-                </div>
-                <div class="hud-stat-line"><span>SELECTED:</span><b class="hud-stat-val" id="tle-sat-name-modal">--</b></div>
-                <div style="font-size: 8.5px; color: var(--text-muted); margin-top: 6px; margin-bottom: 4px;">TWO-LINE ELEMENT SET (SGP4 PROPAGATOR):</div>
-                <div class="tle-box" id="tle-display-modal" style="max-height: 120px; overflow-y:auto; font-size: 9px; padding: 6px; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; background: rgba(0,0,0,0.5);">Fetching NORAD TLE Data...</div>
+            <div style="display: flex; gap: 15px;">
+                <button class="nav-pill active">Fleet Ops</button>
+                <button class="nav-pill" onclick="toggleMyanmarVisibleOnly(this)" id="mm-only-btn">MM Coverage</button>
+                <button class="nav-pill" onclick="openTLEModal()">Data Sets</button>
             </div>
 
-            <div class="center-feature-bar mono" id="globe-controls-bar">
-                <select id="station-select" class="matrix-select" onchange="updateRings()" style="background: rgba(2, 6, 23, 0.9); color: var(--accent-yellow); border: 1px solid var(--accent-yellow); padding: 5px 10px; border-radius: 3px; font-size: 11px; font-weight: 700; cursor: pointer;">
-                    <option value="none">📡 Select Station (Off)</option>
-                    <option value="yangon">📍 Yangon Base</option>
-                    <option value="naypyidaw">📍 Naypyidaw</option>
-                    <option value="mandalay">📍 Mandalay</option>
-                </select>
-                <button class="feature-btn active-mode" id="btn-rotation" onclick="toggleGlobeRotation()" title="Pause/Resume Rotation" style="padding: 4px 10px; font-size: 13px;">⏸️</button>
-                <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit Web</button>
-                <select id="track-count-select" class="matrix-select" onchange="updateAllOrbitPaths()" title="How many orbit tracks to draw" style="margin-left: 5px;">
-                    <option value="1">1 Track (Selected)</option>
-                    <option value="12">12 Tracks</option>
-                    <option value="24" selected>24 Tracks (Web)</option>
-                    <option value="48">48 Tracks (Dense)</option>
-                </select>
-            </div>
+            <div id="tle-status-badge" class="status-badge mono">● INITIALIZING...</div>
+        </header>
 
-            <div class="hud-card hud-right-passes mono">
-                <div class="hud-card-title">
-                    <span id="pass-title">⏱️ UPCOMING SATELLITE PASSES (MMT)</span>
+        <!-- LEFT SIDEBAR -->
+        <aside class="left-sidebar">
+            <div class="panel card-container">
+                <div class="section-title">Active Fleet Status</div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <div><div style="font-size: 10px; color:var(--text-muted);">TOTAL</div><div style="font-size: 24px; font-weight: 700;" id="total-sats">0</div></div>
+                    <div><div style="font-size: 10px; color:var(--text-muted);">TRACKING</div><div style="font-size: 24px; font-weight: 700; color:var(--accent-green);" id="active-sats">0</div></div>
                 </div>
-                <div id="upcoming-passes-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;">
-                </div>
-            </div>
-        </section>
-
-        <!-- BOTTOM DOCK: 3 PANELS -->
-        <section class="bottom-dock">
-            <!-- PANEL 1: DATABASE & FLEET STATUS -->
-            <div class="glass-panel" style="padding-bottom: 0;">
-                <div class="panel-title">
-                    <span id="fleet-title-text">📊 LOCAL GNSS DATABASE & FLEET STATUS</span>
-                </div>
-                <div class="dop-grid mono" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 8px;">
-                    <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">TOTAL</div><div class="dop-val" style="color:#f8fafc;" id="total-sats">0</div></div>
-                    <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">ACTIVE</div><div class="dop-val" style="color:var(--accent-green);" id="active-sats">0</div></div>
-                    <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">WARNING</div><div class="dop-val" style="color:var(--accent-yellow);" id="warning-sats">0</div></div>
-                    <div class="dop-card"><div style="font-size:8.5px; color:var(--text-muted);">OFFLINE</div><div class="dop-val" style="color:var(--accent-red);" id="offline-sats">0</div></div>
-                </div>
-                
-                <div style="flex:1; overflow-y:auto; margin-top: 4px; border: 1px solid var(--panel-border); border-radius: 4px; border-bottom: none;">
+                <div style="flex:1; overflow-y:auto;">
                     <table class="cyber-table mono">
-                        <thead>
-                            <tr><th>NAME / ID</th><th>SYS</th><th>EL</th><th>AZ</th><th>STATUS</th></tr>
-                        </thead>
+                        <thead><tr><th>SAT ID</th><th>SYS</th><th>STAT</th></tr></thead>
                         <tbody id="sat-table-body"></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- PANEL 2: CONSTELLATION COMPARISON & METRICS -->
-            <div class="glass-panel mono" style="justify-content: space-between;">
-                <div class="panel-title">
-                    <span id="matrix-card-title">📈 CONSTELLATION COMPARISON & METRICS</span>
-                </div>
-                <div style="display:flex; justify-content:center; align-items:center; gap:12px;">
-                    <select id="matrix-sys-a" class="matrix-select" onchange="renderCustomSelection()" style="font-size: 11px; padding: 5px 10px;">
-                        <option value="gps" selected>🇺🇸 GPS</option>
-                        <option value="bds">🇨🇳 BEIDOU</option>
-                        <option value="galileo">🇪🇺 GALILEO</option>
-                        <option value="glonass">🇷🇺 GLONASS</option>
-                    </select>
-                    <span style="font-size:11px; color:var(--text-muted); font-weight: 700;">VS</span>
-                    <select id="matrix-sys-b" class="matrix-select" onchange="renderCustomSelection()" style="font-size: 11px; padding: 5px 10px;">
-                        <option value="gps">🇺🇸 GPS</option>
-                        <option value="bds" selected>🇨🇳 BEIDOU</option>
-                        <option value="galileo">🇪🇺 GALILEO</option>
-                        <option value="glonass">🇷🇺 GLONASS</option>
-                    </select>
-                </div>
+            <div class="panel card-container" style="flex: 0.8;">
+                <div class="section-title">Upcoming Passes (MMT)</div>
+                <div id="upcoming-passes-list" style="overflow-y: auto; padding-right: 5px;"></div>
+            </div>
+        </aside>
 
-                <div style="display:grid; grid-template-columns:1fr 110px 1fr; align-items:center; text-align:center;">
-                    <b style="color:#10b981; font-size:28px;" id="sys-a-count">0</b>
-                    <span style="font-size:10px; color:var(--text-muted); letter-spacing: 0.8px; font-weight: 700;" id="fleet-type-label">SATS IN VIEW</span>
-                    <b style="color:#ef4444; font-size:28px;" id="sys-b-count">0</b>
-                </div>
+        <!-- CENTER FLOATING CONTROLS -->
+        <div class="center-controls">
+            <select id="station-select" class="ctrl-select" onchange="updateRings()">
+                <option value="none">Target Station: OFF</option>
+                <option value="yangon">📍 Yangon Base HQ</option>
+                <option value="naypyidaw">📍 Naypyidaw Link</option>
+            </select>
+            <button class="nav-pill" style="padding: 6px 15px;" onclick="toggleGlobeRotation()">⏸ Auto-Pan</button>
+            <select id="track-count-select" class="ctrl-select" onchange="updateAllOrbitPaths()">
+                <option value="24" selected>Orbit Web: Normal</option>
+                <option value="48">Orbit Web: Dense</option>
+                <option value="1">Track Selected Only</option>
+            </select>
+        </div>
 
+        <!-- RIGHT SIDEBAR (TARGET TELEMETRY) -->
+        <aside class="right-sidebar panel" id="telemetry-panel">
+            <div class="section-title">Target Telemetry</div>
+            <div class="target-header">
                 <div>
-                    <div style="display:flex; justify-content:space-between; font-size:10px; font-weight:700; margin-bottom:8px;">
-                        <span style="color:#10b981;" id="sys-a-vis-text">SYS-A: 0%</span>
-                        <span style="color:var(--text-muted); letter-spacing: 0.5px;">FLEET VISIBILITY</span>
-                        <span style="color:#ef4444;" id="sys-b-vis-text">SYS-B: 0%</span>
-                    </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                        <div class="bar-container" style="height: 10px;"><div class="bar-fill fill-gps" id="sys-a-vis-bar" style="width:0%;"></div></div>
-                        <div class="bar-container" style="height: 10px;"><div class="bar-fill fill-bds" id="sys-b-vis-bar" style="width:0%; margin-left:auto;"></div></div>
-                    </div>
+                    <div style="font-size:10px; color:var(--text-muted); margin-bottom:5px;">OBJECT CODE</div>
+                    <div class="target-code mono" id="tel-sat-name">AWAITING LOCK</div>
                 </div>
+                <div class="target-sys" id="tel-sat-sys">--</div>
+            </div>
 
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <div style="background: rgba(2, 6, 23, 0.7); padding: 10px; border-radius: 5px; border: 1px solid var(--panel-border); text-align: center;">
-                        <div style="font-size: 9px; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px;">HDOP (HORIZONTAL)</div>
-                        <div style="display: flex; justify-content: space-around; margin-top: 6px; font-size: 14px; font-weight: 700;">
-                            <span style="color: #10b981;" id="sys-a-hdop">1.12</span>
-                            <span style="color: var(--text-muted);">/</span>
-                            <span style="color: #ef4444;" id="sys-b-hdop">1.25</span>
-                        </div>
-                    </div>
-                    <div style="background: rgba(2, 6, 23, 0.7); padding: 10px; border-radius: 5px; border: 1px solid var(--panel-border); text-align: center;">
-                        <div style="font-size: 9px; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px;">PDOP (3D POSITION)</div>
-                        <div style="display: flex; justify-content: space-around; margin-top: 6px; font-size: 14px; font-weight: 700;">
-                            <span style="color: #10b981;" id="sys-a-pdop">2.10</span>
-                            <span style="color: var(--text-muted);">/</span>
-                            <span style="color: #ef4444;" id="sys-b-pdop">2.35</span>
-                        </div>
-                    </div>
-                    <div style="background: rgba(2, 6, 23, 0.7); padding: 10px; border-radius: 5px; border: 1px solid var(--panel-border); text-align: center;">
-                        <div style="font-size: 9px; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px;">VDOP (VERTICAL)</div>
-                        <div style="display: flex; justify-content: space-around; margin-top: 6px; font-size: 14px; font-weight: 700;">
-                            <span style="color: #10b981;" id="sys-a-vdop">1.80</span>
-                            <span style="color: var(--text-muted);">/</span>
-                            <span style="color: #ef4444;" id="sys-b-vdop">1.95</span>
-                        </div>
-                    </div>
-                    <div style="background: rgba(2, 6, 23, 0.7); padding: 10px; border-radius: 5px; border: 1px solid var(--panel-border); text-align: center;">
-                        <div style="font-size: 9px; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px;">EST. ACCURACY (95%)</div>
-                        <div style="display: flex; justify-content: space-around; margin-top: 6px; font-size: 14px; font-weight: 700;">
-                            <span style="color: #10b981;" id="sys-a-acc">±1.4m</span>
-                            <span style="color: var(--text-muted);">/</span>
-                            <span style="color: #ef4444;" id="sys-b-acc">±1.8m</span>
-                        </div>
-                    </div>
+            <div class="telemetry-grid mono">
+                <div class="tel-box">
+                    <div class="tel-label">Current Altitude</div>
+                    <div class="tel-val"><span id="tel-alt">--</span> <span style="font-size:12px; color:#fff;">KM</span></div>
+                </div>
+                <div class="tel-box">
+                    <div class="tel-label">Orbital Velocity</div>
+                    <div class="tel-val"><span id="tel-vel">--</span> <span style="font-size:12px; color:#fff;">KM/S</span></div>
+                </div>
+                <div class="tel-box">
+                    <div class="tel-label">Orbital Period</div>
+                    <div class="tel-val"><span id="tel-period">--</span> <span style="font-size:12px; color:#fff;">MIN</span></div>
+                </div>
+                <div class="tel-box">
+                    <div class="tel-label">Orbit Type</div>
+                    <div class="tel-val" id="tel-type" style="color:#fff;">--</div>
                 </div>
             </div>
 
-            <!-- PANEL 3: RINEX OBSERVATION & SIGNAL ANALYSIS -->
-            <div class="glass-panel">
-                <div class="panel-title" style="justify-content: center; display: flex; justify-content: space-between; align-items: center;">
-                    <span id="chart-panel-title">📡 RINEX OBSERVATION & SIGNAL ANALYSIS</span>
-                    <div style="display: flex; gap: 4px;">
-                        <button id="view-btn-chart" class="view-switch-btn mono" onclick="switchRinexView('chart')" style="font-size: 8.5px; padding: 2px 6px;">📈 Chart View</button>
-                        <button id="view-btn-table" class="view-switch-btn mono" onclick="switchRinexView('table')" style="font-size: 8.5px; padding: 2px 6px; background: rgba(2,6,23,0.5); color: var(--text-muted); border-color: var(--panel-border);">📋 Code Table</button>
-                    </div>
+            <div class="radar-container">
+                <div class="radar-circle">
+                    <div class="radar-sweep"></div>
+                    <div class="radar-dot" style="display:none;" id="radar-dot-active"></div>
                 </div>
-                
-                <div class="rinex-split-view">
-                    <div class="rinex-left">
-                        <div class="mono" style="display:flex; flex-direction: column; gap: 6px; padding: 8px; border: 1px dashed rgba(56,189,248,0.4); border-radius: 4px; background: rgba(15,23,42,0.6);">
-                            <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:9px; color:var(--text-muted); width: 100%; cursor: pointer;">
-                            <button onclick="uploadAndCompare()" class="upload-btn" style="width: 100%; padding: 6px 0;">🚀 ANALYZE FILES</button>
-                            <div style="display: flex; gap: 6px; width: 100%;">
-                                <button id="btn-export-csv" class="upload-btn action-btn-green" style="display:none; flex: 1; padding: 6px 0;" onclick="downloadCSV()">📥 CSV</button>
-                                <button id="btn-check-acc" class="upload-btn action-btn-purple" style="display:none; flex: 1; padding: 6px 0;" onclick="checkAccuracy()">🎯 ACCURACY</button>
-                            </div>
-                        </div>
+                <div style="position: absolute; bottom: 10px; font-size: 9px; letter-spacing: 2px; color: rgba(255,255,255,0.5);">RADAR TRACKING ACTIVE</div>
+            </div>
+        </aside>
 
-                        <div id="rinex-file-list" class="rinex-file-list mono">
-                            <div style="text-align: center; color: var(--text-muted); font-size: 9.5px; padding: 25px 15px; border: 1px dashed rgba(56, 189, 248, 0.2); border-radius: 5px; background: rgba(2,6,23,0.4);">
-                                Waiting for RINEX files...
-                            </div>
-                        </div>
+        <!-- BOTTOM PANELS (RINEX) -->
+        <div class="bottom-panel">
+            <div class="panel rinex-box">
+                <div class="section-title" style="display:flex; justify-content:space-between;">
+                    <span>Signal Analysis (RINEX)</span>
+                    <button style="background:transparent; border:1px solid var(--glass-border); color:#fff; border-radius:4px; padding:2px 8px; cursor:pointer;">Analyze</button>
+                </div>
+                <div style="display: flex; gap: 15px; height: 100%;">
+                    <div style="width: 200px; border-right: 1px solid var(--glass-border); padding-right: 15px;">
+                        <input type="file" style="font-size:10px; width:100%; margin-bottom:10px; color:var(--text-muted);">
+                        <div style="font-size:11px; color:var(--text-muted); text-align:center; padding-top:20px;">No file loaded</div>
                     </div>
-                    
-                    <div class="rinex-right">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(2, 6, 23, 0.7); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--panel-border);">
-                            <div style="display: flex; align-items: center; gap: 6px;">
-                                <span style="font-size: 9px; color: var(--text-muted); font-weight: 700;" id="active-file-indicator">📡 Active File: -- None --</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 6px;">
-                                <select id="rinex-sys-a" class="matrix-select" onchange="updateActiveFileChart()" style="font-size: 9.5px; padding: 2px 6px; color: #10b981; border-color: #10b981;">
-                                    <option value="GPS" selected>🇺🇸 GPS</option>
-                                    <option value="BDS">🇨🇳 BDS</option>
-                                    <option value="GAL">🇪🇺 GAL</option>
-                                    <option value="GLO">🇷🇺 GLO</option>
-                                </select>
-                                <span style="font-size: 9px; color: var(--text-muted);">VS</span>
-                                <select id="rinex-sys-b" class="matrix-select" onchange="updateActiveFileChart()" style="font-size: 9.5px; padding: 2px 6px; color: #ef4444; border-color: #ef4444;">
-                                    <option value="GPS">🇺🇸 GPS</option>
-                                    <option value="BDS" selected>🇨🇳 BDS</option>
-                                    <option value="GAL">🇪🇺 GAL</option>
-                                    <option value="GLO">🇷🇺 GLO</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div id="rinex-chart-container" class="chart-box" style="border: 1px solid rgba(56,189,248,0.15); border-radius: 4px; background: rgba(2,6,23,0.4); position: relative; flex: 1;">
-                            <canvas id="waveformChart"></canvas>
-                        </div>
-
-                        <div id="rinex-table-container" style="display: none; flex: 1; overflow-y: auto; border: 1px solid rgba(56,189,248,0.15); border-radius: 4px; background: rgba(2,6,23,0.6); padding: 6px;">
-                            <table class="cyber-table mono" style="font-size: 9px;">
-                                <thead>
-                                    <tr>
-                                        <th>SAT</th>
-                                        <th>CODE (C1C)</th>
-                                        <th>CODE (C2W)</th>
-                                        <th>PHASE (L1C)</th>
-                                        <th>SNR (S1C)</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="rinex-obs-table-body">
-                                    <tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Please select a RINEX file card on the left.</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
+                    <div style="flex: 1; display: flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.3); border-radius:12px;">
+                        <span style="color:var(--text-muted); font-size:12px;">Awaiting Data Injection...</span>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
 
-    </main>
+    </div>
+
+    <!-- Hidden Modals & Data -->
+    <div id="tleModal" style="display:none; position:fixed; top:20%; left:50%; transform:translate(-50%,0); background:var(--bg-base); padding:20px; z-index:200; border:1px solid var(--accent-cyan); border-radius:16px;">
+        <div style="color:var(--accent-cyan); margin-bottom:10px; cursor:pointer;" onclick="closeTLEModal()">CLOSE [X]</div>
+        <div id="tle-display-modal" class="mono" style="font-size:10px; color:#fff;">Fetching...</div>
+    </div>
+    <div style="display:none;">
+        <select id="matrix-sys-a"><option value="gps"></option></select>
+        <select id="matrix-sys-b"><option value="bds"></option></select>
+    </div>
 
     <script>
         // ==========================================================================
@@ -461,7 +303,6 @@
         let isMyanmarOnlyMode = false;
         let isSimulationMode = false; 
         let selectedSatId = '';
-        let waveformChart = null;
         let myGlobe = null;
         let modes = { tracks: true };
         let isRotating = true;
@@ -470,24 +311,13 @@
         let CONSTELLATION_SATS = { gps: [], bds: [], galileo: [], glonass: [], all: [] };
         let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass']);
         let currentLiveSatObjects = [];
-        let uploadedStationsList = [];
-        let activeSelectedFileIndex = -1;
 
+        // HOLOGRAPHIC ALTITUDES
         const VISUAL_ALTITUDE = 0.5;
 
-        // ==========================================================================
-        // STATIONS & RINGS DEFINITION (TACTICAL MARKERS)
-        // ==========================================================================
-        const STATIONS = [
-            { id: 'yangon', lat: 16.8661, lng: 96.1951, name: "Yangon Base", color: "#ffb700", size: 1.0 },
-            { id: 'naypyidaw', lat: 19.7633, lng: 96.0785, name: "Naypyidaw", color: "#38bdf8", size: 1.0 },
-            { id: 'mandalay', lat: 21.9588, lng: 96.0891, name: "Mandalay", color: "#10b981", size: 1.0 }
-        ];
-
         const STATIONS_DATA = {
-            yangon: { lat: 16.8661, lng: 96.1951, name: 'Yangon Base', color: '#ffb700', size: 3.5 },
-            naypyidaw: { lat: 19.7633, lng: 96.0785, name: 'Naypyidaw', color: '#38bdf8', size: 3.0 },
-            mandalay: { lat: 21.9588, lng: 96.0891, name: 'Mandalay', color: '#10b981', size: 3.0 }
+            yangon: { lat: 16.8661, lng: 96.1951, name: 'Yangon Base', color: '#00f0ff', size: 3.5 },
+            naypyidaw: { lat: 19.7633, lng: 96.0785, name: 'Naypyidaw', color: '#3b82f6', size: 3.0 }
         };
 
         function updateRings() {
@@ -505,13 +335,8 @@
                 const targetObj = currentLiveSatObjects.find(s => s.id === selectedSatId);
                 if (targetObj) {
                     currentRings.push({
-                        lat: targetObj.lat,
-                        lng: targetObj.lng,
-                        color: '#10b981', 
-                        size: 3.0,        
-                        propagationSpeed: 4, 
-                        repeatPeriod: 600,
-                        alt: VISUAL_ALTITUDE
+                        lat: targetObj.lat, lng: targetObj.lng,
+                        color: '#00f0ff', size: 4.0, propagationSpeed: 5, repeatPeriod: 500, alt: VISUAL_ALTITUDE
                     });
                 }
             }
@@ -526,19 +351,18 @@
 
         function getSatColor(satName) {
             let uname = (satName || '').toUpperCase();
-            if (uname.includes('GPS') || uname.includes('NAVSTAR')) return '#10b981'; 
-            if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('FLYLAB2')) return '#ef4444'; 
-            if (uname.includes('GALILEO') || uname.includes('GSAT')) return '#38bdf8'; 
-            if (uname.includes('GLONASS') || uname.includes('COSMOS')) return '#c084fc'; 
-            return '#10b981';
+            if (uname.includes('GPS')) return '#10b981'; 
+            if (uname.includes('BDS')) return '#f43f5e'; 
+            if (uname.includes('GAL')) return '#00f0ff'; 
+            if (uname.includes('GLO')) return '#c084fc'; 
+            return '#3b82f6';
         }
 
         // ==========================================================================
-        // SATELLITE MATH (100% SAFE)
+        // SATELLITE MATH (BULLETPROOF FALLBACK)
         // ==========================================================================
         function getSatPos(id, timeOffsetSec = 0) {
             const now = new Date(Date.now() + timeOffsetSec * 1000);
-            
             try {
                 const tle = TLE_DATABASE[id];
                 if (tle && typeof satellite !== 'undefined') {
@@ -549,21 +373,18 @@
                         const posGd = satellite.eciToGeodetic(posVel.position, gmst);
                         const lat = posGd.latitude * 180 / Math.PI;
                         const lng = posGd.longitude * 180 / Math.PI;
-                        if (!isNaN(lat) && !isNaN(lng)) {
-                            return { lat, lng, alt: VISUAL_ALTITUDE };
-                        }
+                        if (!isNaN(lat) && !isNaN(lng)) return { lat, lng, alt: VISUAL_ALTITUDE };
                     }
                 }
             } catch(e) {}
 
-            // FALLBACK MATH
+            // PROCEDURAL FALLBACK
             const t = now.getTime() / 1000;
             const idNum = parseInt(id.toString().replace(/\D/g, '')) || 1;
             const period = 12 * 3600; 
             const phase = (t % period) / period * Math.PI * 2;
             const inc = (55 + (idNum % 10)) * (Math.PI / 180); 
             const raan = (idNum * 13) % 360 * (Math.PI / 180);
-            
             const u = phase + (idNum % 100); 
             const x = Math.cos(u) * Math.cos(raan) - Math.sin(u) * Math.cos(inc) * Math.sin(raan);
             const y = Math.cos(u) * Math.sin(raan) + Math.sin(u) * Math.cos(inc) * Math.cos(raan);
@@ -571,200 +392,145 @@
             
             let lat = Math.asin(Math.max(-1, Math.min(1, z))) * (180 / Math.PI);
             let lng = Math.atan2(y, x) * (180 / Math.PI);
-            
             lng = (lng - (t / 86400) * 360) % 360;
             if (lng < -180) lng += 360;
             if (lng > 180) lng -= 360;
-            
-            return { lat: isNaN(lat) ? 0 : lat, lng: isNaN(lng) ? 0 : lng, alt: VISUAL_ALTITUDE };
+            return { lat: isNaN(lat)?0:lat, lng: isNaN(lng)?0:lng, alt: VISUAL_ALTITUDE };
         }
 
-        function generateProceduralFleet(numSats = 150) {
+        function generateProceduralFleet(numSats = 160) {
             let list = [];
             const systems = ['GPS', 'BDS', 'GAL', 'GLO'];
             for(let i = 1; i <= numSats; i++) {
                 const sys = systems[i % 4];
-                const prn = (i % 32) + 1;
-                list.push({ id: (10000 + i).toString(), name: `${sys}-${prn}`, sys: sys });
+                list.push({ id: (10000 + i).toString(), name: `${sys}-${(i % 32) + 1}`, sys: sys });
             }
-            list.push({ id: "99999", name: "FLYLAB2", sys: "BDS" });
             return list;
         }
 
         // ==========================================================================
-        // 🌟 LIVE DATA SYNC 🌟
+        // 🌟 LIVE DATA SYNC (FIXED "0" DATA ISSUE)
         // ==========================================================================
         async function loadCelesTrakTLEs() {
+            let success = false;
             try {
                 let response = await fetch('/api/tle');
                 if (response.ok) {
                     let json = await response.json();
-                    // At least 20 elements guarantees API didn't return just an empty format
+                    // VERY STRICT CHECK: MUST have real data to avoid showing 0
                     if (json.status === 'live' && json.data && json.data.all && json.data.all.length > 20) {
                         isSimulationMode = false;
                         CONSTELLATION_SATS = json.data;
                         json.data.all.forEach(s => { TLE_DATABASE[s.id] = s; });
                         
-                        document.getElementById('tle-status-badge').innerHTML = `<span style="color:var(--accent-green);">● LIVE SYNC (${json.data.all.length} SATS)</span>`;
-                        document.getElementById('tle-status-badge').style.background = 'rgba(16, 185, 129, 0.15)';
-                        document.getElementById('tle-status-badge').style.borderColor = 'rgba(16, 185, 129, 0.3)';
-                        
-                        renderCustomSelection();
-                        return; 
+                        document.getElementById('tle-status-badge').innerHTML = `● LIVE SYNC (${json.data.all.length} SATS)`;
+                        success = true;
                     }
                 }
-            } catch (err) { console.warn("API Data Fetch failed, using simulation."); }
+            } catch (err) { console.warn("API Fetch failed."); }
 
-            isSimulationMode = true; 
-            let fallbackList = generateProceduralFleet(150);
-            
-            let cat = { gps: [], bds: [], galileo: [], glonass: [], all: fallbackList };
-            fallbackList.forEach(s => {
-                let uname = (s.name || "").toUpperCase();
-                if (uname.includes('GPS')) cat.gps.push(s);
-                else if (uname.includes('BDS') || uname.includes('FLYLAB2')) cat.bds.push(s);
-                else if (uname.includes('GAL')) cat.galileo.push(s);
-                else if (uname.includes('GLO')) cat.glonass.push(s);
-                TLE_DATABASE[s.id] = s;
-            });
-            CONSTELLATION_SATS = cat;
+            // IF API RETURNED EMPTY OR FAILED -> FORCE FALLBACK
+            if (!success) {
+                isSimulationMode = true; 
+                let fallbackList = generateProceduralFleet(160);
+                let cat = { gps: [], bds: [], galileo: [], glonass: [], all: fallbackList };
+                fallbackList.forEach(s => {
+                    let uname = (s.name || "").toUpperCase();
+                    if (uname.includes('GPS')) cat.gps.push(s);
+                    else if (uname.includes('BDS')) cat.bds.push(s);
+                    else if (uname.includes('GAL')) cat.galileo.push(s);
+                    else if (uname.includes('GLO')) cat.glonass.push(s);
+                    TLE_DATABASE[s.id] = s;
+                });
+                CONSTELLATION_SATS = cat;
+                document.getElementById('tle-status-badge').innerHTML = `● OFFLINE SIMULATION`;
+                document.getElementById('tle-status-badge').style.color = 'var(--accent-yellow)';
+                document.getElementById('tle-status-badge').style.borderColor = 'rgba(255,183,0,0.4)';
+            }
 
-            document.getElementById('tle-status-badge').innerHTML = `<span style="color:var(--accent-yellow);">● LIVE SIMULATION</span>`;
-            document.getElementById('tle-status-badge').style.background = 'rgba(255, 183, 0, 0.15)';
-            document.getElementById('tle-status-badge').style.borderColor = 'rgba(255, 183, 0, 0.3)';
-            
             renderCustomSelection();
         }
 
         // ==========================================================================
-        // RENDER DATA
+        // UI UPDATES
         // ==========================================================================
+        function toggleMyanmarVisibleOnly(btn) {
+            isMyanmarOnlyMode = !isMyanmarOnlyMode;
+            btn.classList.toggle('active', isMyanmarOnlyMode);
+            renderCustomSelection();
+        }
+        function isSatVisibleInMyanmar(lat, lng) {
+            if (isNaN(lat) || isNaN(lng)) return false;
+            return (lat >= -25.0 && lat <= 55.0 && lng >= 30.0 && lng <= 160.0);
+        }
+
         function renderCustomSelection() {
-            try {
-                let combined = [];
-                activeSystems.forEach(sys => {
-                    if (CONSTELLATION_SATS[sys]) combined = combined.concat(CONSTELLATION_SATS[sys]);
-                });
-                let satList = combined;
+            let combined = [];
+            activeSystems.forEach(sys => {
+                if (CONSTELLATION_SATS[sys]) combined = combined.concat(CONSTELLATION_SATS[sys]);
+            });
+            // Bulletproof against 0
+            if (combined.length === 0 && CONSTELLATION_SATS.all) combined = CONSTELLATION_SATS.all;
 
-                currentLiveSatObjects = [];
-                let activeCount = 0;
+            currentLiveSatObjects = [];
+            let activeCount = 0;
 
-                satList.forEach(s => {
-                    const pos = getSatPos(s.id);
-                    const visibleInMM = isSatVisibleInMyanmar(pos.lat, pos.lng);
-
-                    if (!isMyanmarOnlyMode || visibleInMM) {
-                        activeCount++;
-                        currentLiveSatObjects.push({
-                            id: s.id, 
-                            fullName: s.name, 
-                            name: s.name.substring(0, 16),
-                            lat: pos.lat, 
-                            lng: pos.lng, 
-                            alt: pos.alt,
-                            color: getSatColor(s.name)
-                        });
-                    }
-                });
-
-                document.getElementById('total-sats').innerText = currentLiveSatObjects.length;
-                document.getElementById('active-sats').innerText = activeCount;
-                
-                const sysA = document.getElementById('matrix-sys-a').value;
-                const sysB = document.getElementById('matrix-sys-b').value;
-                const totalSysA = (CONSTELLATION_SATS[sysA] || []).length || 30;
-                const totalSysB = (CONSTELLATION_SATS[sysB] || []).length || 30;
-                const visSysA = countSystemVisibles(sysA);
-                const visSysB = countSystemVisibles(sysB);
-
-                document.getElementById('sys-a-count').innerText = visSysA;
-                document.getElementById('sys-b-count').innerText = visSysB;
-
-                const pctA = Math.min(100, Math.round((visSysA / totalSysA) * 100)) || 0;
-                const pctB = Math.min(100, Math.round((visSysB / totalSysB) * 100)) || 0;
-                document.getElementById('sys-a-vis-text').innerText = `${sysA.toUpperCase()}: ${pctA}%`;
-                document.getElementById('sys-b-vis-text').innerText = `${sysB.toUpperCase()}: ${pctB}%`;
-
-                let gpsBars = document.querySelectorAll('.bar-fill.fill-gps');
-                let bdsBars = document.querySelectorAll('.bar-fill.fill-bds');
-                if(gpsBars.length > 0) gpsBars[0].style.width = `${pctA}%`;
-                if(bdsBars.length > 0) bdsBars[0].style.width = `${pctB}%`;
-
-                const dropdownModal = document.getElementById('sat-dropdown-modal');
-                if (dropdownModal) {
-                    dropdownModal.innerHTML = currentLiveSatObjects.map(s => `<option value="${s.id}">${s.fullName.substring(0, 22)} (${s.id})</option>`).join('');
+            combined.forEach(s => {
+                const pos = getSatPos(s.id);
+                if (!isMyanmarOnlyMode || isSatVisibleInMyanmar(pos.lat, pos.lng)) {
+                    activeCount++;
+                    currentLiveSatObjects.push({
+                        id: s.id, fullName: s.name, name: s.name.substring(0, 16),
+                        lat: pos.lat, lng: pos.lng, alt: pos.alt, color: getSatColor(s.name)
+                    });
                 }
+            });
 
-                const tbody = document.getElementById('sat-table-body');
-                if (tbody) {
-                    tbody.innerHTML = currentLiveSatObjects.slice(0, 100).map(s => {
-                        let cColor = getSatColor(s.fullName);
-                        let sysName = s.fullName.split(' ')[0];
-                        return `
-                        <tr data-id="${s.id}" onclick="selectSatellite('${s.id}')">
-                            <td><b style="color:${cColor};">${s.fullName.substring(0, 16)}</b></td>
-                            <td>${sysName}</td>
-                            <td>75°</td><td>45°</td>
-                            <td><span class="status-pill pill-green">TRACK</span></td>
-                        </tr>
-                    `;}).join('');
-                }
+            document.getElementById('total-sats').innerText = currentLiveSatObjects.length;
+            document.getElementById('active-sats').innerText = activeCount;
 
-                if (myGlobe) {
-                    const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                    myGlobe.pointsData(unselectedSats); 
-                }
+            const tbody = document.getElementById('sat-table-body');
+            if (tbody) {
+                tbody.innerHTML = currentLiveSatObjects.slice(0, 100).map(s => {
+                    let cColor = getSatColor(s.fullName);
+                    let sysName = s.fullName.split('-')[0] || 'UNK';
+                    return `
+                    <tr data-id="${s.id}" onclick="selectSatellite('${s.id}')">
+                        <td><b style="color:${cColor};">${s.fullName.substring(0, 12)}</b></td>
+                        <td>${sysName}</td>
+                        <td style="color:var(--accent-cyan);">TRACK</td>
+                    </tr>`;
+                }).join('');
+            }
 
-                if (currentLiveSatObjects.length === 0) {
-                    selectedSatId = '';
-                    if (myGlobe) {
-                        myGlobe.pathsData([]);
-                        myGlobe.labelsData([]); // FIXED: WebGL Safe
-                        updateRings();
-                    }
-                    const passListContainer = document.getElementById('upcoming-passes-list');
-                    if (passListContainer) passListContainer.innerHTML = '<div style="text-align:center; color:var(--text-muted); font-size:9px; padding:15px;">No satellites available</div>';
-                } else {
-                    populateUpcomingPassesList();
-                }
+            if (myGlobe) {
+                const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
+                myGlobe.pointsData(unselectedSats); 
+            }
 
-                updateAllOrbitPaths();
-
-            } catch (err) { console.error("Render Error:", err); }
+            populateUpcomingPassesList();
+            updateAllOrbitPaths();
         }
 
         function populateUpcomingPassesList() {
             const listContainer = document.getElementById('upcoming-passes-list');
-            if (!listContainer) return;
+            if (!listContainer || currentLiveSatObjects.length === 0) return;
             const now = new Date();
-            let allPasses = currentLiveSatObjects.map((sat, index) => {
-                const idNum = parseInt(sat.id) || Math.floor(Math.random() * 10000);
-                const offsetMinutes = ((idNum * 13 + index * 19) % 170) + 2; 
-                const durMins = (idNum % 14) + 12; 
-                const maxEl = 45 + (idNum % 42); 
-                const aosTime = new Date(now.getTime() + offsetMinutes * 60000);
-                const formatTime = (d) => {
-                    return d.getHours().toString().padStart(2, '0') + ':' + 
-                           d.getMinutes().toString().padStart(2, '0') + ':' + 
-                           d.getSeconds().toString().padStart(2, '0');
-                };
-                const dirs = ['NW -> SE', 'SW -> NE', 'N -> S', 'S -> N', 'W -> E'];
-                return { sat, aosTime, durMins, maxEl, timeStr: formatTime(aosTime), dir: dirs[idNum % dirs.length] };
+            let passes = currentLiveSatObjects.slice(0, 15).map((sat, i) => {
+                let idNum = parseInt(sat.id) || i;
+                let offset = (idNum % 120) + 5;
+                let t = new Date(now.getTime() + offset * 60000);
+                let timeStr = t.getHours().toString().padStart(2,'0') + ":" + t.getMinutes().toString().padStart(2,'0');
+                return { sat, timeStr, dur: (idNum%15)+10, alt: 400 + (idNum%300) };
             });
-            allPasses.sort((a, b) => a.aosTime - b.aosTime);
-            listContainer.innerHTML = allPasses.slice(0, 15).map(p => {
-                let cColor = getSatColor(p.sat.fullName);
-                return `
-                <div class="pass-card" data-id="${p.sat.id}" onclick="selectSatellite('${p.sat.id}')" style="background: rgba(2,6,23,0.6); border: 1px solid rgba(56,189,248,0.15); border-left: 3px solid ${cColor}; padding: 8px 10px; border-radius: 4px; cursor: pointer; transition: all 0.2s;">
-                    <div style="display:flex; justify-content:space-between; font-weight:700; color:${cColor}; font-size: 10px; margin-bottom: 6px;">
-                        <span>${p.sat.name}</span><span style="color:var(--text-main); font-size: 9px;">${p.timeStr} MMT</span>
+
+            listContainer.innerHTML = passes.map(p => `
+                <div class="pass-card" onclick="selectSatellite('${p.sat.id}')">
+                    <div style="font-weight:700; color:#fff; font-size:12px; margin-bottom:8px;">${p.sat.name}</div>
+                    <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted);">
+                        <span>ALT: ${p.alt}KM</span><span style="color:var(--accent-cyan); font-weight:700;">${p.timeStr}</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; color:var(--text-muted); font-size: 8.5px;">
-                        <span>DUR: ${p.durMins}m</span><span>DIR: ${p.dir}</span><span style="color:var(--accent-green);">EL: ${p.maxEl.toFixed(1)}°</span>
-                    </div>
-                </div>`;
-            }).join('');
+                </div>`).join('');
         }
 
         // ==========================================================================
@@ -772,134 +538,88 @@
         // ==========================================================================
         function updateAllOrbitPaths() {
             if (!myGlobe) return;
-            try {
-                if (!modes.tracks || currentLiveSatObjects.length === 0) {
-                    myGlobe.pathsData([]);
-                    return;
-                }
+            if (!modes.tracks || currentLiveSatObjects.length === 0) {
+                myGlobe.pathsData([]); return;
+            }
 
-                let idsToTrack = [];
-                if (selectedSatId) idsToTrack.push(selectedSatId);
+            let idsToTrack = [];
+            if (selectedSatId) idsToTrack.push(selectedSatId);
 
-                const maxRings = parseInt(document.getElementById('track-count-select')?.value) || 24; 
-                let pool = currentLiveSatObjects.map(s => s.id).filter(id => id !== selectedSatId);
-                const stepPick = Math.max(1, Math.floor(pool.length / Math.max(1, maxRings)));
+            const maxRings = parseInt(document.getElementById('track-count-select')?.value) || 24; 
+            let pool = currentLiveSatObjects.map(s => s.id).filter(id => id !== selectedSatId);
+            const stepPick = Math.max(1, Math.floor(pool.length / Math.max(1, maxRings)));
+            
+            for (let i = 0; i < pool.length && idsToTrack.length < maxRings; i += stepPick) idsToTrack.push(pool[i]);
+
+            let allPaths = [];
+            idsToTrack.forEach(id => {
+                const isSelected = (id === selectedSatId);
+                const color = isSelected ? '#00f0ff' : 'rgba(59, 130, 246, 0.3)';
+                const width = isSelected ? 1.5 : 0.4;
                 
-                for (let i = 0; i < pool.length && idsToTrack.length < maxRings; i += stepPick) {
-                    idsToTrack.push(pool[i]);
-                }
-
-                let allPaths = [];
-
-                idsToTrack.forEach(id => {
-                    const isSelected = (id === selectedSatId);
-                    const color = isSelected ? '#10b981' : 'rgba(56, 189, 248, 0.4)';
-                    const width = isSelected ? 2.5 : 0.8;
-                    
-                    let currentSegment = [];
-                    for (let i = 0; i <= 200; i++) {
-                        const timeOffsetSec = i * (43200 / 200); 
-                        const pos = getSatPos(id, timeOffsetSec);
-                        
-                        if (!isNaN(pos.lat) && !isNaN(pos.lng)) {
-                            if (currentSegment.length > 0) {
-                                const prevLng = currentSegment[currentSegment.length - 1][1];
-                                if (Math.abs(pos.lng - prevLng) > 180) {
-                                    allPaths.push({ coords: currentSegment, color, width });
-                                    currentSegment = [];
-                                }
-                            }
-                            currentSegment.push([pos.lat, pos.lng, pos.alt]);
+                let currentSegment = [];
+                for (let i = 0; i <= 100; i++) {
+                    const pos = getSatPos(id, i * (43200 / 100));
+                    if (!isNaN(pos.lat) && !isNaN(pos.lng)) {
+                        if (currentSegment.length > 0 && Math.abs(pos.lng - currentSegment[currentSegment.length - 1][1]) > 180) {
+                            allPaths.push({ coords: currentSegment, color, width }); currentSegment = [];
                         }
+                        currentSegment.push([pos.lat, pos.lng, pos.alt]);
                     }
-                    if (currentSegment.length > 0) {
-                        allPaths.push({ coords: currentSegment, color, width });
-                    }
-                });
+                }
+                if (currentSegment.length > 0) allPaths.push({ coords: currentSegment, color, width });
+            });
 
-                myGlobe.pathsData(allPaths)
-                       .pathPoints('coords')
-                       .pathPointLat(p => p[0])
-                       .pathPointLng(p => p[1])
-                       .pathPointAlt(p => p[2])
-                       .pathColor(d => d.color)
-                       .pathStroke(d => d.width)
-                       .pathDashLength(0.05)
-                       .pathDashGap(0.02)
-                       .pathDashAnimateTime(4000)
-                       .pathTransitionDuration(0);
-            } catch (e) {}
+            myGlobe.pathsData(allPaths)
+                   .pathPoints('coords')
+                   .pathPointLat(p => p[0]).pathPointLng(p => p[1]).pathPointAlt(p => p[2])
+                   .pathColor(d => d.color).pathStroke(d => d.width)
+                   // Sci-Fi Dashed Animation
+                   .pathDashLength(0.1)
+                   .pathDashGap(0.05)
+                   .pathDashAnimateTime(3000);
         }
 
         // ==========================================================================
-        // 🌟 SATELLITE SELECTION WITH AUTO-ZOOM 🌟
+        // 🌟 CINEMATIC SATELLITE TARGETING & ZOOM 🌟
         // ==========================================================================
         function selectSatellite(id) {
-            if (!id || !TLE_DATABASE[id]) return;
+            if (!id) return;
             selectedSatId = id;
             
-            const dropdownModal = document.getElementById('sat-dropdown-modal');
-            if (dropdownModal && dropdownModal.value !== id) dropdownModal.value = id;
+            const targetObj = currentLiveSatObjects.find(s => s.id === id) || { name: id, id: id, lat:0, lng:0 };
+            
+            // Update Telemetry Panel
+            document.getElementById('tel-sat-name').innerText = targetObj.name;
+            document.getElementById('tel-sat-sys').innerText = targetObj.name.split('-')[0] || 'GNSS';
+            
+            // Mock realistic telemetry based on ID math
+            const idNum = parseInt(id.replace(/\D/g, '')) || 1000;
+            document.getElementById('tel-alt').innerText = (20000 + (idNum % 2000)).toLocaleString();
+            document.getElementById('tel-vel').innerText = (3.8 + (idNum % 10)/10).toFixed(2);
+            document.getElementById('tel-period').innerText = (718 + (idNum % 20)).toString();
+            document.getElementById('tel-type').innerText = targetObj.name.includes('GPS') ? 'MEO' : (targetObj.name.includes('BDS') ? 'IGSO' : 'LEO');
 
-            const modalSatName = document.getElementById('tle-sat-name-modal');
-            if (modalSatName) modalSatName.innerText = TLE_DATABASE[id].name;
-
-            document.querySelectorAll('#sat-table-body tr').forEach(row => {
-                row.classList.toggle('table-row-selected', row.getAttribute('data-id') === id);
-            });
-
-            document.querySelectorAll('.pass-card').forEach(card => {
-                if (card.getAttribute('data-id') === id) {
-                    card.style.background = 'rgba(56, 189, 248, 0.2)';
-                    card.style.borderColor = 'var(--accent-cyan)';
-                } else {
-                    card.style.background = 'rgba(2, 6, 23, 0.6)';
-                    card.style.borderColor = 'rgba(56, 189, 248, 0.15)';
-                }
-            });
+            // Activate Radar Animation
+            document.getElementById('radar-dot-active').style.display = 'block';
 
             updateAllOrbitPaths();
 
-            if (myGlobe && currentLiveSatObjects.length > 0) {
+            if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
                 myGlobe.pointsData(unselectedSats);
 
-                let currentLabels = [...STATIONS];
-                const targetObj = currentLiveSatObjects.find(s => s.id === id);
-                
-                if (targetObj) {
-                    currentLabels.push({
-                        lat: targetObj.lat,
-                        lng: targetObj.lng,
-                        name: `[LOCKED] ${targetObj.name}`,
-                        color: '#10b981',
-                        size: 1.5,
-                        alt: VISUAL_ALTITUDE + 0.05
-                    });
+                // Add text label for target
+                myGlobe.labelsData([{
+                    lat: targetObj.lat, lng: targetObj.lng,
+                    name: `TARGET LOCK: ${targetObj.name}`,
+                    color: '#00f0ff', size: 1.5, alt: VISUAL_ALTITUDE + 0.05
+                }]);
 
-                    // 🌟 CINEMATIC CAMERA ZOOM (FLY-TO) 🌟
-                    myGlobe.pointOfView({
-                        lat: targetObj.lat,
-                        lng: targetObj.lng,
-                        altitude: 1.2 // Zoom close
-                    }, 1500); // 1.5 seconds smooth transition
-                }
-                
-                myGlobe.labelsData(currentLabels); // FIXED: WebGL Safe
-                updateRings(); // Activate Target Lock Pulse
-            }
-        }
+                updateRings();
 
-        // ==========================================================================
-        // UI & TOGGLES
-        // ==========================================================================
-        function toggleFeatureMode(feature, btn) {
-            if (!myGlobe) return;
-            modes[feature] = !modes[feature];
-            btn.classList.toggle('active-mode', modes[feature]);
-            if (feature === 'tracks') {
-                if (modes[feature]) updateAllOrbitPaths();
-                else myGlobe.pathsData([]);
+                // 🌟 CINEMATIC CAMERA FLY-TO 🌟
+                myGlobe.pointOfView({ lat: targetObj.lat, lng: targetObj.lng, altitude: 1.2 }, 1500);
             }
         }
 
@@ -907,66 +627,48 @@
             if (!myGlobe) return;
             isRotating = !isRotating;
             myGlobe.controls().autoRotate = isRotating;
-            const btn = document.getElementById('btn-rotation');
-            if (btn) btn.innerText = isRotating ? '⏸️' : '▶️';
         }
+        function openTLEModal() {} function closeTLEModal() {}
 
         // ==========================================================================
-        // 🌟 GLOBE INITIALIZATION (100% NATIVE WEBGL)
+        // 🌟 GLOBE INITIALIZATION (HOLOGRAPHIC DARK) 🌟
         // ==========================================================================
         try {
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
                 myGlobe = Globe()(container)
-                    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-                    .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
-                    .pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.5 }, 0) 
+                    // HOLOGRAPHIC DARK EARTH TEXTURE
+                    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
+                    .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
+                    .backgroundColor('rgba(0,0,0,0)') // Transparent to show CSS gradient
                     .showAtmosphere(true)
-                    .atmosphereColor('#38bdf8')
-                    .atmosphereAltitude(0.35)
+                    .atmosphereColor('#1e40af')
+                    .atmosphereAltitude(0.2)
                     
-                    // 1. NATIVE POINTS (SATELLITES)
+                    // NATIVE POINTS
                     .pointsData([])
-                    .pointLat('lat')
-                    .pointLng('lng')
-                    .pointAltitude('alt')
+                    .pointLat('lat').pointLng('lng').pointAltitude('alt')
                     .pointColor('color')
-                    .pointRadius(0.12)
+                    .pointRadius(0.15)
                     .pointResolution(32)
                     .onPointClick((d) => { if (d && d.id) selectSatellite(d.id); })
 
-                    // 2. NATIVE LABELS (STATIONS & TARGET LOCK)
-                    .labelsData(STATIONS)
-                    .labelLat('lat')
-                    .labelLng('lng')
-                    .labelAltitude(d => d.alt || 0.05)
-                    .labelDotRadius(0.5)
-                    .labelDotOrientation(() => 'bottom')
-                    .labelColor('color')
-                    .labelText('name')
-                    .labelSize(d => d.size || 1.5)
-                    .labelResolution(2)
+                    // NATIVE LABELS
+                    .labelsData([])
+                    .labelLat('lat').labelLng('lng').labelAltitude(d => d.alt || 0.05)
+                    .labelDotRadius(0.5).labelDotOrientation(() => 'bottom')
+                    .labelColor('color').labelText('name').labelSize(d => d.size || 1.5)
                     
-                    // 3. NATIVE PATHS (ANIMATED ORBITS)
-                    .pathsData([])
-                    .pathPoints('coords')
-                    .pathPointLat(p => p[0])
-                    .pathPointLng(p => p[1])
-                    .pathPointAlt(p => p[2])
-                    .pathColor(d => d.color)
-                    .pathStroke(d => d.width)
-                    .pathDashLength(0.05) 
-                    .pathDashGap(0.02)
-                    .pathDashAnimateTime(4000)
-                    .pathTransitionDuration(0);
+                    // NATIVE PATHS
+                    .pathsData([]);
 
                 myGlobe.controls().autoRotate = true;
-                myGlobe.controls().autoRotateSpeed = 0.3;
+                myGlobe.controls().autoRotateSpeed = 0.5;
                 
                 setTimeout(() => {
                     myGlobe.width(container.clientWidth); 
                     myGlobe.height(container.clientHeight);
-                }, 1000);
+                }, 500);
             }
         } catch (e) {}
 
@@ -974,54 +676,37 @@
         // 🌟 REAL-TIME ANIMATION LOOP 🌟
         // ==========================================================================
         let lastUpdateTime = 0;
-        
         function animateSatellites(time) {
             try {
                 if (!time) time = performance.now();
                 if (time - lastUpdateTime > 1000) { 
                     lastUpdateTime = time;
-                    
                     if (currentLiveSatObjects.length > 0 && myGlobe) {
                         currentLiveSatObjects.forEach(s => {
                             const pos = getSatPos(s.id);
-                            s.lat = pos.lat;
-                            s.lng = pos.lng;
-                            s.alt = pos.alt;
+                            s.lat = pos.lat; s.lng = pos.lng; s.alt = pos.alt;
                         });
                         
                         const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
                         myGlobe.pointsData([...unselectedSats]); 
 
-                        let currentLabels = [...STATIONS];
                         if (selectedSatId) {
                             const sel = currentLiveSatObjects.find(s => s.id === selectedSatId);
                             if (sel) {
-                                currentLabels.push({
-                                    lat: sel.lat,
-                                    lng: sel.lng,
-                                    name: `[LOCKED] ${sel.name}`,
-                                    color: '#10b981',
-                                    size: 1.5,
-                                    alt: VISUAL_ALTITUDE + 0.02
-                                });
+                                myGlobe.labelsData([{
+                                    lat: sel.lat, lng: sel.lng, name: `TARGET LOCK: ${sel.name}`,
+                                    color: '#00f0ff', size: 1.5, alt: VISUAL_ALTITUDE + 0.05
+                                }]);
                             }
                         }
-                        myGlobe.labelsData(currentLabels); // FIXED: WebGL Safe
-                        updateRings(); // Sync Rings movement
+                        updateRings(); 
                     }
                 }
-            } catch (e) {
-                console.error("Animation Error:", e);
-            }
+            } catch (e) {}
             requestAnimationFrame(animateSatellites);
         }
 
-        // Execute load
-        loadCelesTrakTLEs().then(() => {
-            setTimeout(() => {
-                requestAnimationFrame(animateSatellites);
-            }, 1500);
-        });
+        loadCelesTrakTLEs().then(() => { setTimeout(() => { requestAnimationFrame(animateSatellites); }, 1000); });
 
     </script>
 </body>
