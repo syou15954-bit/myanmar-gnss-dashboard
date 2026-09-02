@@ -201,10 +201,18 @@
                 </button>
                 <div id="constellation-menu-box" class="mono" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; background: rgba(15, 23, 42, 0.98); border: 1px solid var(--accent-cyan); border-radius: 6px; padding: 10px; width: 170px; z-index: 300; box-shadow: 0 10px 25px rgba(0,0,0,0.8);">
                     <div style="font-size: 8.5px; color: var(--text-muted); margin-bottom: 6px; border-bottom: 1px solid var(--panel-border); padding-bottom: 4px;">SELECT SYSTEMS:</div>
-                    <label style="display: flex; align-items: center; gap: 6px; font-size: 9.5px; color: #10b981; padding: 3px 0; cursor: pointer;"><input type="checkbox" value="gps" checked onchange="onConstellationCheckboxChange()"> 🛰️ GPS</label>
-                    <label style="display: flex; align-items: center; gap: 6px; font-size: 9.5px; color: #ef4444; padding: 3px 0; cursor: pointer;"><input type="checkbox" value="bds" checked onchange="onConstellationCheckboxChange()"> 🛰️ BEIDOU</label>
-                    <label style="display: flex; align-items: center; gap: 6px; font-size: 9.5px; color: #38bdf8; padding: 3px 0; cursor: pointer;"><input type="checkbox" value="galileo" checked onchange="onConstellationCheckboxChange()"> 🇪🇺 GALILEO</label>
-                    <label style="display: flex; align-items: center; gap: 6px; font-size: 9.5px; color: #c084fc; padding: 3px 0; cursor: pointer;"><input type="checkbox" value="glonass" checked onchange="onConstellationCheckboxChange()"> 🇷🇺 GLONASS</label>
+                    <label style="display: flex; align-items: center; gap: 6px; font-size: 9.5px; color: #10b981; padding: 3px 0; cursor: pointer;">
+                        <input type="checkbox" value="gps" checked onchange="onConstellationCheckboxChange()"> 🛰️ GPS
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 6px; font-size: 9.5px; color: #ef4444; padding: 3px 0; cursor: pointer;">
+                        <input type="checkbox" value="bds" checked onchange="onConstellationCheckboxChange()"> 🛰️ BEIDOU
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 6px; font-size: 9.5px; color: #38bdf8; padding: 3px 0; cursor: pointer;">
+                        <input type="checkbox" value="galileo" checked onchange="onConstellationCheckboxChange()"> 🇪🇺 GALILEO
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 6px; font-size: 9.5px; color: #c084fc; padding: 3px 0; cursor: pointer;">
+                        <input type="checkbox" value="glonass" checked onchange="onConstellationCheckboxChange()"> 🇷🇺 GLONASS
+                    </label>
                 </div>
             </div>
         </div>
@@ -249,6 +257,7 @@
                     <option value="none">📡 Select Station (Off)</option>
                     <option value="yangon">📍 Yangon Base</option>
                     <option value="naypyidaw">📍 Naypyidaw</option>
+                    <option value="mandalay">📍 Mandalay</option>
                 </select>
                 <button class="feature-btn active-mode" id="btn-rotation" onclick="toggleGlobeRotation()" title="Pause/Resume Rotation" style="padding: 4px 10px; font-size: 13px;">⏸️</button>
                 <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit Web</button>
@@ -383,7 +392,12 @@
                         <div class="mono" style="display:flex; flex-direction: column; gap: 6px; padding: 8px; border: 1px dashed rgba(56,189,248,0.4); border-radius: 4px; background: rgba(15,23,42,0.6);">
                             <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:9px; color:var(--text-muted); width: 100%; cursor: pointer;">
                             <button onclick="uploadAndCompare()" class="upload-btn" style="width: 100%; padding: 6px 0;">🚀 ANALYZE FILES</button>
+                            <div style="display: flex; gap: 6px; width: 100%;">
+                                <button id="btn-export-csv" class="upload-btn action-btn-green" style="display:none; flex: 1; padding: 6px 0;" onclick="downloadCSV()">📥 CSV</button>
+                                <button id="btn-check-acc" class="upload-btn action-btn-purple" style="display:none; flex: 1; padding: 6px 0;" onclick="checkAccuracy()">🎯 ACCURACY</button>
+                            </div>
                         </div>
+
                         <div id="rinex-file-list" class="rinex-file-list mono">
                             <div style="text-align: center; color: var(--text-muted); font-size: 9.5px; padding: 25px 15px; border: 1px dashed rgba(56, 189, 248, 0.2); border-radius: 5px; background: rgba(2,6,23,0.4);">
                                 Waiting for RINEX files...
@@ -460,14 +474,36 @@
         let activeSelectedFileIndex = -1;
 
         // 🌟 ORBIT ALTITUDE 🌟
-        const VISUAL_ALTITUDE = 0.8;
+        const VISUAL_ALTITUDE = 0.5;
 
-        // TLE STATION MARKERS
+        // ==========================================================================
+        // STATIONS DEFINITION
+        // ==========================================================================
         const STATIONS = [
-            { lat: 16.8661, lng: 96.1951, name: "Yangon Base", color: "#ffb700", size: 1.0 },
-            { lat: 60.1282, lng: 18.6435, name: "瑞典站 [X-Band]", color: "#ef4444", size: 1.0 },
-            { lat: 39.9042, lng: 116.4074, name: "中国站 [UHF]", color: "#38bdf8", size: 1.0 }
+            { id: 'yangon', lat: 16.8661, lng: 96.1951, name: "Yangon Base", color: "#ffb700", size: 1.0 },
+            { id: 'naypyidaw', lat: 19.7633, lng: 96.0785, name: "Naypyidaw", color: "#38bdf8", size: 1.0 },
+            { id: 'mandalay', lat: 21.9588, lng: 96.0891, name: "Mandalay", color: "#10b981", size: 1.0 }
         ];
+
+        const STATIONS_DATA = {
+            yangon: { lat: 16.8661, lng: 96.1951, name: 'Yangon Base', color: '#ffb700', size: 3.5 },
+            naypyidaw: { lat: 19.7633, lng: 96.0785, name: 'Naypyidaw', color: '#38bdf8', size: 3.0 },
+            mandalay: { lat: 21.9588, lng: 96.0891, name: 'Mandalay', color: '#10b981', size: 3.0 }
+        };
+
+        function selectStationMode(val) {
+            if (!myGlobe) return;
+            if (val === 'none' || !STATIONS_DATA[val]) {
+                myGlobe.ringsData([]);
+            } else {
+                const st = STATIONS_DATA[val];
+                myGlobe.ringsData([st])
+                    .ringColor(d => d.color)
+                    .ringMaxRadius(d => d.size)
+                    .ringPropagationSpeed(2.5)
+                    .ringRepeatPeriod(800);
+            }
+        }
 
         function getSatColor(satName) {
             let uname = (satName || '').toUpperCase();
@@ -536,7 +572,29 @@
             return list;
         }
 
+        // ==========================================================================
+        // 🌟 LIVE DATA SYNC 🌟
+        // ==========================================================================
         async function loadCelesTrakTLEs() {
+            try {
+                let response = await fetch('/api/tle');
+                if (response.ok) {
+                    let json = await response.json();
+                    if (json.status === 'live' && json.data && json.data.all && json.data.all.length > 0) {
+                        isSimulationMode = false;
+                        CONSTELLATION_SATS = json.data;
+                        json.data.all.forEach(s => { TLE_DATABASE[s.id] = s; });
+                        document.getElementById('tle-status-badge').innerHTML = `<span style="color:var(--accent-green);">● LIVE SYNC (${json.data.all.length} SATS)</span>`;
+                        renderCustomSelection();
+                        setTimeout(() => selectSatellite("99999"), 500); 
+                        return; 
+                    }
+                }
+            } catch (err) {
+                console.warn("API Data Fetch failed, falling back to Simulation");
+            }
+
+            // FALLBACK TO SIMULATION IF API FAILS
             isSimulationMode = true; 
             let fallbackList = generateProceduralFleet(150);
             
@@ -674,17 +732,17 @@
                     `;}).join('');
                 }
 
-                // 🌟 RENDER OBJECTS DIRECTLY 🌟
+                // Push dots to Globe
                 if (myGlobe) {
                     const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                    myGlobe.objectsData([...unselectedSats]); 
+                    myGlobe.objectsData(unselectedSats); 
                 }
 
                 if (currentLiveSatObjects.length === 0) {
                     selectedSatId = '';
                     if (myGlobe) {
                         myGlobe.pathsData([]);
-                        myGlobe.labelsData([]);
+                        myGlobe.htmlElementsData([]);
                     }
                     const passListContainer = document.getElementById('upcoming-passes-list');
                     if (passListContainer) passListContainer.innerHTML = '<div style="text-align:center; color:var(--text-muted); font-size:9px; padding:15px;">No satellites available</div>';
@@ -801,9 +859,7 @@
                        .pathStroke(d => d.width)
                        .pathDashLength(0) 
                        .pathTransitionDuration(0);
-            } catch (e) {
-                console.error("Path Error:", e);
-            }
+            } catch (e) {}
         }
 
         function toggleFeatureMode(feature, btn) {
@@ -852,21 +908,14 @@
 
             if (myGlobe && currentLiveSatObjects.length > 0) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                myGlobe.objectsData([...unselectedSats]);
+                myGlobe.objectsData(unselectedSats);
 
-                // Update Labels Data
-                let currentLabels = [...STATIONS];
+                let htmlElements = [...STATIONS];
                 const targetObj = currentLiveSatObjects.find(s => s.id === id);
                 if (targetObj) {
-                    currentLabels.push({
-                        lat: targetObj.lat,
-                        lng: targetObj.lng,
-                        name: `[TRACK] ${targetObj.name}`,
-                        color: '#10b981',
-                        size: 1.5
-                    });
+                    htmlElements.push(targetObj);
                 }
-                myGlobe.labelsData(currentLabels);
+                myGlobe.htmlElementsData(htmlElements);
             }
         }
 
@@ -890,8 +939,121 @@
             }
         }
 
+        function parseFullRinex(text, fileName) {
+            try {
+                let chartLabels = ["00:00", "06:00", "12:00", "18:00"];
+                let chartDataBySys = { GPS: [42,43,44,42], BDS: [40,41,42,40], GAL: [43,44,45,43], GLO: [39,40,41,39] };
+                let satRecords = [{ sat: "G07", code1: "21023.123", code2: "21026.876", phase: "110234.890", snr: "46.5 dB" }];
+                return {
+                    markerName: fileName, obsDate: "2026-08-21", recType: "Generic Receiver", interval: "15.000 Sec", version: "3.04", counts: { GPS: 32, BDS: 22, GAL: 24, GLO: 48 },
+                    chartLabels, chartDataBySys, satRecords
+                };
+            } catch (err) {}
+        }
+
+        function updateActiveFileChart() {
+            if (activeSelectedFileIndex >= 0 && uploadedStationsList[activeSelectedFileIndex]) {
+                selectFileCard(activeSelectedFileIndex);
+            }
+        }
+
+        async function uploadAndCompare() {
+            const fileInput = document.getElementById('rinexFileInput');
+            if (!fileInput || !fileInput.files || fileInput.files.length === 0) { alert('Please select RINEX (.rnx / .obs) files.'); return; }
+
+            const fileListContainer = document.getElementById('rinex-file-list');
+            fileListContainer.innerHTML = ''; 
+            uploadedStationsList = [];
+            document.getElementById('btn-export-csv').style.display = 'inline-block';
+            document.getElementById('btn-check-acc').style.display = 'inline-block';
+
+            Array.from(fileInput.files).forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const text = e.target.result;
+                    let fileName = file.name.replace(/\.[^/.]+$/, "");
+                    const parsedData = parseFullRinex(text, fileName);
+                    uploadedStationsList.push({
+                        id: index, fileName: fileName, name: parsedData.markerName, recType: parsedData.recType,
+                        interval: parsedData.interval, obsDate: parsedData.obsDate, version: parsedData.version,
+                        counts: parsedData.counts, chartLabels: parsedData.chartLabels, chartDataBySys: parsedData.chartDataBySys, satRecords: parsedData.satRecords
+                    });
+                    renderStationCards();
+                    if (uploadedStationsList.length === 1) selectFileCard(0);
+                };
+                reader.readAsText(file); 
+            });
+        }
+
+        function selectFileCard(index) {
+            activeSelectedFileIndex = index;
+            let st = uploadedStationsList[index];
+            if (!st) return;
+
+            document.querySelectorAll('.rinex-card').forEach((card, idx) => {
+                if (idx === index) card.classList.add('rinex-card-selected');
+                else card.classList.remove('rinex-card-selected');
+            });
+
+            document.getElementById('active-file-indicator').innerText = `📡 Active: ${st.name}`;
+            let sysA = document.getElementById('rinex-sys-a').value;
+            let sysB = document.getElementById('rinex-sys-b').value;
+            renderSystemComparisonChart(st, sysA, sysB);
+        }
+
+        function renderStationCards() {
+            const fileListContainer = document.getElementById('rinex-file-list');
+            fileListContainer.innerHTML = '';
+
+            uploadedStationsList.forEach((st, idx) => {
+                const card = document.createElement('div');
+                card.className = 'rinex-card' + (idx === activeSelectedFileIndex ? ' rinex-card-selected' : '');
+                card.setAttribute('onclick', `selectFileCard(${idx})`);
+                card.innerHTML = `
+                    <div style="color: var(--accent-cyan); font-weight: 700; font-size: 11px; border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding-bottom: 4px; display: flex; justify-content: space-between;">
+                        <span>📡 ${st.name}</span> <span style="color: var(--accent-green); font-size: 9.5px;">ACTIVE</span>
+                    </div>
+                `;
+                fileListContainer.appendChild(card);
+            });
+        }
+
+        function renderSystemComparisonChart(st, sysA = "GPS", sysB = "BDS") {
+            const getSysColor = (s) => {
+                if(s === 'GPS') return '#10b981';
+                if(s === 'BDS') return '#ef4444';
+                return '#38bdf8';
+            };
+
+            let labels = st.chartLabels || [];
+            let dataA = (st.chartDataBySys && st.chartDataBySys[sysA]) ? st.chartDataBySys[sysA] : [];
+            let dataB = (st.chartDataBySys && st.chartDataBySys[sysB]) ? st.chartDataBySys[sysB] : [];
+
+            const ctx = document.getElementById('waveformChart');
+            if (!ctx) return;
+
+            if (waveformChart) {
+                waveformChart.data.labels = labels;
+                waveformChart.data.datasets[0].data = dataA;
+                waveformChart.data.datasets[1].data = dataB;
+                waveformChart.update('none'); 
+            } else {
+                waveformChart = new Chart(ctx.getContext('2d'), {
+                    type: 'line',
+                    data: { 
+                        labels: labels, 
+                        datasets: [
+                            { label: `📡 ${sysA}`, data: dataA, borderColor: getSysColor(sysA), borderWidth: 2.2, pointRadius: 3 },
+                            { label: `📡 ${sysB}`, data: dataB, borderColor: getSysColor(sysB), borderWidth: 2.2, pointRadius: 3 }
+                        ] 
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, animation: false }
+                });
+            }
+        }
+
         // ==========================================================================
-        // 🌟 GLOBE INITIALIZATION (GUARANTEED RENDER)
+        // 🌟 GLOBE INITIALIZATION (GUARANTEED HTML ELEMENTS & SPHERES) 🌟
         // ==========================================================================
         try {
             const container = document.getElementById('globeViz');
@@ -918,17 +1080,32 @@
                     })
                     .onObjectClick((d) => { if (d && d.id) selectSatellite(d.id); })
 
-                    // 🌟 WEBGL LABELS (NO HTML DOM TO PREVENT CRASHES) 🌟
-                    .labelsData(STATIONS)
-                    .labelLat('lat')
-                    .labelLng('lng')
-                    .labelAltitude(d => d.alt || 0.05)
-                    .labelDotRadius(0.6)
-                    .labelDotOrientation(() => 'bottom')
-                    .labelColor('color')
-                    .labelText('name')
-                    .labelSize(d => d.size || 1.5)
-                    .labelResolution(2)
+                    // 🌟 HTML ELEMENTS FOR STATIONS & TARGET LABEL 🌟
+                    .htmlElementsData(STATIONS)
+                    .htmlElement(d => {
+                        const el = document.createElement('div');
+                        if (d.size) { // GROUND STATION
+                            el.innerHTML = `
+                                <div style="display:flex; align-items:center; gap:4px; pointer-events:none; transform: translate(-50%, -50%);">
+                                    <div style="background:${d.color}; width:12px; height:12px; border-radius:50%; box-shadow: 0 0 10px ${d.color}; border: 2px solid #fff;"></div>
+                                    <div style="background:rgba(2,6,23,0.8); border:1px solid ${d.color}; padding:2px 6px; border-radius:4px; color:${d.color}; font-size:9px; font-weight:bold; white-space:nowrap;">
+                                        ${d.name}
+                                    </div>
+                                </div>
+                            `;
+                        } else { // SATELLITE
+                            el.innerHTML = `
+                                <div style="display:flex; align-items:center; gap:6px; pointer-events:none; transform: translate(10px, -10px);">
+                                    <div style="background:#10b981; width:12px; height:12px; border-radius:50%; box-shadow: 0 0 10px #10b981, 0 0 20px #10b981; border: 2px solid #fff;"></div>
+                                    <div style="background:rgba(2,6,23,0.85); border:1px solid #10b981; padding:3px 8px; border-radius:4px; color:#10b981; font-size:11px; font-weight:bold; white-space:nowrap; box-shadow: 0 0 10px rgba(16,185,129,0.4);">
+                                        <span style="color:#f8fafc;">[TRACK]</span> ${d.name}
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        return el;
+                    })
+                    .htmlAltitude(d => d.alt || 0.05)
                     
                     // 🌟 ORBIT PATHS 🌟
                     .pathsData([])
@@ -954,7 +1131,7 @@
                     myGlobe.width(container.clientWidth); 
                     myGlobe.height(container.clientHeight);
                     renderCustomSelection();
-                }, 1000); // 1s delay to let ThreeJS mount
+                }, 1000);
             }
         } catch (e) {}
 
@@ -967,7 +1144,6 @@
             try {
                 if (!time) time = performance.now();
                 
-                // Throttle to 1 update per second
                 if (time - lastUpdateTime > 1000) { 
                     lastUpdateTime = time;
                     
@@ -985,17 +1161,9 @@
                         let currentLabels = [...STATIONS];
                         if (selectedSatId) {
                             const sel = currentLiveSatObjects.find(s => s.id === selectedSatId);
-                            if (sel) {
-                                currentLabels.push({
-                                    lat: sel.lat,
-                                    lng: sel.lng,
-                                    name: `[TRACK] ${sel.name}`,
-                                    color: '#10b981',
-                                    size: 1.5
-                                });
-                            }
+                            if (sel) currentLabels.push(sel);
                         }
-                        myGlobe.labelsData(currentLabels);
+                        myGlobe.htmlElementsData(currentLabels);
                     }
                 }
             } catch (e) {}
