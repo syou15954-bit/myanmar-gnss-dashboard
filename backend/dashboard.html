@@ -197,7 +197,7 @@
         </aside>
 
         <div class="center-controls">
-            <select id="station-select" class="ctrl-select" onchange="updateRings()">
+            <select id="station-select" class="ctrl-select" onchange="onStationSelectChange(this.value)">
                 <option value="none">Target Station: OFF</option>
                 <option value="yangon">📍 Yangon Base HQ</option>
                 <option value="naypyidaw">📍 Naypyidaw Link</option>
@@ -231,7 +231,7 @@
                 </div>
                 <div class="tel-box">
                     <div class="tel-label">Orbital Period</div>
-                    <div class="tel-val"><span id="tel-period">--</span> <span style="font-size:12px; color:#fff;">KM</span></div>
+                    <div class="tel-val"><span id="tel-period">--</span> <span style="font-size:12px; color:#fff;">MIN</span></div>
                 </div>
                 <div class="tel-box">
                     <div class="tel-label">Orbit Type</div>
@@ -291,18 +291,22 @@
         const VISUAL_ALTITUDE = 0.05; 
 
         const STATIONS_DATA = {
-            yangon: { lat: 16.8661, lng: 96.1951, name: 'Yangon Base', color: '#00f0ff', size: 3.5 },
-            naypyidaw: { lat: 19.7633, lng: 96.0785, name: 'Naypyidaw', color: '#3b82f6', size: 3.0 }
+            yangon: { lat: 16.8661, lng: 96.1951, name: 'Yangon Base HQ', color: '#00f0ff', size: 3.5, alt: 0.01 },
+            naypyidaw: { lat: 19.7633, lng: 96.0785, name: 'Naypyidaw Link', color: '#3b82f6', size: 3.0, alt: 0.01 }
         };
 
-        function updateRings() {
+        // 🌟 GROUND STATION ZOOM & PULSE RINGS 🌟
+        function onStationSelectChange(val) {
             if (!myGlobe) return;
             let currentRings = [];
-            const stVal = document.getElementById('station-select').value;
-            if (stVal !== 'none' && STATIONS_DATA[stVal]) {
-                let st = Object.assign({}, STATIONS_DATA[stVal]);
-                st.alt = 0.01; currentRings.push(st);
+            
+            if (val !== 'none' && STATIONS_DATA[val]) {
+                let st = STATIONS_DATA[val];
+                currentRings.push(st);
+                // Cinematic fly-to station
+                myGlobe.pointOfView({ lat: st.lat, lng: st.lng, altitude: 1.2 }, 1500);
             }
+
             if (selectedSatId) {
                 const targetObj = currentLiveSatObjects.find(s => s.id === selectedSatId);
                 if (targetObj) {
@@ -312,12 +316,18 @@
                     });
                 }
             }
+
             myGlobe.ringsData(currentRings)
                 .ringColor(d => d.color)
                 .ringMaxRadius(d => d.size)
                 .ringPropagationSpeed(d => d.propagationSpeed || 2.5)
                 .ringRepeatPeriod(d => d.repeatPeriod || 800)
                 .ringAltitude(d => d.alt || 0.01);
+        }
+
+        function updateRings() {
+            const stVal = document.getElementById('station-select').value;
+            onStationSelectChange(stVal);
         }
 
         function getSatColor(satName) {
@@ -565,7 +575,6 @@
             myGlobe.controls().autoRotate = isRotating;
         }
 
-        // 🌟 HANDLE RINEX UPLOAD & RENDER METADATA / CHART 🌟
         function handleRinexUpload() {
             const fileInput = document.getElementById('rinexFileInput');
             const metaBox = document.getElementById('rinex-metadata');
@@ -578,7 +587,7 @@
                     - Version: 3.04 (Obs)<br>
                     - Receiver: Trimble NetR9<br>
                     - Interval: 15.0s<br>
-                    - Satellites: 32 GPS / 24 BDS
+                    - Observed SVs: 32 GPS / 24 BDS
                 `;
                 if(placeholder) placeholder.style.display = 'none';
 
@@ -610,7 +619,6 @@
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
                 myGlobe = Globe()(container)
-                    // 🌟 BLUE MARBLE EARTH WITH REALISTIC SPACE BACKGROUND 🌟
                     .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                     .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
                     .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
@@ -618,10 +626,10 @@
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.25)
                     
-                    // 🌟 CLEAN ROUND POINTS 🌟
+                    // 🌟 3D GLOWING SPHERE SATELLITES (NO SPIKES OR LINES) 🌟
                     .pointsData([])
                     .pointLat('lat').pointLng('lng').pointAltitude('alt')
-                    .pointColor('color').pointRadius(0.18).pointResolution(32)
+                    .pointColor('color').pointRadius(0.22).pointResolution(32)
                     .onPointClick((d) => { if (d && d.id) selectSatellite(d.id); })
 
                     .labelsData([])
