@@ -270,8 +270,8 @@
         let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass']);
         let currentLiveSatObjects = [];
 
-        // 🌟 FIXED PROPER ORBIT ALTITUDE (Prevents spikes) 🌟
-        const VISUAL_ALTITUDE = 0.08; 
+        // 🌟 PROPER ORBIT ALTITUDE (Clean Surface Dots) 🌟
+        const VISUAL_ALTITUDE = 0.05; 
 
         const STATIONS_DATA = {
             yangon: { lat: 16.8661, lng: 96.1951, name: 'Yangon Base', color: '#00f0ff', size: 3.5 },
@@ -524,7 +524,7 @@
 
             document.getElementById('radar-dot-active').style.display = 'block';
 
-            renderCustomSelection(); // to highlight table row
+            renderCustomSelection(); 
             updateAllOrbitPaths();
 
             if (myGlobe) {
@@ -552,16 +552,18 @@
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
                 myGlobe = Globe()(container)
-                    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
+                    // 🌟 နိုင်ငံတကာသုံး Blue Marble ရောင်စုံကမ္ဘာလုံးပုံရိပ် 🌟
+                    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                     .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
                     .backgroundColor('rgba(0,0,0,0)')
                     .showAtmosphere(true)
-                    .atmosphereColor('#1e40af')
-                    .atmosphereAltitude(0.2)
+                    .atmosphereColor('#38bdf8')
+                    .atmosphereAltitude(0.25)
                     
+                    // 🌟 သေသပ်ဝိုင်းစက်နေသော အစက်များ (ချွန်ထွက်နေသော အချောင်းများ မပါ) 🌟
                     .pointsData([])
                     .pointLat('lat').pointLng('lng').pointAltitude('alt')
-                    .pointColor('color').pointRadius(0.2).pointResolution(32)
+                    .pointColor('color').pointRadius(0.15).pointResolution(32)
                     .onPointClick((d) => { if (d && d.id) selectSatellite(d.id); })
 
                     .labelsData([])
