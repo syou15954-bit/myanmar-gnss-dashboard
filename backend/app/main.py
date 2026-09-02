@@ -1,6 +1,7 @@
 import os
 import sys
 import io
+import requests # CelesTrak မှ Live Data ယူရန် ထည့်သွင်းထားပါသည်
 import numpy as np
 import pandas as pd
 from fastapi import FastAPI, UploadFile, File, HTTPException
@@ -74,7 +75,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:8000",
         "http://127.0.0.1:8000",
-        "https://myanmar-gnss-dashboard.onrender.com",  # Production domain ထည့်သွင်းပြီး
+        "https://myanmar-gnss-dashboard.onrender.com",  # Production domain
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -220,8 +221,33 @@ def run_accuracy_verification(data: dict):
     result = evaluate_accuracy_and_reliability(pred, act)
     return result
 
+# 🌟 CelesTrak မှ Live Data ဆွဲယူမည့် ပင်မ API
 @app.get("/api/tle")
 def get_live_tles():
+    # 1. အင်တာနက်မှ CelesTrak Active Satellites များကို လှမ်းယူခြင်း
+    try:
+        url = "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle"
+        response = requests.get(url, timeout=10)
+        
+        if response.status_code == 200:
+            tle_text = response.text
+            parsed = parse_gnss_tle(tle_text)
+            
+            # FLYLAB2 Custom Satellite အား System ထဲသို့ ထည့်သွင်းခြင်း
+            flylab_sat = {
+                'id': '99999',
+                'name': 'FLYLAB2 (99999)',
+                'line1': '1 99999U 20000A   24001.00000000 -.00000000  00000-0  00000-0 0   9999',
+                'line2': '2 99999  55.0000 150.0000 0100000   0.0000 359.0000  2.00560000100000'
+            }
+            parsed['bds'].append(flylab_sat)
+            parsed['all'].append(flylab_sat)
+
+            return {'status': 'live', 'data': parsed}
+    except Exception as e:
+        print(f"Failed to fetch live TLE: {e}")
+
+    # 2. အင်တာနက်ပြတ်တောက်သွားပါက Local Cache မှ Data အဟောင်းကို ပြန်လည်အသုံးပြုခြင်း
     try:
         cache_path = os.path.join(BACKEND_DIR, 'tle_cache.txt')
         if os.path.exists(cache_path):
@@ -233,4 +259,5 @@ def get_live_tles():
     except Exception as e:
         print(f"Failed to read local TLE cache: {e}")
 
+    # 3. မည်သည့် Data မှ မရရှိပါက Frontend ဘက်တွင် Fallback Math ဖြင့် ဆွဲရန် Empty ပြန်ပို့ခြင်း
     return {'status': 'fallback', 'data': {'gps': [], 'bds': [], 'galileo': [], 'glonass': [], 'all': []}}
