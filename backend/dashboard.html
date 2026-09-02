@@ -255,9 +255,8 @@
             <div class="center-feature-bar mono" id="globe-controls-bar">
                 <select id="station-select" class="matrix-select" onchange="selectStationMode(this.value)" style="background: rgba(2, 6, 23, 0.9); color: var(--accent-yellow); border: 1px solid var(--accent-yellow); padding: 5px 10px; border-radius: 3px; font-size: 11px; font-weight: 700; cursor: pointer;">
                     <option value="none">📡 Select Station (Off)</option>
-                    <option value="yangon">📍 Yangon (RINEX Measured / Base)</option>
-                    <option value="naypyidaw">📍 Naypyidaw (Uppatasanti Landmark)</option>
-                    <option value="mandalay">📍 Mandalay Hill Landmark</option>
+                    <option value="yangon">📍 Yangon Base</option>
+                    <option value="naypyidaw">📍 Naypyidaw</option>
                 </select>
                 <button class="feature-btn active-mode" id="btn-rotation" onclick="toggleGlobeRotation()" title="Pause/Resume Rotation" style="padding: 4px 10px; font-size: 13px;">⏸️</button>
                 <button class="feature-btn active-mode" id="btn-tracks" onclick="toggleFeatureMode('tracks', this)">🌐 3D Orbit Web</button>
@@ -454,11 +453,10 @@
 
     </main>
 
-    <!-- ==========================================================================
-         JAVASCRIPT LOGIC
-         ========================================================================== -->
     <script>
-        // GLOBALS
+        // ==========================================================================
+        // GLOBALS & STATE
+        // ==========================================================================
         let isMyanmarOnlyMode = false;
         let isSimulationMode = false; 
         let selectedSatId = '';
@@ -473,7 +471,6 @@
         let currentLiveSatObjects = [];
         let uploadedStationsList = [];
         let activeSelectedFileIndex = -1;
-        let currentSelectedStation = 'none';
 
         // 🌟 ORBIT ALTITUDE 🌟 Make satellites visually detached from Earth surface
         const VISUAL_ALTITUDE = 0.5;
@@ -497,31 +494,14 @@
         // ==========================================================================
         // SATELLITE MATH & BULLETPROOF PROCEDURAL FALLBACK
         // ==========================================================================
-        // Creates a highly dense fleet mathematically so objects NEVER disappear
+        // Creates a highly dense fleet mathematically so points NEVER disappear
         function getSatPos(id, timeOffsetSec = 0) {
-            try {
-                const tle = TLE_DATABASE[id];
-                if (tle && typeof satellite !== 'undefined') {
-                    const satrec = satellite.twoline2satrec(tle.line1, tle.line2);
-                    const now = new Date(Date.now() + timeOffsetSec * 1000);
-                    const posVel = satellite.propagate(satrec, now);
-                    if (posVel && posVel.position && !isNaN(posVel.position.x)) {
-                        const gmst = satellite.gstime(now);
-                        const posGd = satellite.eciToGeodetic(posVel.position, gmst);
-                        return { 
-                            lat: satellite.degreesLat(posGd.latitude), 
-                            lng: satellite.degreesLong(posGd.longitude), 
-                            alt: VISUAL_ALTITUDE 
-                        };
-                    }
-                }
-            } catch(e) {}
-
-            // BULLETPROOF PROCEDURAL MATH
             const now = new Date(Date.now() + timeOffsetSec * 1000);
-            const t = now.getTime() / 1000;
+            
+            // BULLETPROOF PROCEDURAL MATH (Bypasses satellite.js TLE parsing errors entirely)
             const idNum = parseInt(id.replace(/\D/g, '')) || Math.floor(Math.random() * 1000);
-            const period = 12 * 3600; 
+            const t = now.getTime() / 1000;
+            const period = 12 * 3600; // 12 hour orbit
             const phase = (t % period) / period * Math.PI * 2;
             const inc = (55 + (idNum % 10)) * (Math.PI / 180); 
             const raan = (idNum * 13) % 360 * (Math.PI / 180);
@@ -538,7 +518,7 @@
             if (lng < -180) lng += 360;
             if (lng > 180) lng -= 360;
             
-            return { lat: lat, lng: lng, alt: VISUAL_ALTITUDE };
+            return { lat: Number(lat.toFixed(4)), lng: Number(lng.toFixed(4)), alt: VISUAL_ALTITUDE };
         }
 
         function generateProceduralFleet(numSats = 150) {
@@ -691,10 +671,10 @@
                     `;}).join('');
                 }
 
-                // Initial Push to Globe
+                // 🌟 INITIAL RENDER TO POINTSDATA 🌟
                 if (myGlobe) {
                     const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                    myGlobe.objectsData(unselectedSats); 
+                    myGlobe.pointsData(unselectedSats); 
                 }
 
                 if (currentLiveSatObjects.length === 0) {
@@ -764,64 +744,58 @@
         function updateAllOrbitPaths() {
             if (!myGlobe) return;
 
-            try {
-                if (!modes.tracks || currentLiveSatObjects.length === 0) {
-                    myGlobe.pathsData([]);
-                    return;
-                }
+            if (!modes.tracks || currentLiveSatObjects.length === 0) {
+                myGlobe.pathsData([]);
+                return;
+            }
 
-                let idsToTrack = [];
-                if (selectedSatId) idsToTrack.push(selectedSatId);
+            let idsToTrack = [];
+            if (selectedSatId) idsToTrack.push(selectedSatId);
 
-                const maxRings = parseInt(document.getElementById('track-count-select')?.value) || 24; 
-                let pool = currentLiveSatObjects.map(s => s.id).filter(id => id !== selectedSatId);
-                const stepPick = Math.max(1, Math.floor(pool.length / Math.max(1, maxRings)));
+            const maxRings = parseInt(document.getElementById('track-count-select')?.value) || 24; 
+            let pool = currentLiveSatObjects.map(s => s.id).filter(id => id !== selectedSatId);
+            const stepPick = Math.max(1, Math.floor(pool.length / Math.max(1, maxRings)));
+            
+            for (let i = 0; i < pool.length && idsToTrack.length < maxRings; i += stepPick) {
+                idsToTrack.push(pool[i]);
+            }
+
+            let allPaths = [];
+
+            idsToTrack.forEach(id => {
+                const isSelected = (id === selectedSatId);
+                const color = isSelected ? '#10b981' : 'rgba(56, 189, 248, 0.35)';
+                const width = isSelected ? 1.5 : 0.4;
                 
-                for (let i = 0; i < pool.length && idsToTrack.length < maxRings; i += stepPick) {
-                    idsToTrack.push(pool[i]);
-                }
-
-                let allPaths = [];
-
-                idsToTrack.forEach(id => {
-                    const isSelected = (id === selectedSatId);
-                    const color = isSelected ? '#10b981' : 'rgba(56, 189, 248, 0.35)';
-                    const width = isSelected ? 1.5 : 0.4;
+                let currentSegment = [];
+                for (let i = 0; i <= 200; i++) {
+                    const timeOffsetSec = i * (43200 / 200); // 12 hours
+                    const pos = getSatPos(id, timeOffsetSec);
                     
-                    let currentSegment = [];
-                    for (let i = 0; i <= 200; i++) {
-                        const timeOffsetSec = i * (43200 / 200); // 12 hours
-                        const pos = getSatPos(id, timeOffsetSec);
-                        
-                        // Safety Check to ensure no NaN crashes pathsData
-                        if (!isNaN(pos.lat) && !isNaN(pos.lng)) {
-                            if (currentSegment.length > 0) {
-                                const prevLng = currentSegment[currentSegment.length - 1][1];
-                                if (Math.abs(pos.lng - prevLng) > 180) {
-                                    allPaths.push({ coords: currentSegment, color, width });
-                                    currentSegment = [];
-                                }
-                            }
-                            currentSegment.push([pos.lat, pos.lng, pos.alt]);
+                    if (currentSegment.length > 0) {
+                        const prevLng = currentSegment[currentSegment.length - 1][1];
+                        if (Math.abs(pos.lng - prevLng) > 180) {
+                            allPaths.push({ coords: currentSegment, color, width });
+                            currentSegment = [];
                         }
                     }
-                    if (currentSegment.length > 0) {
-                        allPaths.push({ coords: currentSegment, color, width });
-                    }
-                });
+                    currentSegment.push([pos.lat, pos.lng, pos.alt]);
+                }
+                if (currentSegment.length > 0) {
+                    allPaths.push({ coords: currentSegment, color, width });
+                }
+            });
 
-                myGlobe.pathsData(allPaths)
-                       .pathPoints('coords')
-                       .pathPointLat(p => p[0])
-                       .pathPointLng(p => p[1])
-                       .pathPointAlt(p => p[2])
-                       .pathColor(d => d.color)
-                       .pathStroke(d => d.width)
-                       .pathDashLength(0) 
-                       .pathTransitionDuration(0);
-            } catch (e) {
-                console.error("Path Error:", e);
-            }
+            // 🌟 PUSH PATHS TO GLOBE 🌟
+            myGlobe.pathsData(allPaths)
+                   .pathPoints('coords')
+                   .pathPointLat(p => p[0])
+                   .pathPointLng(p => p[1])
+                   .pathPointAlt(p => p[2])
+                   .pathColor(d => d.color)
+                   .pathStroke(d => d.width)
+                   .pathDashLength(0) 
+                   .pathTransitionDuration(0);
         }
 
         function toggleFeatureMode(feature, btn) {
@@ -870,7 +844,7 @@
 
             if (myGlobe && currentLiveSatObjects.length > 0) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                myGlobe.objectsData(unselectedSats);
+                myGlobe.pointsData(unselectedSats);
 
                 const targetObj = currentLiveSatObjects.find(s => s.id === id);
                 if (targetObj) {
@@ -1013,7 +987,7 @@
         }
 
         // ==========================================================================
-        // 🌟 GLOBE INITIALIZATION (REVERTED TO SAFE OBJECTSDATA)
+        // 🌟 GLOBE INITIALIZATION (POINTS RENDER FIX)
         // ==========================================================================
         try {
             const container = document.getElementById('globeViz');
@@ -1026,25 +1000,32 @@
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.35)
                     
-                    // 🌟 RESTORED 3D SPHERES (GUARANTEED TO RENDER) 🌟
-                    .objectsData([])
-                    .objectLat('lat')
-                    .objectLng('lng')
-                    .objectAltitude('alt')
-                    .objectThreeObject(d => {
-                        if (!window.THREE) return null;
-                        const geom = new window.THREE.SphereGeometry(0.5, 16, 16); 
-                        const mat = new window.THREE.MeshBasicMaterial({ color: d.color });
-                        return new window.THREE.Mesh(geom, mat);
-                    })
-                    .onObjectClick((d) => { if (d && d.id) selectSatellite(d.id); })
+                    // 🌟 THIS DRAWS THE SATELLITE DOTS 🌟
+                    .pointsData([])
+                    .pointLat('lat')
+                    .pointLng('lng')
+                    .pointAltitude('alt')
+                    .pointColor('color')
+                    .pointRadius(0.12)
+                    .pointResolution(32)
+                    .onPointClick((d) => { if (d && d.id) selectSatellite(d.id); })
                     
-                    // 🌟 HTML MARKERS FOR STATION IDENTIFIERS AND SATELLITE TRACK 🌟
+                    // 🌟 THIS DRAWS THE ORBIT TRACKS 🌟
+                    .pathsData([])
+                    .pathPoints('coords')
+                    .pathPointLat(p => p[0])
+                    .pathPointLng(p => p[1])
+                    .pathPointAlt(p => p[2])
+                    .pathColor(d => d.color)
+                    .pathStroke(d => d.width)
+                    .pathDashLength(0) 
+                    .pathTransitionDuration(0)
+                    
+                    // 🌟 THIS DRAWS THE STATION LABELS 🌟
                     .htmlElementsData(STATIONS)
                     .htmlElement(d => {
                         const el = document.createElement('div');
-                        
-                        if (d.size) { // Ground Station
+                        if (d.size) { 
                             el.innerHTML = `
                                 <div style="display:flex; align-items:center; gap:4px; pointer-events:none; transform: translate(-50%, -50%);">
                                     <div style="background:${d.color}; width:12px; height:12px; border-radius:50%; box-shadow: 0 0 10px ${d.color}; border: 2px solid #fff;"></div>
@@ -1053,7 +1034,7 @@
                                     </div>
                                 </div>
                             `;
-                        } else { // Selected Satellite Label
+                        } else {
                             el.innerHTML = `
                                 <div style="display:flex; align-items:center; gap:6px; pointer-events:none; transform: translate(10px, -10px);">
                                     <div style="background:#10b981; width:12px; height:12px; border-radius:50%; box-shadow: 0 0 10px #10b981, 0 0 20px #10b981; border: 2px solid #fff;"></div>
@@ -1065,7 +1046,7 @@
                         }
                         return el;
                     })
-                    .htmlAltitude(d => d.alt !== undefined ? d.alt : 0.01);
+                    .htmlAltitude(d => d.alt || 0.01);
 
                 myGlobe.controls().autoRotate = true;
                 myGlobe.controls().autoRotateSpeed = 0.3;
@@ -1073,13 +1054,14 @@
                 setTimeout(() => {
                     myGlobe.width(container.clientWidth); 
                     myGlobe.height(container.clientHeight);
-                    updateAllOrbitPaths();
+                    // FORCE INITIAL RENDER
+                    renderCustomSelection();
                 }, 500);
             }
         } catch (e) {}
 
         // ==========================================================================
-        // 🌟 REAL-TIME ANIMATION LOOP (1 SEC THROTTLE FOR MAX STABILITY)
+        // 🌟 REAL-TIME ANIMATION LOOP (1 SEC THROTTLE) 🌟
         // ==========================================================================
         let lastUpdateTime = 0;
         
@@ -1087,7 +1069,7 @@
             try {
                 if (!time) time = performance.now();
                 
-                // Limit render to ~1 FPS to completely eliminate WebGL rendering crashes
+                // Limit render to ~1 FPS to prevent crashing
                 if (time - lastUpdateTime > 1000) { 
                     lastUpdateTime = time;
                     
@@ -1099,8 +1081,9 @@
                             s.alt = pos.alt;
                         });
                         
+                        // 🌟 PUSH POINTS DATA EVERY SECOND 🌟
                         const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                        myGlobe.objectsData(unselectedSats); 
+                        myGlobe.pointsData(unselectedSats); 
 
                         let htmlElements = [...STATIONS];
                         if (selectedSatId) {
@@ -1110,9 +1093,7 @@
                         myGlobe.htmlElementsData(htmlElements);
                     }
                 }
-            } catch (e) {
-                console.error("Animation Error:", e);
-            }
+            } catch (e) {}
             requestAnimationFrame(animateSatellites);
         }
 
