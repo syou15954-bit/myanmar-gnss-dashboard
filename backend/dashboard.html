@@ -15,8 +15,8 @@
     <style>
         :root {
             --bg-base: #050914;
-            --glass-bg: rgba(16, 24, 43, 0.65);
-            --glass-border: rgba(56, 189, 248, 0.15);
+            --glass-bg: rgba(16, 24, 43, 0.75);
+            --glass-border: rgba(56, 189, 248, 0.2);
             --accent-cyan: #00f0ff;
             --accent-blue: #3b82f6;
             --accent-green: #10b981;
@@ -30,7 +30,6 @@
         html, body {
             height: 100vh; width: 100vw; overflow: hidden;
             background-color: var(--bg-base); 
-            background-image: radial-gradient(circle at 50% 50%, #0a1128 0%, #02040a 100%);
             color: var(--text-main); 
             font-family: 'Space Grotesk', sans-serif; 
             font-size: 14px;
@@ -54,7 +53,7 @@
             background: var(--glass-bg); border: 1px solid var(--glass-border);
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
             border-radius: 24px; padding: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
             pointer-events: auto;
             display: flex; flex-direction: column; overflow: hidden;
         }
@@ -139,16 +138,18 @@
         }
         @keyframes ping { 0% { opacity: 0; transform: scale(0.5); } 50% { opacity: 1; transform: scale(1.2); } 100% { opacity: 0; transform: scale(0.5); } }
 
-        /* BOTTOM CENTER */
+        /* BOTTOM CENTER (RINEX & CONTROLS) */
         .bottom-panel { grid-column: 2 / 4; grid-row: 3; display: flex; gap: 20px; background: transparent; border:none; box-shadow:none; padding:0;}
         .center-controls {
             position: absolute; bottom: 250px; left: 50%; transform: translateX(-50%);
             display: flex; gap: 12px; background: var(--glass-bg); padding: 10px 20px;
             border-radius: 40px; border: 1px solid var(--glass-border); backdrop-filter: blur(16px);
-            pointer-events: auto;
+            pointer-events: auto; z-index: 20;
         }
         .ctrl-select { background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 6px 15px; font-family: 'Space Grotesk'; outline: none; cursor: pointer; }
-        .rinex-box { flex: 1; }
+        .rinex-box { flex: 1; display: flex; flex-direction: column; }
+        .rinex-content { display: flex; gap: 15px; height: 100%; align-items: center; margin-top: 8px; }
+        .chart-container-box { flex: 1; height: 100%; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 5px; position: relative; min-height: 110px; }
     </style>
 </head>
 <body>
@@ -245,14 +246,21 @@
             </div>
         </aside>
 
+        <!-- RINEX ANALYSIS PANEL -->
         <div class="bottom-panel">
             <div class="panel rinex-box">
-                <div class="section-title" style="display:flex; justify-content:space-between;">
-                    <span>Signal Analysis (RINEX)</span>
+                <div class="section-title" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>Signal Analysis (RINEX .obs / .rnx)</span>
+                    <button onclick="runRinexAnalysis()" class="nav-pill" style="padding: 2px 12px; font-size:10px;">Run Analysis</button>
                 </div>
-                <div style="display: flex; gap: 15px; height: 100%; align-items: center;">
-                    <input type="file" id="rinexFileInput" multiple style="font-size:10px; color:var(--text-muted);">
-                    <span style="color:var(--text-muted); font-size:12px;">Upload RINEX observation files for signal comparison...</span>
+                <div class="rinex-content">
+                    <div style="width: 240px; display:flex; flex-direction:column; gap:8px;">
+                        <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:10px; color:var(--text-muted);">
+                        <div id="rinex-file-label" style="font-size:10px; color:var(--accent-cyan);">No file loaded</div>
+                    </div>
+                    <div class="chart-container-box">
+                        <canvas id="rinexChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -264,13 +272,13 @@
         let myGlobe = null;
         let modes = { tracks: true };
         let isRotating = true;
+        let rinexChartInstance = null;
 
         let TLE_DATABASE = {};
         let CONSTELLATION_SATS = { gps: [], bds: [], galileo: [], glonass: [], all: [] };
         let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass']);
         let currentLiveSatObjects = [];
 
-        // 🌟 PROPER ORBIT ALTITUDE (Clean Surface Dots) 🌟
         const VISUAL_ALTITUDE = 0.05; 
 
         const STATIONS_DATA = {
@@ -548,22 +556,55 @@
             myGlobe.controls().autoRotate = isRotating;
         }
 
+        // 🌟 RUN RINEX ANALYSIS CHART 🌟
+        function runRinexAnalysis() {
+            const fileInput = document.getElementById('rinexFileInput');
+            const label = document.getElementById('rinex-file-label');
+            if(fileInput.files.length > 0) {
+                label.innerText = `${fileInput.files.length} file(s) loaded.`;
+            } else {
+                label.innerText = `Using simulated signal metrics...`;
+            }
+
+            const ctx = document.getElementById('rinexChart').getContext('2d');
+            if(rinexChartInstance) rinexChartInstance.destroy();
+
+            rinexChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+                    datasets: [
+                        { label: 'GPS (SVs)', data: [8, 9, 7, 10, 9, 8], borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', borderWidth: 2, tension: 0.3 },
+                        { label: 'BDS (SVs)', data: [7, 8, 9, 8, 10, 9], borderColor: '#f43f5e', backgroundColor: 'rgba(244,63,94,0.1)', borderWidth: 2, tension: 0.3 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#fff', font: { size: 10 } } } },
+                    scales: {
+                        x: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                    }
+                }
+            });
+        }
+
         try {
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
                 myGlobe = Globe()(container)
-                    // 🌟 နိုင်ငံတကာသုံး Blue Marble ရောင်စုံကမ္ဘာလုံးပုံရိပ် 🌟
+                    // 🌟 REALISTIC BLUE MARBLE TEXTURE WITH SPACE BACKGROUND 🌟
                     .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                     .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
-                    .backgroundColor('rgba(0,0,0,0)')
+                    .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
                     .showAtmosphere(true)
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.25)
                     
-                    // 🌟 သေသပ်ဝိုင်းစက်နေသော အစက်များ (ချွန်ထွက်နေသော အချောင်းများ မပါ) 🌟
+                    // 🌟 CLEAN ROUND POINTS (NO SPIKES) 🌟
                     .pointsData([])
                     .pointLat('lat').pointLng('lng').pointAltitude('alt')
-                    .pointColor('color').pointRadius(0.15).pointResolution(32)
+                    .pointColor('color').pointRadius(0.18).pointResolution(32)
                     .onPointClick((d) => { if (d && d.id) selectSatellite(d.id); })
 
                     .labelsData([])
@@ -579,6 +620,7 @@
                 setTimeout(() => {
                     myGlobe.width(container.clientWidth); 
                     myGlobe.height(container.clientHeight);
+                    runRinexAnalysis(); // Render initial mock chart
                 }, 500);
             }
         } catch (e) {}
