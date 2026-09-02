@@ -47,7 +47,7 @@
             grid-template-columns: 360px 1fr 340px;
             grid-template-rows: 70px 1fr 220px;
             height: 100vh; width: 100vw; padding: 20px; gap: 20px;
-            pointer-events: none; /* Let clicks pass through to globe */
+            pointer-events: none;
         }
         
         .panel {
@@ -55,13 +55,11 @@
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
             border-radius: 24px; padding: 20px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
-            pointer-events: auto; /* Enable clicks inside panels */
+            pointer-events: auto;
             display: flex; flex-direction: column; overflow: hidden;
         }
 
-        /* -----------------------------------------------------
-           TOP NAVIGATION (Spans full width)
-        ----------------------------------------------------- */
+        /* TOP NAVIGATION */
         .top-nav {
             grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center;
             background: transparent; border: none; box-shadow: none; pointer-events: auto; padding: 0;
@@ -79,15 +77,11 @@
             color: var(--accent-green); border-radius: 40px; padding: 6px 16px; font-size: 11px; font-weight: 700;
         }
 
-        /* -----------------------------------------------------
-           LEFT SIDEBAR (Fleet & Passes)
-        ----------------------------------------------------- */
+        /* LEFT SIDEBAR */
         .left-sidebar { grid-column: 1; grid-row: 2 / -1; gap: 20px; display: flex; flex-direction: column; background: transparent; border: none; box-shadow: none; padding: 0; }
-        
         .card-container { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 15px; }
         .section-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; margin-bottom: 5px; }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.3); border-radius: 4px; }
@@ -98,6 +92,7 @@
         .cyber-table td { padding: 8px 4px; border-bottom: 1px solid rgba(255,255,255,0.02); }
         .cyber-table tr { cursor: pointer; transition: 0.2s; }
         .cyber-table tr:hover { background: rgba(0, 240, 255, 0.05); }
+        .table-row-selected { background: rgba(0, 240, 255, 0.15) !important; border-left: 3px solid var(--accent-cyan); }
 
         /* Passes Cards */
         .pass-card {
@@ -108,11 +103,8 @@
         .pass-card:hover { border-color: var(--accent-cyan); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,240,255,0.1); }
         .pass-card::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; background: var(--accent-cyan); }
 
-        /* -----------------------------------------------------
-           RIGHT SIDEBAR (Target Telemetry)
-        ----------------------------------------------------- */
+        /* RIGHT SIDEBAR */
         .right-sidebar { grid-column: 3; grid-row: 2; display: flex; flex-direction: column; gap: 20px; }
-
         .target-header { display: flex; justify-content: space-between; align-items: flex-start; }
         .target-code { font-size: 24px; font-weight: 700; color: #fff; letter-spacing: 1px; }
         .target-sys { font-size: 11px; background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 20px; }
@@ -147,9 +139,7 @@
         }
         @keyframes ping { 0% { opacity: 0; transform: scale(0.5); } 50% { opacity: 1; transform: scale(1.2); } 100% { opacity: 0; transform: scale(0.5); } }
 
-        /* -----------------------------------------------------
-           BOTTOM CENTER (Controls & RINEX)
-        ----------------------------------------------------- */
+        /* BOTTOM CENTER */
         .bottom-panel { grid-column: 2 / 4; grid-row: 3; display: flex; gap: 20px; background: transparent; border:none; box-shadow:none; padding:0;}
         .center-controls {
             position: absolute; bottom: 250px; left: 50%; transform: translateX(-50%);
@@ -158,20 +148,14 @@
             pointer-events: auto;
         }
         .ctrl-select { background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 6px 15px; font-family: 'Space Grotesk'; outline: none; cursor: pointer; }
-        
         .rinex-box { flex: 1; }
-
     </style>
 </head>
 <body>
 
-    <!-- 3D GLOBE BACKGROUND -->
     <div id="globeViz"></div>
 
-    <!-- UI OVERLAY -->
     <div class="dashboard-wrapper">
-        
-        <!-- TOP NAVIGATION -->
         <header class="top-nav">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <div style="width: 32px; height: 32px; background: var(--accent-cyan); border-radius: 50%; box-shadow: 0 0 20px var(--accent-cyan); display: flex; align-items: center; justify-content: center;">
@@ -183,13 +167,11 @@
             <div style="display: flex; gap: 15px;">
                 <button class="nav-pill active">Fleet Ops</button>
                 <button class="nav-pill" onclick="toggleMyanmarVisibleOnly(this)" id="mm-only-btn">MM Coverage</button>
-                <button class="nav-pill" onclick="openTLEModal()">Data Sets</button>
             </div>
 
             <div id="tle-status-badge" class="status-badge mono">● INITIALIZING...</div>
         </header>
 
-        <!-- LEFT SIDEBAR -->
         <aside class="left-sidebar">
             <div class="panel card-container">
                 <div class="section-title">Active Fleet Status</div>
@@ -211,7 +193,6 @@
             </div>
         </aside>
 
-        <!-- CENTER FLOATING CONTROLS -->
         <div class="center-controls">
             <select id="station-select" class="ctrl-select" onchange="updateRings()">
                 <option value="none">Target Station: OFF</option>
@@ -226,7 +207,6 @@
             </select>
         </div>
 
-        <!-- RIGHT SIDEBAR (TARGET TELEMETRY) -->
         <aside class="right-sidebar panel" id="telemetry-panel">
             <div class="section-title">Target Telemetry</div>
             <div class="target-header">
@@ -265,43 +245,21 @@
             </div>
         </aside>
 
-        <!-- BOTTOM PANELS (RINEX) -->
         <div class="bottom-panel">
             <div class="panel rinex-box">
                 <div class="section-title" style="display:flex; justify-content:space-between;">
                     <span>Signal Analysis (RINEX)</span>
-                    <button style="background:transparent; border:1px solid var(--glass-border); color:#fff; border-radius:4px; padding:2px 8px; cursor:pointer;">Analyze</button>
                 </div>
-                <div style="display: flex; gap: 15px; height: 100%;">
-                    <div style="width: 200px; border-right: 1px solid var(--glass-border); padding-right: 15px;">
-                        <input type="file" style="font-size:10px; width:100%; margin-bottom:10px; color:var(--text-muted);">
-                        <div style="font-size:11px; color:var(--text-muted); text-align:center; padding-top:20px;">No file loaded</div>
-                    </div>
-                    <div style="flex: 1; display: flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.3); border-radius:12px;">
-                        <span style="color:var(--text-muted); font-size:12px;">Awaiting Data Injection...</span>
-                    </div>
+                <div style="display: flex; gap: 15px; height: 100%; align-items: center;">
+                    <input type="file" id="rinexFileInput" multiple style="font-size:10px; color:var(--text-muted);">
+                    <span style="color:var(--text-muted); font-size:12px;">Upload RINEX observation files for signal comparison...</span>
                 </div>
             </div>
         </div>
-
-    </div>
-
-    <!-- Hidden Modals & Data -->
-    <div id="tleModal" style="display:none; position:fixed; top:20%; left:50%; transform:translate(-50%,0); background:var(--bg-base); padding:20px; z-index:200; border:1px solid var(--accent-cyan); border-radius:16px;">
-        <div style="color:var(--accent-cyan); margin-bottom:10px; cursor:pointer;" onclick="closeTLEModal()">CLOSE [X]</div>
-        <div id="tle-display-modal" class="mono" style="font-size:10px; color:#fff;">Fetching...</div>
-    </div>
-    <div style="display:none;">
-        <select id="matrix-sys-a"><option value="gps"></option></select>
-        <select id="matrix-sys-b"><option value="bds"></option></select>
     </div>
 
     <script>
-        // ==========================================================================
-        // GLOBALS & STATE
-        // ==========================================================================
         let isMyanmarOnlyMode = false;
-        let isSimulationMode = false; 
         let selectedSatId = '';
         let myGlobe = null;
         let modes = { tracks: true };
@@ -312,8 +270,8 @@
         let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass']);
         let currentLiveSatObjects = [];
 
-        // HOLOGRAPHIC ALTITUDES
-        const VISUAL_ALTITUDE = 0.5;
+        // 🌟 FIXED PROPER ORBIT ALTITUDE (Prevents spikes) 🌟
+        const VISUAL_ALTITUDE = 0.08; 
 
         const STATIONS_DATA = {
             yangon: { lat: 16.8661, lng: 96.1951, name: 'Yangon Base', color: '#00f0ff', size: 3.5 },
@@ -323,24 +281,20 @@
         function updateRings() {
             if (!myGlobe) return;
             let currentRings = [];
-
             const stVal = document.getElementById('station-select').value;
             if (stVal !== 'none' && STATIONS_DATA[stVal]) {
                 let st = Object.assign({}, STATIONS_DATA[stVal]);
-                st.alt = 0.01; 
-                currentRings.push(st);
+                st.alt = 0.01; currentRings.push(st);
             }
-
             if (selectedSatId) {
                 const targetObj = currentLiveSatObjects.find(s => s.id === selectedSatId);
                 if (targetObj) {
                     currentRings.push({
                         lat: targetObj.lat, lng: targetObj.lng,
-                        color: '#00f0ff', size: 4.0, propagationSpeed: 5, repeatPeriod: 500, alt: VISUAL_ALTITUDE
+                        color: '#00f0ff', size: 2.5, propagationSpeed: 4, repeatPeriod: 600, alt: VISUAL_ALTITUDE
                     });
                 }
             }
-
             myGlobe.ringsData(currentRings)
                 .ringColor(d => d.color)
                 .ringMaxRadius(d => d.size)
@@ -358,9 +312,6 @@
             return '#3b82f6';
         }
 
-        // ==========================================================================
-        // SATELLITE MATH (BULLETPROOF FALLBACK)
-        // ==========================================================================
         function getSatPos(id, timeOffsetSec = 0) {
             const now = new Date(Date.now() + timeOffsetSec * 1000);
             try {
@@ -378,7 +329,6 @@
                 }
             } catch(e) {}
 
-            // PROCEDURAL FALLBACK
             const t = now.getTime() / 1000;
             const idNum = parseInt(id.toString().replace(/\D/g, '')) || 1;
             const period = 12 * 3600; 
@@ -393,8 +343,7 @@
             let lat = Math.asin(Math.max(-1, Math.min(1, z))) * (180 / Math.PI);
             let lng = Math.atan2(y, x) * (180 / Math.PI);
             lng = (lng - (t / 86400) * 360) % 360;
-            if (lng < -180) lng += 360;
-            if (lng > 180) lng -= 360;
+            if (lng < -180) lng += 360; if (lng > 180) lng -= 360;
             return { lat: isNaN(lat)?0:lat, lng: isNaN(lng)?0:lng, alt: VISUAL_ALTITUDE };
         }
 
@@ -408,30 +357,22 @@
             return list;
         }
 
-        // ==========================================================================
-        // 🌟 LIVE DATA SYNC (FIXED "0" DATA ISSUE)
-        // ==========================================================================
         async function loadCelesTrakTLEs() {
             let success = false;
             try {
                 let response = await fetch('/api/tle');
                 if (response.ok) {
                     let json = await response.json();
-                    // VERY STRICT CHECK: MUST have real data to avoid showing 0
                     if (json.status === 'live' && json.data && json.data.all && json.data.all.length > 20) {
-                        isSimulationMode = false;
                         CONSTELLATION_SATS = json.data;
                         json.data.all.forEach(s => { TLE_DATABASE[s.id] = s; });
-                        
                         document.getElementById('tle-status-badge').innerHTML = `● LIVE SYNC (${json.data.all.length} SATS)`;
                         success = true;
                     }
                 }
-            } catch (err) { console.warn("API Fetch failed."); }
+            } catch (err) {}
 
-            // IF API RETURNED EMPTY OR FAILED -> FORCE FALLBACK
             if (!success) {
-                isSimulationMode = true; 
                 let fallbackList = generateProceduralFleet(160);
                 let cat = { gps: [], bds: [], galileo: [], glonass: [], all: fallbackList };
                 fallbackList.forEach(s => {
@@ -445,15 +386,10 @@
                 CONSTELLATION_SATS = cat;
                 document.getElementById('tle-status-badge').innerHTML = `● OFFLINE SIMULATION`;
                 document.getElementById('tle-status-badge').style.color = 'var(--accent-yellow)';
-                document.getElementById('tle-status-badge').style.borderColor = 'rgba(255,183,0,0.4)';
             }
-
             renderCustomSelection();
         }
 
-        // ==========================================================================
-        // UI UPDATES
-        // ==========================================================================
         function toggleMyanmarVisibleOnly(btn) {
             isMyanmarOnlyMode = !isMyanmarOnlyMode;
             btn.classList.toggle('active', isMyanmarOnlyMode);
@@ -465,13 +401,7 @@
         }
 
         function renderCustomSelection() {
-            let combined = [];
-            activeSystems.forEach(sys => {
-                if (CONSTELLATION_SATS[sys]) combined = combined.concat(CONSTELLATION_SATS[sys]);
-            });
-            // Bulletproof against 0
-            if (combined.length === 0 && CONSTELLATION_SATS.all) combined = CONSTELLATION_SATS.all;
-
+            let combined = CONSTELLATION_SATS.all || [];
             currentLiveSatObjects = [];
             let activeCount = 0;
 
@@ -494,8 +424,9 @@
                 tbody.innerHTML = currentLiveSatObjects.slice(0, 100).map(s => {
                     let cColor = getSatColor(s.fullName);
                     let sysName = s.fullName.split('-')[0] || 'UNK';
+                    let isSel = (s.id === selectedSatId) ? 'table-row-selected' : '';
                     return `
-                    <tr data-id="${s.id}" onclick="selectSatellite('${s.id}')">
+                    <tr class="${isSel}" data-id="${s.id}" onclick="selectSatellite('${s.id}')">
                         <td><b style="color:${cColor};">${s.fullName.substring(0, 12)}</b></td>
                         <td>${sysName}</td>
                         <td style="color:var(--accent-cyan);">TRACK</td>
@@ -521,7 +452,7 @@
                 let offset = (idNum % 120) + 5;
                 let t = new Date(now.getTime() + offset * 60000);
                 let timeStr = t.getHours().toString().padStart(2,'0') + ":" + t.getMinutes().toString().padStart(2,'0');
-                return { sat, timeStr, dur: (idNum%15)+10, alt: 400 + (idNum%300) };
+                return { sat, timeStr, alt: 400 + (idNum%300) };
             });
 
             listContainer.innerHTML = passes.map(p => `
@@ -533,9 +464,6 @@
                 </div>`).join('');
         }
 
-        // ==========================================================================
-        // 🌟 ANIMATED DATA ORBIT WEB 🌟
-        // ==========================================================================
         function updateAllOrbitPaths() {
             if (!myGlobe) return;
             if (!modes.tracks || currentLiveSatObjects.length === 0) {
@@ -555,7 +483,7 @@
             idsToTrack.forEach(id => {
                 const isSelected = (id === selectedSatId);
                 const color = isSelected ? '#00f0ff' : 'rgba(59, 130, 246, 0.3)';
-                const width = isSelected ? 1.5 : 0.4;
+                const width = isSelected ? 2.0 : 0.5;
                 
                 let currentSegment = [];
                 for (let i = 0; i <= 100; i++) {
@@ -564,7 +492,7 @@
                         if (currentSegment.length > 0 && Math.abs(pos.lng - currentSegment[currentSegment.length - 1][1]) > 180) {
                             allPaths.push({ coords: currentSegment, color, width }); currentSegment = [];
                         }
-                        currentSegment.push([pos.lat, pos.lng, pos.alt]);
+                        currentSegment.push([pos.lat, pos.lng, VISUAL_ALTITUDE]);
                     }
                 }
                 if (currentSegment.length > 0) allPaths.push({ coords: currentSegment, color, width });
@@ -574,42 +502,35 @@
                    .pathPoints('coords')
                    .pathPointLat(p => p[0]).pathPointLng(p => p[1]).pathPointAlt(p => p[2])
                    .pathColor(d => d.color).pathStroke(d => d.width)
-                   // Sci-Fi Dashed Animation
                    .pathDashLength(0.1)
                    .pathDashGap(0.05)
                    .pathDashAnimateTime(3000);
         }
 
-        // ==========================================================================
-        // 🌟 CINEMATIC SATELLITE TARGETING & ZOOM 🌟
-        // ==========================================================================
         function selectSatellite(id) {
             if (!id) return;
             selectedSatId = id;
             
             const targetObj = currentLiveSatObjects.find(s => s.id === id) || { name: id, id: id, lat:0, lng:0 };
             
-            // Update Telemetry Panel
             document.getElementById('tel-sat-name').innerText = targetObj.name;
             document.getElementById('tel-sat-sys').innerText = targetObj.name.split('-')[0] || 'GNSS';
             
-            // Mock realistic telemetry based on ID math
             const idNum = parseInt(id.replace(/\D/g, '')) || 1000;
             document.getElementById('tel-alt').innerText = (20000 + (idNum % 2000)).toLocaleString();
             document.getElementById('tel-vel').innerText = (3.8 + (idNum % 10)/10).toFixed(2);
             document.getElementById('tel-period').innerText = (718 + (idNum % 20)).toString();
-            document.getElementById('tel-type').innerText = targetObj.name.includes('GPS') ? 'MEO' : (targetObj.name.includes('BDS') ? 'IGSO' : 'LEO');
+            document.getElementById('tel-type').innerText = targetObj.name.includes('GPS') ? 'MEO' : 'IGSO';
 
-            // Activate Radar Animation
             document.getElementById('radar-dot-active').style.display = 'block';
 
+            renderCustomSelection(); // to highlight table row
             updateAllOrbitPaths();
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
                 myGlobe.pointsData(unselectedSats);
 
-                // Add text label for target
                 myGlobe.labelsData([{
                     lat: targetObj.lat, lng: targetObj.lng,
                     name: `TARGET LOCK: ${targetObj.name}`,
@@ -617,8 +538,6 @@
                 }]);
 
                 updateRings();
-
-                // 🌟 CINEMATIC CAMERA FLY-TO 🌟
                 myGlobe.pointOfView({ lat: targetObj.lat, lng: targetObj.lng, altitude: 1.2 }, 1500);
             }
         }
@@ -628,38 +547,28 @@
             isRotating = !isRotating;
             myGlobe.controls().autoRotate = isRotating;
         }
-        function openTLEModal() {} function closeTLEModal() {}
 
-        // ==========================================================================
-        // 🌟 GLOBE INITIALIZATION (HOLOGRAPHIC DARK) 🌟
-        // ==========================================================================
         try {
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
                 myGlobe = Globe()(container)
-                    // HOLOGRAPHIC DARK EARTH TEXTURE
                     .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
                     .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
-                    .backgroundColor('rgba(0,0,0,0)') // Transparent to show CSS gradient
+                    .backgroundColor('rgba(0,0,0,0)')
                     .showAtmosphere(true)
                     .atmosphereColor('#1e40af')
                     .atmosphereAltitude(0.2)
                     
-                    // NATIVE POINTS
                     .pointsData([])
                     .pointLat('lat').pointLng('lng').pointAltitude('alt')
-                    .pointColor('color')
-                    .pointRadius(0.15)
-                    .pointResolution(32)
+                    .pointColor('color').pointRadius(0.2).pointResolution(32)
                     .onPointClick((d) => { if (d && d.id) selectSatellite(d.id); })
 
-                    // NATIVE LABELS
                     .labelsData([])
                     .labelLat('lat').labelLng('lng').labelAltitude(d => d.alt || 0.05)
                     .labelDotRadius(0.5).labelDotOrientation(() => 'bottom')
                     .labelColor('color').labelText('name').labelSize(d => d.size || 1.5)
                     
-                    // NATIVE PATHS
                     .pathsData([]);
 
                 myGlobe.controls().autoRotate = true;
@@ -672,9 +581,6 @@
             }
         } catch (e) {}
 
-        // ==========================================================================
-        // 🌟 REAL-TIME ANIMATION LOOP 🌟
-        // ==========================================================================
         let lastUpdateTime = 0;
         function animateSatellites(time) {
             try {
@@ -707,7 +613,6 @@
         }
 
         loadCelesTrakTLEs().then(() => { setTimeout(() => { requestAnimationFrame(animateSatellites); }, 1000); });
-
     </script>
 </body>
 </html>
