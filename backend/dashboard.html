@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GNSS Tactical Mission Control Center</title>
 
-    <!-- Required Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.min.js"></script>
     <script src="https://unpkg.com/globe.gl@2.25.3/dist/globe.gl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/satellite.js@4.1.3/dist/satellite.min.js"></script>
@@ -191,7 +190,7 @@
         <div class="top-nav-left">
             <button class="view-switch-btn mono" onclick="openTLEModal()">📋 VIEW TLE DATA</button>
             <button class="myanmar-filter-btn mono" id="mm-only-btn" onclick="toggleMyanmarVisibleOnly(this)">🇲🇲 MYANMAR VISIBLE ONLY</button>
-            <div id="tle-status-badge" class="mono" style="font-size: 9px; color: var(--accent-yellow); background: rgba(255, 183, 0, 0.15); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(255, 183, 0, 0.3); display: flex; align-items: center;">
+            <div id="tle-status-badge" class="mono" style="font-size: 9px; color: var(--accent-green); background: rgba(16, 185, 129, 0.15); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center;">
                 ● CHECKING...
             </div>
             
@@ -232,7 +231,6 @@
 
     <main class="viewport-main">
         
-        <!-- GLOBE SECTION -->
         <section class="globe-stage">
             <div id="globeViz"></div>
 
@@ -253,7 +251,7 @@
             </div>
 
             <div class="center-feature-bar mono" id="globe-controls-bar">
-                <select id="station-select" class="matrix-select" onchange="selectStationMode(this.value)" style="background: rgba(2, 6, 23, 0.9); color: var(--accent-yellow); border: 1px solid var(--accent-yellow); padding: 5px 10px; border-radius: 3px; font-size: 11px; font-weight: 700; cursor: pointer;">
+                <select id="station-select" class="matrix-select" onchange="updateRings()" style="background: rgba(2, 6, 23, 0.9); color: var(--accent-yellow); border: 1px solid var(--accent-yellow); padding: 5px 10px; border-radius: 3px; font-size: 11px; font-weight: 700; cursor: pointer;">
                     <option value="none">📡 Select Station (Off)</option>
                     <option value="yangon">📍 Yangon Base</option>
                     <option value="naypyidaw">📍 Naypyidaw</option>
@@ -278,9 +276,7 @@
             </div>
         </section>
 
-        <!-- BOTTOM DOCK: 3 PANELS -->
         <section class="bottom-dock">
-            <!-- PANEL 1: DATABASE & FLEET STATUS -->
             <div class="glass-panel" style="padding-bottom: 0;">
                 <div class="panel-title">
                     <span id="fleet-title-text">📊 LOCAL GNSS DATABASE & FLEET STATUS</span>
@@ -302,7 +298,6 @@
                 </div>
             </div>
 
-            <!-- PANEL 2: CONSTELLATION COMPARISON & METRICS -->
             <div class="glass-panel mono" style="justify-content: space-between;">
                 <div class="panel-title">
                     <span id="matrix-card-title">📈 CONSTELLATION COMPARISON & METRICS</span>
@@ -377,7 +372,6 @@
                 </div>
             </div>
 
-            <!-- PANEL 3: RINEX OBSERVATION & SIGNAL ANALYSIS -->
             <div class="glass-panel">
                 <div class="panel-title" style="justify-content: center; display: flex; justify-content: space-between; align-items: center;">
                     <span id="chart-panel-title">📡 RINEX OBSERVATION & SIGNAL ANALYSIS</span>
@@ -473,9 +467,12 @@
         let uploadedStationsList = [];
         let activeSelectedFileIndex = -1;
 
+        // 🌟 ORBIT ALTITUDE 🌟
         const VISUAL_ALTITUDE = 0.5;
 
-        // STATIONS
+        // ==========================================================================
+        // STATIONS & RINGS DEFINITION (TACTICAL MARKERS)
+        // ==========================================================================
         const STATIONS = [
             { id: 'yangon', lat: 16.8661, lng: 96.1951, name: "Yangon Base", color: "#ffb700", size: 1.0 },
             { id: 'naypyidaw', lat: 19.7633, lng: 96.0785, name: "Naypyidaw", color: "#38bdf8", size: 1.0 },
@@ -488,26 +485,49 @@
             mandalay: { lat: 21.9588, lng: 96.0891, name: 'Mandalay', color: '#10b981', size: 3.0 }
         };
 
-        function selectStationMode(val) {
+        // 🌟 UNIFIED FUNCTION TO UPDATE ALL GLOWING RINGS (STATIONS + TRACKED SATELLITE) 🌟
+        function updateRings() {
             if (!myGlobe) return;
-            if (val === 'none' || !STATIONS_DATA[val]) {
-                myGlobe.ringsData([]);
-            } else {
-                const st = STATIONS_DATA[val];
-                myGlobe.ringsData([st])
-                    .ringColor(d => d.color)
-                    .ringMaxRadius(d => d.size)
-                    .ringPropagationSpeed(2.5)
-                    .ringRepeatPeriod(800);
+            let currentRings = [];
+
+            // 1. Add Station Ring if selected
+            const stVal = document.getElementById('station-select').value;
+            if (stVal !== 'none' && STATIONS_DATA[stVal]) {
+                let st = Object.assign({}, STATIONS_DATA[stVal]);
+                st.alt = 0.01; 
+                currentRings.push(st);
             }
+
+            // 2. Add Tactical Tracking Ring for Selected Satellite
+            if (selectedSatId) {
+                const targetObj = currentLiveSatObjects.find(s => s.id === selectedSatId);
+                if (targetObj) {
+                    currentRings.push({
+                        lat: targetObj.lat,
+                        lng: targetObj.lng,
+                        color: '#10b981', // Tactical Green
+                        size: 3.0,        // Max Radius of Pulse
+                        propagationSpeed: 4, // Faster pulse
+                        repeatPeriod: 600,
+                        alt: VISUAL_ALTITUDE
+                    });
+                }
+            }
+
+            myGlobe.ringsData(currentRings)
+                .ringColor(d => d.color)
+                .ringMaxRadius(d => d.size)
+                .ringPropagationSpeed(d => d.propagationSpeed || 2.5)
+                .ringRepeatPeriod(d => d.repeatPeriod || 800)
+                .ringAltitude(d => d.alt || 0.01);
         }
 
         function getSatColor(satName) {
             let uname = (satName || '').toUpperCase();
-            if (uname.includes('GPS') || uname.includes('NAVSTAR')) return '#10b981';
-            if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('FLYLAB2')) return '#ef4444';
-            if (uname.includes('GALILEO') || uname.includes('GSAT')) return '#38bdf8';
-            if (uname.includes('GLONASS') || uname.includes('COSMOS')) return '#c084fc';
+            if (uname.includes('GPS') || uname.includes('NAVSTAR')) return '#10b981'; 
+            if (uname.includes('BEIDOU') || uname.includes('BDS') || uname.includes('FLYLAB2')) return '#ef4444'; 
+            if (uname.includes('GALILEO') || uname.includes('GSAT')) return '#38bdf8'; 
+            if (uname.includes('GLONASS') || uname.includes('COSMOS')) return '#c084fc'; 
             return '#10b981';
         }
 
@@ -525,7 +545,6 @@
                     if (posVel && posVel.position && posVel.position.x !== undefined) {
                         const gmst = satellite.gstime(now);
                         const posGd = satellite.eciToGeodetic(posVel.position, gmst);
-                        // Manual Radian to Degree conversion to prevent library errors
                         const lat = posGd.latitude * 180 / Math.PI;
                         const lng = posGd.longitude * 180 / Math.PI;
                         if (!isNaN(lat) && !isNaN(lng)) {
@@ -588,13 +607,11 @@
                         document.getElementById('tle-status-badge').style.borderColor = 'rgba(16, 185, 129, 0.3)';
                         
                         renderCustomSelection();
-                        setTimeout(() => selectSatellite("99999"), 500); 
                         return; 
                     }
                 }
             } catch (err) { console.warn("API Data Fetch failed."); }
 
-            // FALLBACK TO SIMULATION IF API FAILS
             isSimulationMode = true; 
             let fallbackList = generateProceduralFleet(150);
             
@@ -611,52 +628,6 @@
 
             document.getElementById('tle-status-badge').innerHTML = `<span style="color:var(--accent-yellow);">● LIVE SIMULATION</span>`;
             renderCustomSelection();
-            setTimeout(() => selectSatellite("99999"), 500); 
-        }
-
-        // ==========================================================================
-        // UI FUNCTIONS
-        // ==========================================================================
-        function openTLEModal() { document.getElementById('tleModal').style.display = 'block'; }
-        function closeTLEModal() { document.getElementById('tleModal').style.display = 'none'; }
-        function toggleConstellationMenu(e) { e.stopPropagation(); const box = document.getElementById('constellation-menu-box'); box.style.display = box.style.display === 'block' ? 'none' : 'block'; }
-        window.addEventListener('click', () => { const box = document.getElementById('constellation-menu-box'); if (box) box.style.display = 'none'; });
-
-        function onConstellationCheckboxChange() {
-            const checkboxes = document.querySelectorAll('#constellation-menu-box input[type="checkbox"]');
-            activeSystems.clear();
-            checkboxes.forEach(cb => { if (cb.checked) activeSystems.add(cb.value); });
-            renderCustomSelection();
-        }
-
-        function toggleMyanmarVisibleOnly(btn) {
-            isMyanmarOnlyMode = !isMyanmarOnlyMode;
-            btn.classList.toggle('active-mm', isMyanmarOnlyMode);
-            btn.innerText = isMyanmarOnlyMode ? '🇲🇲 MYANMAR VISIBLE (ACTIVE)' : '🇲🇲 MYANMAR VISIBLE ONLY';
-            renderCustomSelection();
-        }
-
-        function isSatVisibleInMyanmar(lat, lng) {
-            if (isNaN(lat) || isNaN(lng)) return false;
-            return (lat >= -25.0 && lat <= 55.0 && lng >= 30.0 && lng <= 160.0);
-        }
-
-        function getFilteredSatellites() {
-            let combined = [];
-            activeSystems.forEach(sys => {
-                if (CONSTELLATION_SATS[sys]) combined = combined.concat(CONSTELLATION_SATS[sys]);
-            });
-            return combined;
-        }
-
-        function countSystemVisibles(sysKey) {
-            let list = CONSTELLATION_SATS[sysKey] || [];
-            let count = 0;
-            list.forEach(s => {
-                const pos = getSatPos(s.id);
-                if (isSatVisibleInMyanmar(pos.lat, pos.lng)) count++;
-            });
-            return count;
         }
 
         // ==========================================================================
@@ -720,7 +691,7 @@
                         let cColor = getSatColor(s.fullName);
                         let sysName = s.fullName.split(' ')[0];
                         return `
-                        <tr data-id="${s.id}">
+                        <tr data-id="${s.id}" onclick="selectSatellite('${s.id}')">
                             <td><b style="color:${cColor};">${s.fullName.substring(0, 16)}</b></td>
                             <td>${sysName}</td>
                             <td>75°</td><td>45°</td>
@@ -729,13 +700,21 @@
                     `;}).join('');
                 }
 
-                // Push dots to Native WebGL pointsData
                 if (myGlobe) {
                     const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
                     myGlobe.pointsData(unselectedSats); 
                 }
 
-                if (currentLiveSatObjects.length > 0) {
+                if (currentLiveSatObjects.length === 0) {
+                    selectedSatId = '';
+                    if (myGlobe) {
+                        myGlobe.pathsData([]);
+                        myGlobe.htmlElementsData([]);
+                        updateRings();
+                    }
+                    const passListContainer = document.getElementById('upcoming-passes-list');
+                    if (passListContainer) passListContainer.innerHTML = '<div style="text-align:center; color:var(--text-muted); font-size:9px; padding:15px;">No satellites available</div>';
+                } else {
                     populateUpcomingPassesList();
                 }
 
@@ -778,7 +757,7 @@
         }
 
         // ==========================================================================
-        // MULTI-ORBIT WEB RENDERING
+        // 🌟 ANIMATED DATA ORBIT WEB (TACTICAL DASHED LINES) 🌟
         // ==========================================================================
         function updateAllOrbitPaths() {
             if (!myGlobe) return;
@@ -804,11 +783,11 @@
                 idsToTrack.forEach(id => {
                     const isSelected = (id === selectedSatId);
                     const color = isSelected ? '#10b981' : 'rgba(56, 189, 248, 0.4)';
-                    const width = isSelected ? 2.0 : 0.8;
+                    const width = isSelected ? 2.5 : 0.8;
                     
                     let currentSegment = [];
                     for (let i = 0; i <= 200; i++) {
-                        const timeOffsetSec = i * (43200 / 200); // 12 hours
+                        const timeOffsetSec = i * (43200 / 200); 
                         const pos = getSatPos(id, timeOffsetSec);
                         
                         if (!isNaN(pos.lat) && !isNaN(pos.lng)) {
@@ -834,29 +813,17 @@
                        .pathPointAlt(p => p[2])
                        .pathColor(d => d.color)
                        .pathStroke(d => d.width)
-                       .pathDashLength(0) 
+                       // 🌟 ANIMATED DATA FLOW DASHES 🌟
+                       .pathDashLength(0.05)
+                       .pathDashGap(0.02)
+                       .pathDashAnimateTime(4000) // Fast data stream
                        .pathTransitionDuration(0);
             } catch (e) {}
         }
 
-        function toggleFeatureMode(feature, btn) {
-            if (!myGlobe) return;
-            modes[feature] = !modes[feature];
-            btn.classList.toggle('active-mode', modes[feature]);
-            if (feature === 'tracks') {
-                if (modes[feature]) updateAllOrbitPaths();
-                else myGlobe.pathsData([]);
-            }
-        }
-
-        function toggleGlobeRotation() {
-            if (!myGlobe) return;
-            isRotating = !isRotating;
-            myGlobe.controls().autoRotate = isRotating;
-            const btn = document.getElementById('btn-rotation');
-            if (btn) btn.innerText = isRotating ? '⏸️' : '▶️';
-        }
-
+        // ==========================================================================
+        // 🌟 SATELLITE SELECTION WITH AUTO-ZOOM 🌟
+        // ==========================================================================
         function selectSatellite(id) {
             if (!id || !TLE_DATABASE[id]) return;
             selectedSatId = id;
@@ -889,22 +856,53 @@
 
                 let currentLabels = [...STATIONS];
                 const targetObj = currentLiveSatObjects.find(s => s.id === id);
+                
                 if (targetObj) {
                     currentLabels.push({
                         lat: targetObj.lat,
                         lng: targetObj.lng,
-                        name: `[TRACK] ${targetObj.name}`,
+                        name: `[LOCKED] ${targetObj.name}`,
                         color: '#10b981',
                         size: 1.5,
-                        alt: VISUAL_ALTITUDE + 0.02
+                        alt: VISUAL_ALTITUDE + 0.05
                     });
+
+                    // 🌟 CINEMATIC CAMERA ZOOM (FLY-TO) 🌟
+                    myGlobe.pointOfView({
+                        lat: targetObj.lat,
+                        lng: targetObj.lng,
+                        altitude: 1.2 // Zoom close
+                    }, 1500); // 1.5 seconds smooth transition
                 }
-                myGlobe.labelsData(currentLabels);
+                
+                myGlobe.htmlElementsData(currentLabels);
+                updateRings(); // Activate Target Lock Pulse
             }
         }
 
         // ==========================================================================
-        // 🌟 GLOBE INITIALIZATION (100% NATIVE WEBGL)
+        // FEATURE TOGGLES
+        // ==========================================================================
+        function toggleFeatureMode(feature, btn) {
+            if (!myGlobe) return;
+            modes[feature] = !modes[feature];
+            btn.classList.toggle('active-mode', modes[feature]);
+            if (feature === 'tracks') {
+                if (modes[feature]) updateAllOrbitPaths();
+                else myGlobe.pathsData([]);
+            }
+        }
+
+        function toggleGlobeRotation() {
+            if (!myGlobe) return;
+            isRotating = !isRotating;
+            myGlobe.controls().autoRotate = isRotating;
+            const btn = document.getElementById('btn-rotation');
+            if (btn) btn.innerText = isRotating ? '⏸️' : '▶️';
+        }
+
+        // ==========================================================================
+        // 🌟 GLOBE INITIALIZATION
         // ==========================================================================
         try {
             const container = document.getElementById('globeViz');
@@ -917,7 +915,7 @@
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.35)
                     
-                    // 🌟 1. NATIVE POINTS (SATELLITES)
+                    // 🌟 NATIVE POINTS (SATELLITES)
                     .pointsData([])
                     .pointLat('lat')
                     .pointLng('lng')
@@ -927,19 +925,34 @@
                     .pointResolution(32)
                     .onPointClick((d) => { if (d && d.id) selectSatellite(d.id); })
 
-                    // 🌟 2. NATIVE LABELS (STATIONS & TEXT)
-                    .labelsData(STATIONS)
-                    .labelLat('lat')
-                    .labelLng('lng')
-                    .labelAltitude(d => d.alt || 0.05)
-                    .labelDotRadius(0.5)
-                    .labelDotOrientation(() => 'bottom')
-                    .labelColor('color')
-                    .labelText('name')
-                    .labelSize(d => d.size || 1.5)
-                    .labelResolution(2)
+                    // 🌟 NATIVE HTML LABELS (STATIONS)
+                    .htmlElementsData(STATIONS)
+                    .htmlElement(d => {
+                        const el = document.createElement('div');
+                        if (d.size) { 
+                            el.innerHTML = `
+                                <div style="display:flex; align-items:center; gap:4px; pointer-events:none; transform: translate(-50%, -50%);">
+                                    <div style="background:${d.color}; width:12px; height:12px; border-radius:50%; box-shadow: 0 0 10px ${d.color}; border: 2px solid #fff;"></div>
+                                    <div style="background:rgba(2,6,23,0.8); border:1px solid ${d.color}; padding:2px 6px; border-radius:4px; color:${d.color}; font-size:9px; font-weight:bold; white-space:nowrap;">
+                                        ${d.name}
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            el.innerHTML = `
+                                <div style="display:flex; align-items:center; gap:6px; pointer-events:none; transform: translate(10px, -10px);">
+                                    <div style="background:#10b981; width:12px; height:12px; border-radius:50%; box-shadow: 0 0 10px #10b981, 0 0 20px #10b981; border: 2px solid #fff;"></div>
+                                    <div style="background:rgba(2,6,23,0.85); border:1px solid #10b981; padding:3px 8px; border-radius:4px; color:#10b981; font-size:11px; font-weight:bold; white-space:nowrap; box-shadow: 0 0 10px rgba(16,185,129,0.4);">
+                                        ${d.name}
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        return el;
+                    })
+                    .htmlAltitude(d => d.alt || 0.05)
                     
-                    // 🌟 3. NATIVE PATHS (ORBITS)
+                    // 🌟 ANIMATED ORBITS
                     .pathsData([])
                     .pathPoints('coords')
                     .pathPointLat(p => p[0])
@@ -947,7 +960,9 @@
                     .pathPointAlt(p => p[2])
                     .pathColor(d => d.color)
                     .pathStroke(d => d.width)
-                    .pathDashLength(0) 
+                    .pathDashLength(0.05) 
+                    .pathDashGap(0.02)
+                    .pathDashAnimateTime(4000)
                     .pathTransitionDuration(0);
 
                 myGlobe.controls().autoRotate = true;
@@ -989,14 +1004,15 @@
                                 currentLabels.push({
                                     lat: sel.lat,
                                     lng: sel.lng,
-                                    name: `[TRACK] ${sel.name}`,
+                                    name: `[LOCKED] ${sel.name}`,
                                     color: '#10b981',
                                     size: 1.5,
                                     alt: VISUAL_ALTITUDE + 0.02
                                 });
                             }
                         }
-                        myGlobe.labelsData(currentLabels);
+                        myGlobe.htmlElementsData(currentLabels);
+                        updateRings(); // Sync Rings movement
                     }
                 }
             } catch (e) {}
