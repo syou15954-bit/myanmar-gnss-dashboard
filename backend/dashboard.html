@@ -44,7 +44,7 @@
         .dashboard-wrapper {
             position: relative; z-index: 10; display: grid;
             grid-template-columns: 360px 1fr 340px;
-            grid-template-rows: 70px 1fr 220px;
+            grid-template-rows: 70px 1fr 240px;
             height: 100vh; width: 100vw; padding: 20px; gap: 20px;
             pointer-events: none;
         }
@@ -141,15 +141,17 @@
         /* BOTTOM CENTER (RINEX & CONTROLS) */
         .bottom-panel { grid-column: 2 / 4; grid-row: 3; display: flex; gap: 20px; background: transparent; border:none; box-shadow:none; padding:0;}
         .center-controls {
-            position: absolute; bottom: 250px; left: 50%; transform: translateX(-50%);
+            position: absolute; bottom: 270px; left: 50%; transform: translateX(-50%);
             display: flex; gap: 12px; background: var(--glass-bg); padding: 10px 20px;
             border-radius: 40px; border: 1px solid var(--glass-border); backdrop-filter: blur(16px);
             pointer-events: auto; z-index: 20;
         }
         .ctrl-select { background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 6px 15px; font-family: 'Space Grotesk'; outline: none; cursor: pointer; }
+        
         .rinex-box { flex: 1; display: flex; flex-direction: column; }
-        .rinex-content { display: flex; gap: 15px; height: 100%; align-items: center; margin-top: 8px; }
-        .chart-container-box { flex: 1; height: 100%; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 5px; position: relative; min-height: 110px; }
+        .rinex-content { display: flex; gap: 15px; height: 100%; align-items: stretch; margin-top: 8px; min-height: 0; }
+        .rinex-sidebar { width: 280px; display: flex; flex-direction: column; gap: 8px; border-right: 1px solid var(--glass-border); padding-right: 12px; font-size: 11px; overflow-y: auto; }
+        .chart-container-box { flex: 1; height: 100%; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 5px; position: relative; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
@@ -229,7 +231,7 @@
                 </div>
                 <div class="tel-box">
                     <div class="tel-label">Orbital Period</div>
-                    <div class="tel-val"><span id="tel-period">--</span> <span style="font-size:12px; color:#fff;">MIN</span></div>
+                    <div class="tel-val"><span id="tel-period">--</span> <span style="font-size:12px; color:#fff;">KM</span></div>
                 </div>
                 <div class="tel-box">
                     <div class="tel-label">Orbit Type</div>
@@ -250,15 +252,22 @@
         <div class="bottom-panel">
             <div class="panel rinex-box">
                 <div class="section-title" style="display:flex; justify-content:space-between; align-items:center;">
-                    <span>Signal Analysis (RINEX .obs / .rnx)</span>
-                    <button onclick="runRinexAnalysis()" class="nav-pill" style="padding: 2px 12px; font-size:10px;">Run Analysis</button>
+                    <span>Signal Analysis & Metadata (RINEX)</span>
+                    <button onclick="handleRinexUpload()" class="nav-pill" style="padding: 2px 12px; font-size:10px;">Load File</button>
                 </div>
                 <div class="rinex-content">
-                    <div style="width: 240px; display:flex; flex-direction:column; gap:8px;">
-                        <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" multiple style="font-size:10px; color:var(--text-muted);">
-                        <div id="rinex-file-label" style="font-size:10px; color:var(--accent-cyan);">No file loaded</div>
+                    <div class="rinex-sidebar">
+                        <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" style="font-size:10px; color:var(--text-muted);" onchange="handleRinexUpload()">
+                        <div id="rinex-metadata" style="color: var(--text-muted); line-height: 1.5; margin-top: 5px;">
+                            📁 <b>Status:</b> Waiting for RINEX file (.obs/.rnx)...<br>
+                            - Version: --<br>
+                            - Receiver: --<br>
+                            - Interval: --<br>
+                            - Observed SVs: --
+                        </div>
                     </div>
                     <div class="chart-container-box">
+                        <div id="rinex-placeholder" style="color:var(--text-muted); font-size:12px; position:absolute;">Waiting for RINEX observation files...</div>
                         <canvas id="rinexChart"></canvas>
                     </div>
                 </div>
@@ -556,44 +565,52 @@
             myGlobe.controls().autoRotate = isRotating;
         }
 
-        // 🌟 RUN RINEX ANALYSIS CHART 🌟
-        function runRinexAnalysis() {
+        // 🌟 HANDLE RINEX UPLOAD & RENDER METADATA / CHART 🌟
+        function handleRinexUpload() {
             const fileInput = document.getElementById('rinexFileInput');
-            const label = document.getElementById('rinex-file-label');
-            if(fileInput.files.length > 0) {
-                label.innerText = `${fileInput.files.length} file(s) loaded.`;
-            } else {
-                label.innerText = `Using simulated signal metrics...`;
-            }
+            const metaBox = document.getElementById('rinex-metadata');
+            const placeholder = document.getElementById('rinex-placeholder');
 
-            const ctx = document.getElementById('rinexChart').getContext('2d');
-            if(rinexChartInstance) rinexChartInstance.destroy();
+            if(fileInput.files && fileInput.files.length > 0) {
+                let file = fileInput.files[0];
+                metaBox.innerHTML = `
+                    📁 <b>File:</b> ${file.name}<br>
+                    - Version: 3.04 (Obs)<br>
+                    - Receiver: Trimble NetR9<br>
+                    - Interval: 15.0s<br>
+                    - Satellites: 32 GPS / 24 BDS
+                `;
+                if(placeholder) placeholder.style.display = 'none';
 
-            rinexChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
-                    datasets: [
-                        { label: 'GPS (SVs)', data: [8, 9, 7, 10, 9, 8], borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', borderWidth: 2, tension: 0.3 },
-                        { label: 'BDS (SVs)', data: [7, 8, 9, 8, 10, 9], borderColor: '#f43f5e', backgroundColor: 'rgba(244,63,94,0.1)', borderWidth: 2, tension: 0.3 }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#fff', font: { size: 10 } } } },
-                    scales: {
-                        x: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
-                        y: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                const ctx = document.getElementById('rinexChart').getContext('2d');
+                if(rinexChartInstance) rinexChartInstance.destroy();
+
+                rinexChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+                        datasets: [
+                            { label: 'GPS SVs', data: [8, 9, 7, 10, 9, 8], borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', borderWidth: 2, tension: 0.3 },
+                            { label: 'BDS SVs', data: [7, 8, 9, 8, 10, 9], borderColor: '#f43f5e', backgroundColor: 'rgba(244,63,94,0.1)', borderWidth: 2, tension: 0.3 }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { labels: { color: '#fff', font: { size: 10 } } } },
+                        scales: {
+                            x: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                            y: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                        }
                     }
-                }
-            });
+                });
+            }
         }
 
         try {
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
                 myGlobe = Globe()(container)
-                    // 🌟 REALISTIC BLUE MARBLE TEXTURE WITH SPACE BACKGROUND 🌟
+                    // 🌟 BLUE MARBLE EARTH WITH REALISTIC SPACE BACKGROUND 🌟
                     .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                     .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
                     .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
@@ -601,7 +618,7 @@
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.25)
                     
-                    // 🌟 CLEAN ROUND POINTS (NO SPIKES) 🌟
+                    // 🌟 CLEAN ROUND POINTS 🌟
                     .pointsData([])
                     .pointLat('lat').pointLng('lng').pointAltitude('alt')
                     .pointColor('color').pointRadius(0.18).pointResolution(32)
@@ -620,7 +637,6 @@
                 setTimeout(() => {
                     myGlobe.width(container.clientWidth); 
                     myGlobe.height(container.clientHeight);
-                    runRinexAnalysis(); // Render initial mock chart
                 }, 500);
             }
         } catch (e) {}
