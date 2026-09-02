@@ -288,14 +288,14 @@
         let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass']);
         let currentLiveSatObjects = [];
 
-        const VISUAL_ALTITUDE = 0.05; 
+        // 🌟 FIXED ALTITUDE FOR CLEAN 3D SPHERES (NO SPIKES) 🌟
+        const VISUAL_ALTITUDE = 0.001; 
 
         const STATIONS_DATA = {
             yangon: { lat: 16.8661, lng: 96.1951, name: 'Yangon Base HQ', color: '#00f0ff', size: 3.5, alt: 0.01 },
             naypyidaw: { lat: 19.7633, lng: 96.0785, name: 'Naypyidaw Link', color: '#3b82f6', size: 3.0, alt: 0.01 }
         };
 
-        // 🌟 GROUND STATION ZOOM & PULSE RINGS 🌟
         function onStationSelectChange(val) {
             if (!myGlobe) return;
             let currentRings = [];
@@ -303,7 +303,6 @@
             if (val !== 'none' && STATIONS_DATA[val]) {
                 let st = STATIONS_DATA[val];
                 currentRings.push(st);
-                // Cinematic fly-to station
                 myGlobe.pointOfView({ lat: st.lat, lng: st.lng, altitude: 1.2 }, 1500);
             }
 
@@ -626,10 +625,10 @@
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.25)
                     
-                    // 🌟 3D GLOWING SPHERE SATELLITES (NO SPIKES OR LINES) 🌟
+                    // 🌟 3D GLOWING SPHERE SATELLITES (FLAT CLEAN DOTS ON SURFACE) 🌟
                     .pointsData([])
                     .pointLat('lat').pointLng('lng').pointAltitude('alt')
-                    .pointColor('color').pointRadius(0.22).pointResolution(32)
+                    .pointColor('color').pointRadius(0.25).pointResolution(32)
                     .onPointClick((d) => { if (d && d.id) selectSatellite(d.id); })
 
                     .labelsData([])
