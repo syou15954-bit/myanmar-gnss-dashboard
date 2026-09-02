@@ -475,8 +475,8 @@
         let activeSelectedFileIndex = -1;
         let currentSelectedStation = 'none';
 
-        // 🌟 ORBIT ALTITUDE 🌟
-        const VISUAL_ALTITUDE = 0.5;
+        // 🌟 ORBIT ALTITUDE 🌟 Make satellites visually detached from Earth surface
+        const VISUAL_ALTITUDE = 0.6;
 
         // TLE STATION MARKERS
         const STATIONS = [
@@ -674,8 +674,8 @@
                     `;}).join('');
                 }
 
+                // Push dots to Globe immediately
                 if (myGlobe) {
-                    // Inject array of exact format required by globe.gl pointsData
                     const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
                     myGlobe.pointsData(unselectedSats); 
                 }
@@ -753,6 +753,7 @@
             }
 
             let idsToTrack = [];
+            // Always track selected if present
             if (selectedSatId) idsToTrack.push(selectedSatId);
 
             const maxRings = parseInt(document.getElementById('track-count-select')?.value) || 24; 
@@ -790,7 +791,7 @@
             });
 
             myGlobe.pathsData(allPaths)
-                   .pathPoints(d => d.coords)
+                   .pathPoints('coords')
                    .pathPointLat(p => p[0])
                    .pathPointLng(p => p[1])
                    .pathPointAlt(p => p[2])
@@ -842,7 +843,6 @@
                 }
             });
 
-            // Update Map immediately
             updateAllOrbitPaths();
 
             if (myGlobe && currentLiveSatObjects.length > 0) {
@@ -990,7 +990,7 @@
         }
 
         // ==========================================================================
-        // 🌟 GLOBE INITIALIZATION (POINTS RENDER FIX)
+        // 🌟 GLOBE INITIALIZATION
         // ==========================================================================
         try {
             const container = document.getElementById('globeViz');
@@ -1003,17 +1003,17 @@
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.35)
                     
-                    // 🌟 USE LIGHTWEIGHT POINTS FOR PERFORMANCE 🌟
+                    // 🌟 RENDER POINTS 🌟
                     .pointsData([])
                     .pointLat('lat')
                     .pointLng('lng')
                     .pointAltitude('alt')
                     .pointColor('color')
-                    .pointRadius(0.12) // 👈 Perfectly visible but not too big
+                    .pointRadius(0.12) // Perfectly visible size
                     .pointResolution(32)
                     .onPointClick((d) => { if (d && d.id) selectSatellite(d.id); })
                     
-                    // 🌟 HTML MARKERS FOR STATION IDENTIFIERS AND SATELLITE TRACK 🌟
+                    // 🌟 RENDER LABELS 🌟
                     .htmlElementsData(STATIONS)
                     .htmlElement(d => {
                         const el = document.createElement('div');
@@ -1029,7 +1029,7 @@
                                 </div>
                             `;
                         } 
-                        // SELECTED SATELLITE LABEL
+                        // SELECTED SATELLITE
                         else {
                             el.innerHTML = `
                                 <div style="display:flex; align-items:center; gap:6px; pointer-events:none; transform: translate(10px, -10px);">
@@ -1047,7 +1047,6 @@
                 myGlobe.controls().autoRotate = true;
                 myGlobe.controls().autoRotateSpeed = 0.3;
                 
-                // Delay to allow map to load before triggering points
                 setTimeout(() => {
                     myGlobe.width(container.clientWidth); 
                     myGlobe.height(container.clientHeight);
@@ -1057,36 +1056,46 @@
         } catch (e) {}
 
         // ==========================================================================
-        // 🌟 REAL-TIME ANIMATION LOOP (3 SECONDS THROTTLE FOR STABILITY)
+        // 🌟 REAL-TIME ANIMATION LOOP (FLAWLESS)
         // ==========================================================================
-        setInterval(() => {
-            if (currentLiveSatObjects.length > 0) {
-                // Update math
-                currentLiveSatObjects.forEach(s => {
-                    const pos = getSatPos(s.id);
-                    s.lat = pos.lat;
-                    s.lng = pos.lng;
-                    s.alt = pos.alt;
-                });
+        let lastUpdateTime = 0;
+        
+        function animateSatellites(time) {
+            requestAnimationFrame(animateSatellites);
+            
+            if (!time) time = performance.now();
+            
+            // Limit render to 5 FPS to guarantee Browser stability without crashing
+            if (time - lastUpdateTime > 200) { 
+                lastUpdateTime = time;
                 
-                if (myGlobe) {
-                    const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                    myGlobe.pointsData([...unselectedSats]); // Apply Points
+                if (currentLiveSatObjects.length > 0) {
+                    currentLiveSatObjects.forEach(s => {
+                        const pos = getSatPos(s.id);
+                        s.lat = pos.lat;
+                        s.lng = pos.lng;
+                        s.alt = pos.alt;
+                    });
+                    
+                    if (myGlobe) {
+                        const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
+                        myGlobe.pointsData(unselectedSats); 
 
-                    if (selectedSatId) {
-                        const targetObj = currentLiveSatObjects.find(s => s.id === selectedSatId);
-                        if (targetObj) {
-                            myGlobe.htmlElementsData([targetObj, ...STATIONS]); 
+                        let htmlElements = [...STATIONS];
+                        if (selectedSatId) {
+                            const sel = currentLiveSatObjects.find(s => s.id === selectedSatId);
+                            if (sel) htmlElements.push(sel);
                         }
-                    } else {
-                        myGlobe.htmlElementsData([...STATIONS]);
+                        myGlobe.htmlElementsData(htmlElements);
                     }
                 }
             }
-        }, 3000); // Only push UI update every 3 seconds to avoid memory crash
+        }
 
         // Execute load
-        loadCelesTrakTLEs();
+        loadCelesTrakTLEs().then(() => {
+            requestAnimationFrame(animateSatellites);
+        });
 
     </script>
 </body>
