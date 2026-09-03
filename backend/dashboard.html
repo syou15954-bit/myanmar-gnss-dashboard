@@ -288,8 +288,8 @@
         let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass']);
         let currentLiveSatObjects = [];
 
-        // 🌟 CLEAR VISIBLE ORBIT ALTITUDE 🌟
-        const VISUAL_ALTITUDE = 0.35; 
+        // 🌟 FIXED FLAT SURFACE ALTITUDE (PREVENTS SPIKES) 🌟
+        const VISUAL_ALTITUDE = 0.005; 
 
         const STATIONS_DATA = {
             yangon: { lat: 16.8661, lng: 96.1951, name: 'Yangon Base HQ', color: '#00f0ff', size: 3.5, alt: 0.01 },
@@ -329,14 +329,13 @@
             onStationSelectChange(stVal);
         }
 
-        // 🌟 4 GNSS CONSTELLATIONS DISTINCT COLORS 🌟
         function getSatColor(satName) {
             let uname = (satName || '').toUpperCase();
-            if (uname.includes('GPS') || uname.includes('NAVSTAR')) return '#10b981'; // GPS: Green
-            if (uname.includes('BDS') || uname.includes('BEIDOU')) return '#f43f5e'; // BeiDou: Red/Pink
-            if (uname.includes('GAL') || uname.includes('GSAT')) return '#00f0ff'; // Galileo: Cyan/Blue
-            if (uname.includes('GLO') || uname.includes('COSMOS')) return '#c084fc'; // GLONASS: Purple
-            return '#ffb700'; // Others: Yellow
+            if (uname.includes('GPS')) return '#10b981'; // Green
+            if (uname.includes('BDS')) return '#f43f5e'; // Red
+            if (uname.includes('GAL')) return '#00f0ff'; // Cyan
+            if (uname.includes('GLO')) return '#c084fc'; // Purple
+            return '#3b82f6';
         }
 
         function getSatPos(id, timeOffsetSec = 0) {
@@ -491,7 +490,6 @@
                 </div>`).join('');
         }
 
-        // 🌟 CLEAR VISIBLE ORBIT PATHS (MATCHING SATELLITE COLORS) 🌟
         function updateAllOrbitPaths() {
             if (!myGlobe) return;
             if (!modes.tracks || currentLiveSatObjects.length === 0) {
@@ -663,6 +661,9 @@
                             const pos = getSatPos(s.id);
                             s.lat = pos.lat; s.lng = pos.lng; s.alt = pos.alt;
                         });
+                        
+                        // 🌟 FIX ALTITUDE SPIKES BY FORCING SAFE FLAT SURFACE ALTITUDE 🌟
+                        currentLiveSatObjects.forEach(s => { s.alt = VISUAL_ALTITUDE; });
                         
                         const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
                         myGlobe.pointsData([...unselectedSats]); 
