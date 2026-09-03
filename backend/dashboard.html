@@ -288,8 +288,8 @@
         let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass']);
         let currentLiveSatObjects = [];
 
-        // 🌟 PROPER ELEVATED ORBIT ALTITUDE FOR 3D FLOATING EFFECT 🌟
-        const VISUAL_ALTITUDE = 0.15; 
+        // 🌟 PROPER ORBIT ALTITUDE FOR 3D FLOATING SPHERES 🌟
+        const VISUAL_ALTITUDE = 0.25; 
 
         const STATIONS_DATA = {
             yangon: { lat: 16.8661, lng: 96.1951, name: 'Yangon Base HQ', color: '#00f0ff', size: 3.5, alt: 0.01 },
@@ -329,14 +329,14 @@
             onStationSelectChange(stVal);
         }
 
-        // 🌟 4 DISTINCT GNSS CONSTELLATION COLORS 🌟
+        // 🌟 4 DISTINCT CONSTELLATION COLORS (GPS: Green, BDS: Red/Pink, GAL: Cyan, GLO: Purple) 🌟
         function getSatColor(satName) {
             let uname = (satName || '').toUpperCase();
             if (uname.includes('GPS')) return '#10b981'; // GPS: Green
             if (uname.includes('BDS')) return '#f43f5e'; // BeiDou: Red/Pink
             if (uname.includes('GAL')) return '#00f0ff'; // Galileo: Cyan
             if (uname.includes('GLO')) return '#c084fc'; // GLONASS: Purple
-            return '#ffb700'; // Others: Yellow
+            return '#ffb700';
         }
 
         function getSatPos(id, timeOffsetSec = 0) {
@@ -628,10 +628,10 @@
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.25)
                     
-                    // 🌟 3D FLOATING VIVID ORB SATELLITES (CLEAN ROUND SPHERES WITH 0.45 RADIUS) 🌟
+                    // 🌟 FIXED CLEAN 3D FLOATING SPHERES (NO SPIKE LINES) 🌟
                     .pointsData([])
                     .pointLat('lat').pointLng('lng').pointAltitude('alt')
-                    .pointColor('color').pointRadius(0.45).pointResolution(32)
+                    .pointColor('color').pointRadius(0.35).pointResolution(32)
                     .onPointClick((d) => { if (d && d.id) selectSatellite(d.id); })
 
                     .labelsData([])
