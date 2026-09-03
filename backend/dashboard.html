@@ -347,14 +347,14 @@
             onStationSelectChange(stVal);
         }
 
-        // 🌟 4 STRICT CONSTELLATION COLORS (NO YELLOW SPIKES) 🌟
+        // 🌟 4 STRICT CONSTELLATION COLORS 🌟
         function getSatColor(satName) {
             let uname = (satName || '').toUpperCase();
-            if (uname.includes('GPS')) return '#10b981'; // GPS: Green
-            if (uname.includes('BDS')) return '#f43f5e'; // BeiDou: Red/Pink
-            if (uname.includes('GAL')) return '#00f0ff'; // Galileo: Cyan
-            if (uname.includes('GLO')) return '#c084fc'; // GLONASS: Purple
-            return '#00f0ff'; // Default fallback to Cyan (never yellow)
+            if (uname.includes('GPS')) return '#10b981'; // Green
+            if (uname.includes('BDS')) return '#f43f5e'; // Red/Pink
+            if (uname.includes('GAL')) return '#00f0ff'; // Cyan
+            if (uname.includes('GLO')) return '#c084fc'; // Purple
+            return '#00f0ff';
         }
 
         function getSatPos(id, timeOffsetSec = 0) {
@@ -430,7 +430,7 @@
                 });
                 CONSTELLATION_SATS = cat;
                 document.getElementById('tle-status-badge').innerHTML = `● OFFLINE SIMULATION`;
-                document.getElementById('tle-status-badge'].style.color = 'var(--accent-yellow)';
+                document.getElementById('tle-status-badge').style.color = 'var(--accent-yellow)';
             }
             renderCustomSelection();
         }
@@ -481,7 +481,7 @@
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                myGlobe.objectsData(unselectedSats); 
+                myGlobe.htmlElementsData(unselectedSats); 
             }
 
             populateUpcomingPassesList();
@@ -576,7 +576,7 @@
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                myGlobe.objectsData(unselectedSats);
+                myGlobe.htmlElementsData(unselectedSats);
 
                 myGlobe.labelsData([{
                     lat: targetObj.lat, lng: targetObj.lng,
@@ -646,15 +646,21 @@
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.25)
                     
-                    // 🌟 USE THREE.JS MESH OBJECTS (THREE.JS 3D SPHERES) TO ELIMINATE ALL SPIKES PERMANENTLY 🌟
-                    .objectsData([])
-                    .objectLat('lat').objectLng('lng').objectAltitude('alt')
-                    .objectThreeObject(d => {
-                        const geometry = new THREE.SphereGeometry(0.8, 16, 16);
-                        const material = new THREE.MeshBasicMaterial({ color: d.color });
-                        return new THREE.Mesh(geometry, material);
+                    // 🌟 USE STABLE HTML ELEMENTS FOR SATELLITE MARKERS TO AVOID THREE.JS SPIKES 🌟
+                    .htmlElementsData([])
+                    .htmlElement(d => {
+                        const el = document.createElement('div');
+                        el.style.width = '8px';
+                        el.style.height = '8px';
+                        el.style.borderRadius = '50%';
+                        el.style.backgroundColor = d.color;
+                        el.style.boxShadow = `0 0 10px ${d.color}, 0 0 15px ${d.color}`;
+                        el.style.cursor = 'pointer';
+                        el.title = d.fullName;
+                        el.onclick = () => selectSatellite(d.id);
+                        return el;
                     })
-                    .onObjectClick((d) => { if (d && d.id) selectSatellite(d.id); })
+                    .htmlLat('lat').htmlLng('lng').htmlAltitude('alt')
 
                     .labelsData([])
                     .labelLat('lat').labelLng('lng').labelAltitude(d => d.alt || 0.05)
@@ -690,7 +696,7 @@
                         currentLiveSatObjects.forEach(s => { s.alt = VISUAL_ALTITUDE; });
                         
                         const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                        myGlobe.objectsData([...unselectedSats]); 
+                        myGlobe.htmlElementsData([...unselectedSats]); 
 
                         if (selectedSatId) {
                             const sel = currentLiveSatObjects.find(s => s.id === selectedSatId);
