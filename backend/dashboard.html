@@ -40,19 +40,19 @@
         /* GLOBE BACKGROUND */
         #globeViz { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
 
-        /* MAIN LAYOUT */
+        /* MAIN LAYOUT WITH BALANCED SPACING */
         .dashboard-wrapper {
             position: relative; z-index: 10; display: grid;
-            grid-template-columns: 360px 1fr 340px;
-            grid-template-rows: 70px 1fr 240px;
-            height: 100vh; width: 100vw; padding: 20px; gap: 20px;
+            grid-template-columns: 350px 1fr 330px;
+            grid-template-rows: 65px 1fr 220px;
+            height: 100vh; width: 100vw; padding: 15px; gap: 15px;
             pointer-events: none;
         }
         
         .panel {
             background: var(--glass-bg); border: 1px solid var(--glass-border);
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            border-radius: 24px; padding: 20px;
+            border-radius: 20px; padding: 16px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
             pointer-events: auto;
             display: flex; flex-direction: column; overflow: hidden;
@@ -66,20 +66,20 @@
 
         .nav-pill {
             background: rgba(16, 24, 43, 0.8); border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px); border-radius: 40px; padding: 8px 24px;
-            color: var(--text-main); font-weight: 600; cursor: pointer; transition: 0.3s;
+            backdrop-filter: blur(10px); border-radius: 40px; padding: 6px 20px;
+            color: var(--text-main); font-weight: 600; cursor: pointer; transition: 0.3s; font-size: 13px;
         }
         .nav-pill:hover, .nav-pill.active { background: rgba(0, 240, 255, 0.1); border-color: var(--accent-cyan); color: var(--accent-cyan); }
         
         .status-badge {
             background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3);
-            color: var(--accent-green); border-radius: 40px; padding: 6px 16px; font-size: 11px; font-weight: 700;
+            color: var(--accent-green); border-radius: 40px; padding: 5px 14px; font-size: 11px; font-weight: 700;
         }
 
         /* LEFT SIDEBAR */
-        .left-sidebar { grid-column: 1; grid-row: 2 / -1; gap: 20px; display: flex; flex-direction: column; background: transparent; border: none; box-shadow: none; padding: 0; }
-        .card-container { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 15px; }
-        .section-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; margin-bottom: 5px; }
+        .left-sidebar { grid-column: 1; grid-row: 2 / -1; gap: 15px; display: flex; flex-direction: column; background: transparent; border: none; box-shadow: none; padding: 0; }
+        .card-container { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+        .section-title { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 1px solid var(--glass-border); padding-bottom: 8px; margin-bottom: 4px; }
 
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -87,8 +87,8 @@
 
         /* Fleet Table */
         .cyber-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-        .cyber-table th { text-align: left; color: var(--text-muted); padding: 8px 4px; font-weight: 600; position: sticky; top: 0; background: rgba(10, 15, 25, 0.9); z-index: 5; }
-        .cyber-table td { padding: 8px 4px; border-bottom: 1px solid rgba(255,255,255,0.02); }
+        .cyber-table th { text-align: left; color: var(--text-muted); padding: 6px 4px; font-weight: 600; position: sticky; top: 0; background: rgba(10, 15, 25, 0.9); z-index: 5; }
+        .cyber-table td { padding: 6px 4px; border-bottom: 1px solid rgba(255,255,255,0.02); }
         .cyber-table tr { cursor: pointer; transition: 0.2s; }
         .cyber-table tr:hover { background: rgba(0, 240, 255, 0.05); }
         .table-row-selected { background: rgba(0, 240, 255, 0.15) !important; border-left: 3px solid var(--accent-cyan); }
@@ -96,31 +96,31 @@
         /* Passes Cards */
         .pass-card {
             background: linear-gradient(145deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.8) 100%);
-            border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 16px;
-            cursor: pointer; transition: 0.3s; margin-bottom: 10px; position: relative; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 12px;
+            cursor: pointer; transition: 0.3s; margin-bottom: 8px; position: relative; overflow: hidden;
         }
         .pass-card:hover { border-color: var(--accent-cyan); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,240,255,0.1); }
         .pass-card::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; background: var(--accent-cyan); }
 
         /* RIGHT SIDEBAR */
-        .right-sidebar { grid-column: 3; grid-row: 2; display: flex; flex-direction: column; gap: 20px; }
+        .right-sidebar { grid-column: 3; grid-row: 2; display: flex; flex-direction: column; gap: 15px; }
         .target-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .target-code { font-size: 24px; font-weight: 700; color: #fff; letter-spacing: 1px; }
-        .target-sys { font-size: 11px; background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 20px; }
+        .target-code { font-size: 20px; font-weight: 700; color: #fff; letter-spacing: 1px; }
+        .target-sys { font-size: 10px; background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 20px; }
 
-        .telemetry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .tel-box { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; border: 1px solid rgba(255,255,255,0.03); }
-        .tel-label { font-size: 10px; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; }
-        .tel-val { font-size: 20px; font-weight: 700; color: var(--accent-cyan); }
+        .telemetry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .tel-box { background: rgba(0,0,0,0.2); border-radius: 10px; padding: 12px; border: 1px solid rgba(255,255,255,0.03); }
+        .tel-label { font-size: 9px; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
+        .tel-val { font-size: 18px; font-weight: 700; color: var(--accent-cyan); }
 
         /* RADAR ANIMATION */
         .radar-container {
-            width: 100%; height: 180px; background: rgba(0, 15, 30, 0.5); border-radius: 16px;
+            width: 100%; height: 150px; background: rgba(0, 15, 30, 0.5); border-radius: 12px;
             border: 1px solid rgba(0, 240, 255, 0.2); position: relative; overflow: hidden;
             display: flex; justify-content: center; align-items: center; margin-top: auto;
         }
         .radar-circle {
-            width: 140px; height: 140px; border-radius: 50%; border: 1px dashed rgba(0, 240, 255, 0.3);
+            width: 110px; height: 110px; border-radius: 50%; border: 1px dashed rgba(0, 240, 255, 0.3);
             position: relative; box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
         }
         .radar-circle::before { content: ''; position: absolute; top: 0; left: 50%; width: 1px; height: 100%; background: rgba(0, 240, 255, 0.2); }
@@ -132,26 +132,26 @@
         }
         @keyframes sweep { to { transform: rotate(360deg); } }
         .radar-dot {
-            position: absolute; width: 6px; height: 6px; background: #fff; border-radius: 50%;
+            position: absolute; width: 5px; height: 5px; background: #fff; border-radius: 50%;
             box-shadow: 0 0 10px #fff, 0 0 20px var(--accent-cyan); top: 30%; left: 60%;
             animation: ping 2s infinite;
         }
         @keyframes ping { 0% { opacity: 0; transform: scale(0.5); } 50% { opacity: 1; transform: scale(1.2); } 100% { opacity: 0; transform: scale(0.5); } }
 
         /* BOTTOM CENTER (RINEX & CONTROLS) */
-        .bottom-panel { grid-column: 2 / 4; grid-row: 3; display: flex; gap: 20px; background: transparent; border:none; box-shadow:none; padding:0;}
+        .bottom-panel { grid-column: 2 / 4; grid-row: 3; display: flex; gap: 15px; background: transparent; border:none; box-shadow:none; padding:0;}
         .center-controls {
-            position: absolute; bottom: 270px; left: 50%; transform: translateX(-50%);
-            display: flex; gap: 12px; background: var(--glass-bg); padding: 10px 20px;
+            position: absolute; bottom: 235px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 10px; background: var(--glass-bg); padding: 8px 18px;
             border-radius: 40px; border: 1px solid var(--glass-border); backdrop-filter: blur(16px);
             pointer-events: auto; z-index: 20;
         }
-        .ctrl-select { background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 6px 15px; font-family: 'Space Grotesk'; outline: none; cursor: pointer; }
+        .ctrl-select { background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 5px 12px; font-family: 'Space Grotesk'; outline: none; cursor: pointer; font-size: 12px; }
         
         .rinex-box { flex: 1; display: flex; flex-direction: column; }
-        .rinex-content { display: flex; gap: 15px; height: 100%; align-items: stretch; margin-top: 8px; min-height: 0; }
-        .rinex-sidebar { width: 280px; display: flex; flex-direction: column; gap: 8px; border-right: 1px solid var(--glass-border); padding-right: 12px; font-size: 11px; overflow-y: auto; }
-        .chart-container-box { flex: 1; height: 100%; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 5px; position: relative; display: flex; align-items: center; justify-content: center; }
+        .rinex-content { display: flex; gap: 12px; height: 100%; align-items: stretch; margin-top: 6px; min-height: 0; }
+        .rinex-sidebar { width: 260px; display: flex; flex-direction: column; gap: 6px; border-right: 1px solid var(--glass-border); padding-right: 10px; font-size: 10.5px; overflow-y: auto; }
+        .chart-container-box { flex: 1; height: 100%; background: rgba(0,0,0,0.3); border-radius: 10px; padding: 4px; position: relative; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
@@ -160,14 +160,14 @@
 
     <div class="dashboard-wrapper">
         <header class="top-nav">
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <div style="width: 32px; height: 32px; background: var(--accent-cyan); border-radius: 50%; box-shadow: 0 0 20px var(--accent-cyan); display: flex; align-items: center; justify-content: center;">
-                    <span style="color: #000; font-weight: bold;">G</span>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 28px; height: 28px; background: var(--accent-cyan); border-radius: 50%; box-shadow: 0 0 15px var(--accent-cyan); display: flex; align-items: center; justify-content: center;">
+                    <span style="color: #000; font-weight: bold; font-size: 12px;">G</span>
                 </div>
-                <h1 style="font-size: 16px; letter-spacing: 2px;">GNSS COMMAND</h1>
+                <h1 style="font-size: 15px; letter-spacing: 2px;">GNSS COMMAND</h1>
             </div>
             
-            <div style="display: flex; gap: 15px;">
+            <div style="display: flex; gap: 12px;">
                 <button class="nav-pill active">Fleet Ops</button>
                 <button class="nav-pill" onclick="toggleMyanmarVisibleOnly(this)" id="mm-only-btn">MM Coverage</button>
             </div>
@@ -178,9 +178,9 @@
         <aside class="left-sidebar">
             <div class="panel card-container">
                 <div class="section-title">Active Fleet Status</div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                    <div><div style="font-size: 10px; color:var(--text-muted);">TOTAL</div><div style="font-size: 24px; font-weight: 700;" id="total-sats">0</div></div>
-                    <div><div style="font-size: 10px; color:var(--text-muted);">TRACKING</div><div style="font-size: 24px; font-weight: 700; color:var(--accent-green);" id="active-sats">0</div></div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <div><div style="font-size: 9px; color:var(--text-muted);">TOTAL</div><div style="font-size: 20px; font-weight: 700;" id="total-sats">0</div></div>
+                    <div><div style="font-size: 9px; color:var(--text-muted);">TRACKING</div><div style="font-size: 20px; font-weight: 700; color:var(--accent-green);" id="active-sats">0</div></div>
                 </div>
                 <div style="flex:1; overflow-y:auto;">
                     <table class="cyber-table mono">
@@ -192,7 +192,7 @@
 
             <div class="panel card-container" style="flex: 0.8;">
                 <div class="section-title">Upcoming Passes (MMT)</div>
-                <div id="upcoming-passes-list" style="overflow-y: auto; padding-right: 5px;"></div>
+                <div id="upcoming-passes-list" style="overflow-y: auto; padding-right: 4px;"></div>
             </div>
         </aside>
 
@@ -202,7 +202,7 @@
                 <option value="yangon">📍 Yangon Base HQ</option>
                 <option value="naypyidaw">📍 Naypyidaw Link</option>
             </select>
-            <button class="nav-pill" style="padding: 6px 15px;" onclick="toggleGlobeRotation()">⏸ Auto-Pan</button>
+            <button class="nav-pill" style="padding: 5px 12px; font-size: 12px;" onclick="toggleGlobeRotation()">⏸ Auto-Pan</button>
             <select id="track-count-select" class="ctrl-select" onchange="updateAllOrbitPaths()">
                 <option value="24" selected>Orbit Web: Normal</option>
                 <option value="48">Orbit Web: Dense</option>
@@ -214,7 +214,7 @@
             <div class="section-title">Target Telemetry</div>
             <div class="target-header">
                 <div>
-                    <div style="font-size:10px; color:var(--text-muted); margin-bottom:5px;">OBJECT CODE</div>
+                    <div style="font-size:9px; color:var(--text-muted); margin-bottom:4px;">OBJECT CODE</div>
                     <div class="target-code mono" id="tel-sat-name">AWAITING LOCK</div>
                 </div>
                 <div class="target-sys" id="tel-sat-sys">--</div>
@@ -223,15 +223,15 @@
             <div class="telemetry-grid mono">
                 <div class="tel-box">
                     <div class="tel-label">Current Altitude</div>
-                    <div class="tel-val"><span id="tel-alt">--</span> <span style="font-size:12px; color:#fff;">KM</span></div>
+                    <div class="tel-val"><span id="tel-alt">--</span> <span style="font-size:11px; color:#fff;">KM</span></div>
                 </div>
                 <div class="tel-box">
                     <div class="tel-label">Orbital Velocity</div>
-                    <div class="tel-val"><span id="tel-vel">--</span> <span style="font-size:12px; color:#fff;">KM/S</span></div>
+                    <div class="tel-val"><span id="tel-vel">--</span> <span style="font-size:11px; color:#fff;">KM/S</span></div>
                 </div>
                 <div class="tel-box">
                     <div class="tel-label">Orbital Period</div>
-                    <div class="tel-val"><span id="tel-period">--</span> <span style="font-size:12px; color:#fff;">MIN</span></div>
+                    <div class="tel-val"><span id="tel-period">--</span> <span style="font-size:11px; color:#fff;">MIN</span></div>
                 </div>
                 <div class="tel-box">
                     <div class="tel-label">Orbit Type</div>
@@ -244,7 +244,7 @@
                     <div class="radar-sweep"></div>
                     <div class="radar-dot" style="display:none;" id="radar-dot-active"></div>
                 </div>
-                <div style="position: absolute; bottom: 10px; font-size: 9px; letter-spacing: 2px; color: rgba(255,255,255,0.5);">RADAR TRACKING ACTIVE</div>
+                <div style="position: absolute; bottom: 8px; font-size: 8.5px; letter-spacing: 2px; color: rgba(255,255,255,0.5);">RADAR TRACKING ACTIVE</div>
             </div>
         </aside>
 
@@ -253,12 +253,12 @@
             <div class="panel rinex-box">
                 <div class="section-title" style="display:flex; justify-content:space-between; align-items:center;">
                     <span>Signal Analysis & Metadata (RINEX)</span>
-                    <button onclick="handleRinexUpload()" class="nav-pill" style="padding: 2px 12px; font-size:10px;">Load File</button>
+                    <button onclick="handleRinexUpload()" class="nav-pill" style="padding: 2px 10px; font-size:10px;">Load File</button>
                 </div>
                 <div class="rinex-content">
                     <div class="rinex-sidebar">
                         <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" style="font-size:10px; color:var(--text-muted);" onchange="handleRinexUpload()">
-                        <div id="rinex-metadata" style="color: var(--text-muted); line-height: 1.5; margin-top: 5px;">
+                        <div id="rinex-metadata" style="color: var(--text-muted); line-height: 1.4; margin-top: 4px;">
                             📁 <b>Status:</b> Waiting for RINEX file (.obs/.rnx)<br>
                             - Version: --<br>
                             - Receiver: --<br>
@@ -267,7 +267,7 @@
                         </div>
                     </div>
                     <div class="chart-container-box">
-                        <div id="rinex-placeholder" style="color:var(--text-muted); font-size:12px; position:absolute;">Waiting for RINEX observation files...</div>
+                        <div id="rinex-placeholder" style="color:var(--text-muted); font-size:11px; position:absolute;">Waiting for RINEX observation files...</div>
                         <canvas id="rinexChart"></canvas>
                     </div>
                 </div>
@@ -288,7 +288,6 @@
         let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass']);
         let currentLiveSatObjects = [];
 
-        // 🌟 FIXED FLAT SURFACE ALTITUDE (PREVENTS SPIKES) 🌟
         const VISUAL_ALTITUDE = 0.005; 
 
         const STATIONS_DATA = {
@@ -303,7 +302,7 @@
             if (val !== 'none' && STATIONS_DATA[val]) {
                 let st = STATIONS_DATA[val];
                 currentRings.push(st);
-                myGlobe.pointOfView({ lat: st.lat, lng: st.lng, altitude: 1.2 }, 1500);
+                myGlobe.pointOfView({ lat: st.lat, lng: st.lng, altitude: 1.4 }, 1500);
             }
 
             if (selectedSatId) {
@@ -483,8 +482,8 @@
 
             listContainer.innerHTML = passes.map(p => `
                 <div class="pass-card" onclick="selectSatellite('${p.sat.id}')">
-                    <div style="font-weight:700; color:#fff; font-size:12px; margin-bottom:8px;">${p.sat.name}</div>
-                    <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted);">
+                    <div style="font-weight:700; color:#fff; font-size:11px; margin-bottom:6px;">${p.sat.name}</div>
+                    <div style="display:flex; justify-content:space-between; font-size:9.5px; color:var(--text-muted);">
                         <span>ALT: ${p.alt}KM</span><span style="color:var(--accent-cyan); font-weight:700;">${p.timeStr}</span>
                     </div>
                 </div>`).join('');
@@ -566,7 +565,7 @@
                 }]);
 
                 updateRings();
-                myGlobe.pointOfView({ lat: targetObj.lat, lng: targetObj.lng, altitude: 1.2 }, 1500);
+                myGlobe.pointOfView({ lat: targetObj.lat, lng: targetObj.lng, altitude: 1.3 }, 1500);
             }
         }
 
@@ -627,10 +626,10 @@
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.25)
                     
-                    // 🌟 CLEAR LARGE VIVID SATELLITE SPHERES (0.5 RADIUS) 🌟
+                    // 🌟 BALANCED ZOOM & CLEAR VIVID SATELLITE SPHERES (0.35 RADIUS) 🌟
                     .pointsData([])
                     .pointLat('lat').pointLng('lng').pointAltitude('alt')
-                    .pointColor('color').pointRadius(0.5).pointResolution(32)
+                    .pointColor('color').pointRadius(0.35).pointResolution(32)
                     .onPointClick((d) => { if (d && d.id) selectSatellite(d.id); })
 
                     .labelsData([])
@@ -643,6 +642,9 @@
                 myGlobe.controls().autoRotate = true;
                 myGlobe.controls().autoRotateSpeed = 0.5;
                 
+                // Set balanced initial camera altitude so globe doesn't look overly crammed
+                myGlobe.pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.3 }, 0);
+
                 setTimeout(() => {
                     myGlobe.width(container.clientWidth); 
                     myGlobe.height(container.clientHeight);
@@ -662,7 +664,6 @@
                             s.lat = pos.lat; s.lng = pos.lng; s.alt = pos.alt;
                         });
                         
-                        // 🌟 FIX ALTITUDE SPIKES BY FORCING SAFE FLAT SURFACE ALTITUDE 🌟
                         currentLiveSatObjects.forEach(s => { s.alt = VISUAL_ALTITUDE; });
                         
                         const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
