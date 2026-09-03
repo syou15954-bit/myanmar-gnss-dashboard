@@ -288,7 +288,8 @@
         let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass']);
         let currentLiveSatObjects = [];
 
-        const VISUAL_ALTITUDE = 0.005; 
+        // 🌟 3D FLOATING ORBIT ALTITUDE (FLOATING CLEARLY IN SPACE) 🌟
+        const VISUAL_ALTITUDE = 0.25; 
 
         const STATIONS_DATA = {
             yangon: { lat: 16.8661, lng: 96.1951, name: 'Yangon Base HQ', color: '#00f0ff', size: 3.5, alt: 0.01 },
@@ -330,10 +331,10 @@
 
         function getSatColor(satName) {
             let uname = (satName || '').toUpperCase();
-            if (uname.includes('GPS')) return '#10b981'; 
-            if (uname.includes('BDS')) return '#f43f5e'; 
-            if (uname.includes('GAL')) return '#00f0ff'; 
-            if (uname.includes('GLO')) return '#c084fc'; 
+            if (uname.includes('GPS')) return '#10b981'; // Green
+            if (uname.includes('BDS')) return '#f43f5e'; // Red
+            if (uname.includes('GAL')) return '#00f0ff'; // Cyan
+            if (uname.includes('GLO')) return '#c084fc'; // Purple
             return '#3b82f6';
         }
 
@@ -619,18 +620,18 @@
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
                 myGlobe = Globe()(container)
-                    // 🌟 SCI-FI HOLOGRAPHIC DARK GLOWING EARTH TEXTURE 🌟
-                    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
+                    // 🌟 VIVID BLUE MARBLE EARTH WITH BRIGHT CYAN ATMOSPHERE & SPACE BACKGROUND 🌟
+                    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                     .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
                     .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
                     .showAtmosphere(true)
                     .atmosphereColor('#00f0ff')
-                    .atmosphereAltitude(0.35)
+                    .atmosphereAltitude(0.3)
                     
-                    // 🌟 VIVID SCI-FI GLOWING SPHERE SATELLITES (0.45 RADIUS) 🌟
+                    // 🌟 3D FLOATING SATELLITE SPHERES (0.4 RADIUS) 🌟
                     .pointsData([])
                     .pointLat('lat').pointLng('lng').pointAltitude('alt')
-                    .pointColor('color').pointRadius(0.45).pointResolution(32)
+                    .pointColor('color').pointRadius(0.4).pointResolution(32)
                     .onPointClick((d) => { if (d && d.id) selectSatellite(d.id); })
 
                     .labelsData([])
@@ -643,7 +644,6 @@
                 myGlobe.controls().autoRotate = true;
                 myGlobe.controls().autoRotateSpeed = 0.5;
                 
-                // Balanced cinematic view
                 myGlobe.pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.2 }, 0);
 
                 setTimeout(() => {
