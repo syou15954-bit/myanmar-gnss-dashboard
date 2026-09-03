@@ -249,7 +249,7 @@
                 </div>
                 <div class="tel-box">
                     <div class="tel-label">Orbital Period</div>
-                    <div class="tel-val"><span id="tel-period">--</span> <span style="font-size:11px; color:#fff;">MIN</span></div>
+                    <div class="tel-val"><span id="tel-period">--</span> <span style="font-size:11px; color:#fff;">KM</span></div>
                 </div>
                 <div class="tel-box">
                     <div class="tel-label">Orbit Type</div>
@@ -481,7 +481,8 @@
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                myGlobe.htmlElementsData(unselectedSats); 
+                // 🌟 RESTORE GLOWING LABELS AS ROBUST 3D SATELLITE MARKERS 🌟
+                myGlobe.labelsData(unselectedSats); 
             }
 
             populateUpcomingPassesList();
@@ -576,15 +577,8 @@
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                myGlobe.htmlElementsData(unselectedSats);
+                myGlobe.labelsData(unselectedSats);
 
-                myGlobe.labelsData([{
-                    lat: targetObj.lat, lng: targetObj.lng,
-                    name: `TARGET LOCK: ${targetObj.name}`,
-                    color: '#00f0ff', size: 1.5, alt: VISUAL_ALTITUDE + 0.05
-                }]);
-
-                updateRings();
                 myGlobe.pointOfView({ lat: targetObj.lat, lng: targetObj.lng, altitude: 1.3 }, 1500);
             }
         }
@@ -646,26 +640,15 @@
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.25)
                     
-                    // 🌟 USE STABLE HTML ELEMENTS FOR SATELLITE MARKERS TO AVOID THREE.JS SPIKES 🌟
-                    .htmlElementsData([])
-                    .htmlElement(d => {
-                        const el = document.createElement('div');
-                        el.style.width = '8px';
-                        el.style.height = '8px';
-                        el.style.borderRadius = '50%';
-                        el.style.backgroundColor = d.color;
-                        el.style.boxShadow = `0 0 10px ${d.color}, 0 0 15px ${d.color}`;
-                        el.style.cursor = 'pointer';
-                        el.title = d.fullName;
-                        el.onclick = () => selectSatellite(d.id);
-                        return el;
-                    })
-                    .htmlLat('lat').htmlLng('lng').htmlAltitude('alt')
-
+                    // 🌟 USE GLOBE.GL LABELS TO RENDER VIVID COLORED DOT MARKERS WITHOUT ANY SPIKES 🌟
                     .labelsData([])
-                    .labelLat('lat').labelLng('lng').labelAltitude(d => d.alt || 0.05)
-                    .labelDotRadius(0.5).labelDotOrientation(() => 'bottom')
-                    .labelColor('color').labelText('name').labelSize(d => d.size || 1.5)
+                    .labelLat('lat').labelLng('lng').labelAltitude(d => d.alt || VISUAL_ALTITUDE)
+                    .labelDotRadius(0.8)
+                    .labelDotOrientation(() => 'bottom')
+                    .labelColor('color')
+                    .labelText(d => '') // Show clean glowing dots without heavy clutter text
+                    .labelSize(0.5)
+                    .onLabelClick((d) => { if (d && d.id) selectSatellite(d.id); })
                     
                     .pathsData([]);
 
@@ -696,17 +679,8 @@
                         currentLiveSatObjects.forEach(s => { s.alt = VISUAL_ALTITUDE; });
                         
                         const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                        myGlobe.htmlElementsData([...unselectedSats]); 
+                        myGlobe.labelsData(unselectedSats); 
 
-                        if (selectedSatId) {
-                            const sel = currentLiveSatObjects.find(s => s.id === selectedSatId);
-                            if (sel) {
-                                myGlobe.labelsData([{
-                                    lat: sel.lat, lng: sel.lng, name: `TARGET LOCK: ${sel.name}`,
-                                    color: '#00f0ff', size: 1.5, alt: VISUAL_ALTITUDE + 0.05
-                                }]);
-                            }
-                        }
                         updateRings(); 
                     }
                 }
