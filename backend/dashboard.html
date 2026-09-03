@@ -306,7 +306,7 @@
         let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass']);
         let currentLiveSatObjects = [];
 
-        // 🌟 CLEAN FIXED ALTITUDE FOR 3D ORBITS 🌟
+        // 🌟 3D FLOATING ORBIT ALTITUDE 🌟
         const VISUAL_ALTITUDE = 0.25; 
 
         const STATIONS_DATA = {
@@ -350,10 +350,10 @@
         // 🌟 4 DISTINCT CONSTELLATION COLORS 🌟
         function getSatColor(satName) {
             let uname = (satName || '').toUpperCase();
-            if (uname.includes('GPS')) return '#10b981'; // GPS: Green
-            if (uname.includes('BDS')) return '#f43f5e'; // BeiDou: Red/Pink
-            if (uname.includes('GAL')) return '#00f0ff'; // Galileo: Cyan
-            if (uname.includes('GLO')) return '#c084fc'; // GLONASS: Purple
+            if (uname.includes('GPS')) return '#10b981'; // Green
+            if (uname.includes('BDS')) return '#f43f5e'; // Red/Pink
+            if (uname.includes('GAL')) return '#00f0ff'; // Cyan
+            if (uname.includes('GLO')) return '#c084fc'; // Purple
             return '#ffb700';
         }
 
@@ -646,7 +646,7 @@
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.25)
                     
-                    // 🌟 3D GLOWING SPHERES (CLEAN ROUND DOTS WITH 4 COLORS) 🌟
+                    // 🌟 3D GLOWING SPHERES (FORCED PURE ROUND SPHERES WITH ZERO SPIKES) 🌟
                     .pointsData([])
                     .pointLat('lat').pointLng('lng').pointAltitude('alt')
                     .pointColor('color').pointRadius(0.35).pointResolution(32)
