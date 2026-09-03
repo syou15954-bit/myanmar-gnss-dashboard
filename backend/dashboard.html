@@ -168,7 +168,7 @@
 
     <div id="globeViz"></div>
 
-    <!-- INFOGRAPHIC LEGEND OVERLAY (Matching Infographic Style) -->
+    <!-- INFOGRAPHIC LEGEND OVERLAY -->
     <div class="constellation-legend-box mono">
         <div class="legend-badge" style="color: #10b981;"><div class="legend-dot" style="background: #10b981;"></div>GPS</div>
         <div class="legend-badge" style="color: #f43f5e;"><div class="legend-dot" style="background: #f43f5e;"></div>BeiDou</div>
@@ -306,7 +306,7 @@
         let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass']);
         let currentLiveSatObjects = [];
 
-        // 🌟 INFOGRAPHIC ORBIT ALTITUDE (CLEARLY VISIBLE IN SPACE) 🌟
+        // 🌟 CLEAN FIXED ALTITUDE FOR 3D ORBITS 🌟
         const VISUAL_ALTITUDE = 0.25; 
 
         const STATIONS_DATA = {
@@ -347,7 +347,7 @@
             onStationSelectChange(stVal);
         }
 
-        // 🌟 4 DISTINCT INFOGRAPHIC CONSTELLATION COLORS 🌟
+        // 🌟 4 DISTINCT CONSTELLATION COLORS 🌟
         function getSatColor(satName) {
             let uname = (satName || '').toUpperCase();
             if (uname.includes('GPS')) return '#10b981'; // GPS: Green
@@ -530,7 +530,7 @@
                 const satObj = currentLiveSatObjects.find(s => s.id === id);
                 const baseColor = satObj ? satObj.color : '#3b82f6';
                 const color = isSelected ? '#00f0ff' : baseColor;
-                const width = isSelected ? 2.5 : 1.0;
+                const width = isSelected ? 2.5 : 0.9;
                 
                 let currentSegment = [];
                 for (let i = 0; i <= 100; i++) {
@@ -646,10 +646,10 @@
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.25)
                     
-                    // 🌟 3D FLOATING VIVID ORB SATELLITES (CLEAN SPHERES AT INFOGRAPHIC ALTITUDE) 🌟
+                    // 🌟 3D GLOWING SPHERES (CLEAN ROUND DOTS WITH 4 COLORS) 🌟
                     .pointsData([])
                     .pointLat('lat').pointLng('lng').pointAltitude('alt')
-                    .pointColor('color').pointRadius(0.45).pointResolution(32)
+                    .pointColor('color').pointRadius(0.35).pointResolution(32)
                     .onPointClick((d) => { if (d && d.id) selectSatellite(d.id); })
 
                     .labelsData([])
