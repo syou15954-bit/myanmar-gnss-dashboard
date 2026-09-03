@@ -330,10 +330,10 @@
 
         function getSatColor(satName) {
             let uname = (satName || '').toUpperCase();
-            if (uname.includes('GPS')) return '#10b981'; // Green
-            if (uname.includes('BDS')) return '#f43f5e'; // Red
-            if (uname.includes('GAL')) return '#00f0ff'; // Cyan
-            if (uname.includes('GLO')) return '#c084fc'; // Purple
+            if (uname.includes('GPS')) return '#10b981'; 
+            if (uname.includes('BDS')) return '#f43f5e'; 
+            if (uname.includes('GAL')) return '#00f0ff'; 
+            if (uname.includes('GLO')) return '#c084fc'; 
             return '#3b82f6';
         }
 
@@ -619,17 +619,18 @@
             const container = document.getElementById('globeViz');
             if (container && typeof Globe !== 'undefined') {
                 myGlobe = Globe()(container)
-                    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+                    // 🌟 SCI-FI HOLOGRAPHIC DARK GLOWING EARTH TEXTURE 🌟
+                    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
                     .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
                     .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
                     .showAtmosphere(true)
-                    .atmosphereColor('#38bdf8')
-                    .atmosphereAltitude(0.25)
+                    .atmosphereColor('#00f0ff')
+                    .atmosphereAltitude(0.35)
                     
-                    // 🌟 BALANCED ZOOM & CLEAR VIVID SATELLITE SPHERES (0.35 RADIUS) 🌟
+                    // 🌟 VIVID SCI-FI GLOWING SPHERE SATELLITES (0.45 RADIUS) 🌟
                     .pointsData([])
                     .pointLat('lat').pointLng('lng').pointAltitude('alt')
-                    .pointColor('color').pointRadius(0.35).pointResolution(32)
+                    .pointColor('color').pointRadius(0.45).pointResolution(32)
                     .onPointClick((d) => { if (d && d.id) selectSatellite(d.id); })
 
                     .labelsData([])
@@ -642,8 +643,8 @@
                 myGlobe.controls().autoRotate = true;
                 myGlobe.controls().autoRotateSpeed = 0.5;
                 
-                // Set balanced initial camera altitude so globe doesn't look overly crammed
-                myGlobe.pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.3 }, 0);
+                // Balanced cinematic view
+                myGlobe.pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.2 }, 0);
 
                 setTimeout(() => {
                     myGlobe.width(container.clientWidth); 
