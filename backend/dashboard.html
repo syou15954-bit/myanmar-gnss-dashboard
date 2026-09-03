@@ -249,7 +249,7 @@
                 </div>
                 <div class="tel-box">
                     <div class="tel-label">Orbital Period</div>
-                    <div class="tel-val"><span id="tel-period">--</span> <span style="font-size:11px; color:#fff;">KM</span></div>
+                    <div class="tel-val"><span id="tel-period">--</span> <span style="font-size:11px; color:#fff;">MIN</span></div>
                 </div>
                 <div class="tel-box">
                     <div class="tel-label">Orbit Type</div>
@@ -347,7 +347,7 @@
             onStationSelectChange(stVal);
         }
 
-        // 🌟 4 STRICT CONSTELLATION COLORS 🌟
+        // 🌟 4 DISTINCT CONSTELLATION COLORS 🌟
         function getSatColor(satName) {
             let uname = (satName || '').toUpperCase();
             if (uname.includes('GPS')) return '#10b981'; // Green
@@ -430,7 +430,7 @@
                 });
                 CONSTELLATION_SATS = cat;
                 document.getElementById('tle-status-badge').innerHTML = `● OFFLINE SIMULATION`;
-                document.getElementById('tle-status-badge').style.color = 'var(--accent-yellow)';
+                document.getElementById('tle-status-badge'].style.color = 'var(--accent-yellow)';
             }
             renderCustomSelection();
         }
@@ -481,7 +481,6 @@
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                // 🌟 RESTORE GLOWING LABELS AS ROBUST 3D SATELLITE MARKERS 🌟
                 myGlobe.labelsData(unselectedSats); 
             }
 
@@ -510,6 +509,7 @@
                 </div>`).join('');
         }
 
+        // 🌟 FULL 360-DEGREE CONTINUOUS ORBIT PATHS (FULL EARTH ORBIT) 🌟
         function updateAllOrbitPaths() {
             if (!myGlobe) return;
             if (!modes.tracks || currentLiveSatObjects.length === 0) {
@@ -517,13 +517,25 @@
             }
 
             let idsToTrack = [];
-            if (selectedSatId) idsToTrack.push(selectedSatId);
+            const trackMode = document.getElementById('track-count-select')?.value;
 
-            const maxRings = parseInt(document.getElementById('track-count-select')?.value) || 24; 
-            let pool = currentLiveSatObjects.map(s => s.id).filter(id => id !== selectedSatId);
-            const stepPick = Math.max(1, Math.floor(pool.length / Math.max(1, maxRings)));
-            
-            for (let i = 0; i < pool.length && idsToTrack.length < maxRings; i += stepPick) idsToTrack.push(pool[i]);
+            if (selectedSatId) {
+                idsToTrack.push(selectedSatId);
+                if (trackMode === '1') {
+                    // Track Selected Only mode: show only the selected satellite's full orbit
+                    // Do not add other satellites to idsToTrack
+                }
+            }
+
+            if (trackMode !== '1') {
+                const maxRings = parseInt(trackMode) || 24; 
+                let pool = currentLiveSatObjects.map(s => s.id).filter(id => id !== selectedSatId);
+                const stepPick = Math.max(1, Math.floor(pool.length / Math.max(1, maxRings)));
+                
+                for (let i = 0; i < pool.length && idsToTrack.length < maxRings; i += stepPick) {
+                    idsToTrack.push(pool[i]);
+                }
+            }
 
             let allPaths = [];
             idsToTrack.forEach(id => {
@@ -531,14 +543,16 @@
                 const satObj = currentLiveSatObjects.find(s => s.id === id);
                 const baseColor = satObj ? satObj.color : '#3b82f6';
                 const color = isSelected ? '#00f0ff' : baseColor;
-                const width = isSelected ? 2.5 : 1.2;
+                const width = isSelected ? 3.0 : 1.2;
                 
                 let currentSegment = [];
-                for (let i = 0; i <= 100; i++) {
-                    const pos = getSatPos(id, i * (43200 / 100));
+                // 300 steps for a smooth, complete 360-degree continuous orbit ring around the globe
+                for (let i = 0; i <= 300; i++) {
+                    const pos = getSatPos(id, i * (43200 / 300));
                     if (!isNaN(pos.lat) && !isNaN(pos.lng)) {
                         if (currentSegment.length > 0 && Math.abs(pos.lng - currentSegment[currentSegment.length - 1][1]) > 180) {
-                            allPaths.push({ coords: currentSegment, color, width }); currentSegment = [];
+                            allPaths.push({ coords: currentSegment, color, width }); 
+                            currentSegment = [];
                         }
                         currentSegment.push([pos.lat, pos.lng, VISUAL_ALTITUDE]);
                     }
@@ -550,9 +564,9 @@
                    .pathPoints('coords')
                    .pathPointLat(p => p[0]).pathPointLng(p => p[1]).pathPointAlt(p => p[2])
                    .pathColor(d => d.color).pathStroke(d => d.width)
-                   .pathDashLength(0.2)
-                   .pathDashGap(0.05)
-                   .pathDashAnimateTime(2000);
+                   .pathDashLength(1.0) // Solid clean continuous lines for professional look
+                   .pathDashGap(0.0)
+                   .pathDashAnimateTime(0);
         }
 
         function selectSatellite(id) {
@@ -579,6 +593,7 @@
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
                 myGlobe.labelsData(unselectedSats);
 
+                updateRings();
                 myGlobe.pointOfView({ lat: targetObj.lat, lng: targetObj.lng, altitude: 1.3 }, 1500);
             }
         }
@@ -640,13 +655,13 @@
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.25)
                     
-                    // 🌟 USE GLOBE.GL LABELS TO RENDER VIVID COLORED DOT MARKERS WITHOUT ANY SPIKES 🌟
+                    // 🌟 CLEAN VIVID GLOWING DOT MARKERS VIA LABELS 🌟
                     .labelsData([])
                     .labelLat('lat').labelLng('lng').labelAltitude(d => d.alt || VISUAL_ALTITUDE)
                     .labelDotRadius(0.8)
                     .labelDotOrientation(() => 'bottom')
                     .labelColor('color')
-                    .labelText(d => '') // Show clean glowing dots without heavy clutter text
+                    .labelText(d => '')
                     .labelSize(0.5)
                     .onLabelClick((d) => { if (d && d.id) selectSatellite(d.id); })
                     
