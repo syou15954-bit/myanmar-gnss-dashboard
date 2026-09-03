@@ -14,9 +14,9 @@
     
     <style>
         :root {
-            --bg-base: #050914;
-            --glass-bg: rgba(16, 24, 43, 0.75);
-            --glass-border: rgba(56, 189, 248, 0.2);
+            --bg-base: #030712;
+            --glass-bg: rgba(15, 23, 42, 0.82);
+            --glass-border: rgba(56, 189, 248, 0.25);
             --accent-cyan: #00f0ff;
             --accent-blue: #3b82f6;
             --accent-green: #10b981;
@@ -53,7 +53,7 @@
             background: var(--glass-bg); border: 1px solid var(--glass-border);
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
             border-radius: 20px; padding: 16px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05);
             pointer-events: auto;
             display: flex; flex-direction: column; overflow: hidden;
         }
@@ -65,16 +65,26 @@
         }
 
         .nav-pill {
-            background: rgba(16, 24, 43, 0.8); border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255,255,255,0.1);
             backdrop-filter: blur(10px); border-radius: 40px; padding: 6px 20px;
             color: var(--text-main); font-weight: 600; cursor: pointer; transition: 0.3s; font-size: 13px;
         }
-        .nav-pill:hover, .nav-pill.active { background: rgba(0, 240, 255, 0.1); border-color: var(--accent-cyan); color: var(--accent-cyan); }
+        .nav-pill:hover, .nav-pill.active { background: rgba(0, 240, 255, 0.15); border-color: var(--accent-cyan); color: var(--accent-cyan); }
         
         .status-badge {
             background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3);
             color: var(--accent-green); border-radius: 40px; padding: 5px 14px; font-size: 11px; font-weight: 700;
         }
+
+        /* INFOGRAPHIC CONSTELLATION LEGEND OVERLAY */
+        .constellation-legend-box {
+            position: absolute; top: 85px; left: 380px; z-index: 15;
+            background: rgba(15, 23, 42, 0.85); border: 1px solid var(--glass-border);
+            backdrop-filter: blur(12px); border-radius: 14px; padding: 10px 16px;
+            pointer-events: auto; display: flex; gap: 15px; align-items: center; font-size: 11px;
+        }
+        .legend-badge { display: flex; align-items: center; gap: 6px; font-weight: 600; }
+        .legend-dot { width: 9px; height: 9px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
 
         /* LEFT SIDEBAR */
         .left-sidebar { grid-column: 1; grid-row: 2 / -1; gap: 15px; display: flex; flex-direction: column; background: transparent; border: none; box-shadow: none; padding: 0; }
@@ -158,13 +168,21 @@
 
     <div id="globeViz"></div>
 
+    <!-- INFOGRAPHIC LEGEND OVERLAY (Matching Infographic Style) -->
+    <div class="constellation-legend-box mono">
+        <div class="legend-badge" style="color: #10b981;"><div class="legend-dot" style="background: #10b981;"></div>GPS</div>
+        <div class="legend-badge" style="color: #f43f5e;"><div class="legend-dot" style="background: #f43f5e;"></div>BeiDou</div>
+        <div class="legend-badge" style="color: #00f0ff;"><div class="legend-dot" style="background: #00f0ff;"></div>Galileo</div>
+        <div class="legend-badge" style="color: #c084fc;"><div class="legend-dot" style="background: #c084fc;"></div>GLONASS</div>
+    </div>
+
     <div class="dashboard-wrapper">
         <header class="top-nav">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <div style="width: 28px; height: 28px; background: var(--accent-cyan); border-radius: 50%; box-shadow: 0 0 15px var(--accent-cyan); display: flex; align-items: center; justify-content: center;">
                     <span style="color: #000; font-weight: bold; font-size: 12px;">G</span>
                 </div>
-                <h1 style="font-size: 15px; letter-spacing: 2px;">GNSS COMMAND</h1>
+                <h1 style="font-size: 15px; letter-spacing: 2px;">GNSS CONSTELLATIONS</h1>
             </div>
             
             <div style="display: flex; gap: 12px;">
@@ -288,8 +306,8 @@
         let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass']);
         let currentLiveSatObjects = [];
 
-        // 🌟 CLEAN FIXED ALTITUDE FOR 3D ORBITS WITHOUT SPIKES 🌟
-        const VISUAL_ALTITUDE = 0.05; 
+        // 🌟 INFOGRAPHIC ORBIT ALTITUDE (CLEARLY VISIBLE IN SPACE) 🌟
+        const VISUAL_ALTITUDE = 0.25; 
 
         const STATIONS_DATA = {
             yangon: { lat: 16.8661, lng: 96.1951, name: 'Yangon Base HQ', color: '#00f0ff', size: 3.5, alt: 0.01 },
@@ -329,14 +347,14 @@
             onStationSelectChange(stVal);
         }
 
-        // 🌟 4 DISTINCT CONSTELLATION COLORS (GPS: Green, BDS: Red/Pink, GAL: Cyan, GLO: Purple) 🌟
+        // 🌟 4 DISTINCT INFOGRAPHIC CONSTELLATION COLORS 🌟
         function getSatColor(satName) {
             let uname = (satName || '').toUpperCase();
-            if (uname.includes('GPS')) return '#10b981'; // Green
-            if (uname.includes('BDS')) return '#f43f5e'; // Red/Pink
-            if (uname.includes('GAL')) return '#00f0ff'; // Cyan
-            if (uname.includes('GLO')) return '#c084fc'; // Purple
-            return '#3b82f6';
+            if (uname.includes('GPS')) return '#10b981'; // GPS: Green
+            if (uname.includes('BDS')) return '#f43f5e'; // BeiDou: Red/Pink
+            if (uname.includes('GAL')) return '#00f0ff'; // Galileo: Cyan
+            if (uname.includes('GLO')) return '#c084fc'; // GLONASS: Purple
+            return '#ffb700';
         }
 
         function getSatPos(id, timeOffsetSec = 0) {
@@ -512,7 +530,7 @@
                 const satObj = currentLiveSatObjects.find(s => s.id === id);
                 const baseColor = satObj ? satObj.color : '#3b82f6';
                 const color = isSelected ? '#00f0ff' : baseColor;
-                const width = isSelected ? 2.5 : 0.9;
+                const width = isSelected ? 2.5 : 1.0;
                 
                 let currentSegment = [];
                 for (let i = 0; i <= 100; i++) {
@@ -628,10 +646,10 @@
                     .atmosphereColor('#38bdf8')
                     .atmosphereAltitude(0.25)
                     
-                    // 🌟 3D GLOWING SPHERES (CLEAN ROUND DOTS WITH 4 DISTINCT COLORS) 🌟
+                    // 🌟 3D FLOATING VIVID ORB SATELLITES (CLEAN SPHERES AT INFOGRAPHIC ALTITUDE) 🌟
                     .pointsData([])
                     .pointLat('lat').pointLng('lng').pointAltitude('alt')
-                    .pointColor('color').pointRadius(0.35).pointResolution(32)
+                    .pointColor('color').pointRadius(0.45).pointResolution(32)
                     .onPointClick((d) => { if (d && d.id) selectSatellite(d.id); })
 
                     .labelsData([])
@@ -665,8 +683,7 @@
                             s.lat = pos.lat; s.lng = pos.lng; s.alt = pos.alt;
                         });
                         
-                        // 🌟 FORCE FLAT SURFACE ALTITUDE TO REMOVE ALL SPIKE VECTORS 🌟
-                        currentLiveSatObjects.forEach(s => { s.alt = 0.001; });
+                        currentLiveSatObjects.forEach(s => { s.alt = VISUAL_ALTITUDE; });
                         
                         const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
                         myGlobe.pointsData([...unselectedSats]); 
@@ -676,7 +693,7 @@
                             if (sel) {
                                 myGlobe.labelsData([{
                                     lat: sel.lat, lng: sel.lng, name: `TARGET LOCK: ${sel.name}`,
-                                    color: '#00f0ff', size: 1.5, alt: 0.001 + 0.05
+                                    color: '#00f0ff', size: 1.5, alt: VISUAL_ALTITUDE + 0.05
                                 }]);
                             }
                         }
