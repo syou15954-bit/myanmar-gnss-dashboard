@@ -274,7 +274,7 @@
                     <div class="rinex-sidebar">
                         <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" style="font-size:10px; color:var(--text-muted);" onchange="handleRinexUpload()">
                         <div id="rinex-metadata" style="color: var(--text-muted); line-height: 1.4; margin-top: 4px;">
-                            📁 <b>Status:</b> Waiting for RINEX file (.obs/.rnx)<br>
+                            📁 <b>Status:</b> Waiting for RINEX file (.obs,.rnx)<br>
                             - Version: --<br>
                             - Receiver: --<br>
                             - Interval: --<br>
@@ -459,7 +459,7 @@
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                // 🌟 PASS 3D FLAT COORDINATES TO HIDE CYLINDER SPIKES 🌟
+                // 🌟 USE THREE.JS SPHERE OBJECTS IN customLayerData FOR FLAWLESS 3D ORBS WITHOUT SPIKES 🌟
                 myGlobe.customLayerData(unselectedSats); 
             }
 
@@ -630,7 +630,7 @@
                         .atmosphereColor('#38bdf8')
                         .atmosphereAltitude(0.25)
                         
-                        // 🌟 USE GLOBE.GL CUSTOM 3D MESH OBJECTS (THREE.JS SPHERE MESHES) TO GUARANTEE 100% VISIBILITY AND ZERO SPIKES 🌟
+                        // 🌟 THREE.JS SPHERE MESHES VIA customLayerData (100% RELIABLE, ZERO SPIKES, BEAUTIFUL ORBS) 🌟
                         .customLayerData([])
                         .customThreeObject(d => {
                             const geometry = new THREE.SphereGeometry(0.7, 16, 16);
@@ -638,7 +638,6 @@
                             return new THREE.Mesh(geometry, material);
                         })
                         .customThreeObjectUpdate((obj, d) => {
-                            // Position mesh accurately in 3D space above the globe
                             const coords = myGlobe.getCoords(d.lat, d.lng, VISUAL_ALTITUDE);
                             obj.position.set(coords.x, coords.y, coords.z);
                         })
