@@ -39,6 +39,16 @@
         /* GLOBE BACKGROUND */
         #globeViz { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; background: #030712; }
 
+        /* CUSTOM GLOWING SATELLITE MARKER (ZERO SPIKES) */
+        .sat-marker {
+            width: 10px; height: 10px; border-radius: 50%;
+            cursor: pointer; transform: translate(-50%, -50%);
+            transition: transform 0.2s;
+            box-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+            border: 2px solid #ffffff;
+        }
+        .sat-marker:hover { transform: translate(-50%, -50%) scale(1.6); }
+
         /* MAIN LAYOUT WITH BALANCED SPACING */
         .dashboard-wrapper {
             position: relative; z-index: 10; display: grid;
@@ -274,7 +284,7 @@
                     <div class="rinex-sidebar">
                         <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" style="font-size:10px; color:var(--text-muted);" onchange="handleRinexUpload()">
                         <div id="rinex-metadata" style="color: var(--text-muted); line-height: 1.4; margin-top: 4px;">
-                            📁 <b>Status:</b> Waiting for RINEX file (.obs,.rnx)<br>
+                            📁 <b>Status:</b> Waiting for RINEX file (.obs/.rnx)<br>
                             - Version: --<br>
                             - Receiver: --<br>
                             - Interval: --<br>
@@ -459,7 +469,8 @@
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                myGlobe.pointsData(unselectedSats); 
+                // 🌟 USE HTML ELEMENTS DATA AS STABLE GLOWING DOT MARKERS (100% NO SPIKES) 🌟
+                myGlobe.htmlElementsData(unselectedSats); 
             }
 
             populateUpcomingPassesList();
@@ -487,6 +498,7 @@
                 </div>`).join('');
         }
 
+        // 🌟 FULL 360-DEGREE CONTINUOUS ORBIT PATHS 🌟
         function updateAllOrbitPaths() {
             if (!myGlobe) return;
             if (!modes.tracks || currentLiveSatObjects.length === 0) {
@@ -563,14 +575,13 @@
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                myGlobe.pointsData(unselectedSats);
+                myGlobe.htmlElementsData(unselectedSats);
 
                 updateRings();
                 myGlobe.pointOfView({ lat: targetObj.lat, lng: targetObj.lng, altitude: 1.3 }, 1500);
             }
         }
 
-        // 🌟 FIXED TOGGLE GLOBE ROTATION (RESUME & PAUSE WORKS FLAWLESSLY) 🌟
         function toggleGlobeRotation() {
             if (!myGlobe) return;
             isRotating = !isRotating;
@@ -640,13 +651,18 @@
                         .atmosphereColor('#38bdf8')
                         .atmosphereAltitude(0.25)
                         
-                        // 🌟 ROBUST POINTS RENDERING WITH ZERO SPIKES 🌟
-                        .pointsData([])
-                        .pointLat('lat').pointLng('lng').pointAltitude('alt')
-                        .pointColor('color')
-                        .pointRadius(0.6)
-                        .pointResolution(32)
-                        .onPointClick((d) => { if (d && d.id) selectSatellite(d.id); })
+                        // 🌟 USE htmlElementsData WITH CUSTOM CSS MARKERS TO BANISH CYLINDER SPIKES 🌟
+                        .htmlElementsData([])
+                        .htmlElement(d => {
+                            const el = document.createElement('div');
+                            el.className = 'sat-marker';
+                            el.style.backgroundColor = d.color;
+                            el.style.color = d.color;
+                            el.title = d.fullName;
+                            el.onclick = () => selectSatellite(d.id);
+                            return el;
+                        })
+                        .htmlLat('lat').htmlLng('lng').htmlAltitude('alt')
                         
                         .pathsData([]);
 
@@ -678,7 +694,7 @@
                         currentLiveSatObjects.forEach(s => { s.alt = VISUAL_ALTITUDE; });
                         
                         const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                        myGlobe.pointsData(unselectedSats); 
+                        myGlobe.htmlElementsData(unselectedSats); 
 
                         updateRings(); 
                     }
