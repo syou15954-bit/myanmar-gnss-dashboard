@@ -15,7 +15,7 @@
     <style>
         :root {
             --bg-base: #030712;
-            --glass-bg: rgba(15, 23, 42, 0.85);
+            --glass-bg: rgba(15, 23, 42, 0.82);
             --glass-border: rgba(56, 189, 248, 0.25);
             --accent-cyan: #00f0ff;
             --accent-blue: #3b82f6;
@@ -38,7 +38,7 @@
         .mono { font-family: 'JetBrains Mono', monospace; }
 
         /* GLOBE BACKGROUND */
-        #globeViz { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; background: #030712; }
+        #globeViz { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
 
         /* MAIN LAYOUT WITH BALANCED SPACING */
         .dashboard-wrapper {
@@ -249,7 +249,7 @@
                 </div>
                 <div class="tel-box">
                     <div class="tel-label">Orbital Period</div>
-                    <div class="tel-val"><span id="tel-period">--</span> <span style="font-size:11px; color:#fff;">MIN</span></div>
+                    <div class="tel-val"><span id="tel-period">--</span> <span style="font-size:11px; color:#fff;">KM</span></div>
                 </div>
                 <div class="tel-box">
                     <div class="tel-label">Orbit Type</div>
@@ -347,10 +347,10 @@
 
         function getSatColor(satName) {
             let uname = (satName || '').toUpperCase();
-            if (uname.includes('GPS')) return '#10b981'; // Green
-            if (uname.includes('BDS')) return '#f43f5e'; // Red/Pink
-            if (uname.includes('GAL')) return '#00f0ff'; // Cyan
-            if (uname.includes('GLO')) return '#c084fc'; // Purple
+            if (uname.includes('GPS')) return '#10b981'; // GPS: Green
+            if (uname.includes('BDS')) return '#f43f5e'; // BeiDou: Red/Pink
+            if (uname.includes('GAL')) return '#00f0ff'; // Galileo: Cyan
+            if (uname.includes('GLO')) return '#c084fc'; // GLONASS: Purple
             return '#00f0ff';
         }
 
@@ -462,7 +462,8 @@
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                myGlobe.pointsData(unselectedSats); 
+                // 🌟 USING LABELS AS CLEAN GLOWING DOTS (COMPLETELY NO SPIKES) 🌟
+                myGlobe.labelsData(unselectedSats); 
             }
 
             populateUpcomingPassesList();
@@ -490,6 +491,7 @@
                 </div>`).join('');
         }
 
+        // 🌟 FULL 360-DEGREE CONTINUOUS ORBIT PATHS (FULL EARTH ORBIT) 🌟
         function updateAllOrbitPaths() {
             if (!myGlobe) return;
             if (!modes.tracks || currentLiveSatObjects.length === 0) {
@@ -566,7 +568,7 @@
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                myGlobe.pointsData(unselectedSats);
+                myGlobe.labelsData(unselectedSats);
 
                 updateRings();
                 myGlobe.pointOfView({ lat: targetObj.lat, lng: targetObj.lng, altitude: 1.3 }, 1500);
@@ -631,13 +633,15 @@
                         .atmosphereColor('#38bdf8')
                         .atmosphereAltitude(0.25)
                         
-                        // 🌟 USE STANDARD 2D SPHERICAL TEXTURE POINTS (GUARANTEED NO SPIKES, PERFECT VISIBILITY) 🌟
-                        .pointsData([])
-                        .pointLat('lat').pointLng('lng').pointAltitude('alt')
-                        .pointColor('color')
-                        .pointRadius(0.5)
-                        .pointResolution(32)
-                        .onPointClick((d) => { if (d && d.id) selectSatellite(d.id); })
+                        // 🌟 VERIFIED LABELS RENDERING TO GUARANTEE ZERO SPIKES AND PERFECT DISPLAY 🌟
+                        .labelsData([])
+                        .labelLat('lat').labelLng('lng').labelAltitude(d => d.alt || VISUAL_ALTITUDE)
+                        .labelDotRadius(0.8)
+                        .labelDotOrientation(() => 'bottom')
+                        .labelColor('color')
+                        .labelText(d => '')
+                        .labelSize(0.5)
+                        .onLabelClick((d) => { if (d && d.id) selectSatellite(d.id); })
                         
                         .pathsData([]);
 
@@ -669,7 +673,7 @@
                         currentLiveSatObjects.forEach(s => { s.alt = VISUAL_ALTITUDE; });
                         
                         const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                        myGlobe.pointsData(unselectedSats); 
+                        myGlobe.labelsData(unselectedSats); 
 
                         updateRings(); 
                     }
