@@ -84,7 +84,7 @@
             pointer-events: auto; display: flex; gap: 15px; align-items: center; font-size: 11px;
         }
         .legend-badge { display: flex; align-items: center; gap: 6px; font-weight: 600; }
-        .legend-dot { width: 9px; height: 9px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
+        .legend-dot { width: 9px; height: 9px; border-radius: 50%; box-shadow: 0 0 10px currentColor; }
 
         /* LEFT SIDEBAR */
         .left-sidebar { grid-column: 1; grid-row: 2 / -1; gap: 15px; display: flex; flex-direction: column; background: transparent; border: none; box-shadow: none; padding: 0; }
@@ -462,8 +462,8 @@
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                // 🌟 USING LARGE GLOWING LABELS AS 3D SATELLITE MARKERS (ZERO SPIKES, HUGE VISIBILITY) 🌟
-                myGlobe.labelsData(unselectedSats); 
+                // 🌟 GLOWING HALO DOT MARKERS USING HTML ELEMENTS 🌟
+                myGlobe.htmlElementsData(unselectedSats); 
             }
 
             populateUpcomingPassesList();
@@ -491,7 +491,7 @@
                 </div>`).join('');
         }
 
-        // 🌟 FULL 360-DEGREE CONTINUOUS ORBIT PATHS (FULL EARTH ORBIT) 🌟
+        // 🌟 FULL 360-DEGREE CONTINUOUS ORBIT PATHS 🌟
         function updateAllOrbitPaths() {
             if (!myGlobe) return;
             if (!modes.tracks || currentLiveSatObjects.length === 0) {
@@ -568,7 +568,7 @@
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                myGlobe.labelsData(unselectedSats);
+                myGlobe.htmlElementsData(unselectedSats);
 
                 updateRings();
                 myGlobe.pointOfView({ lat: targetObj.lat, lng: targetObj.lng, altitude: 1.3 }, 1500);
@@ -633,15 +633,23 @@
                         .atmosphereColor('#38bdf8')
                         .atmosphereAltitude(0.25)
                         
-                        // 🌟 LARGE VIVID LABELS DOTS (RADIOUS 1.5 FOR ULTRA CLEAR VISIBILITY) 🌟
-                        .labelsData([])
-                        .labelLat('lat').labelLng('lng').labelAltitude(d => d.alt || VISUAL_ALTITUDE)
-                        .labelDotRadius(1.5)
-                        .labelDotOrientation(() => 'bottom')
-                        .labelColor('color')
-                        .labelText(d => '')
-                        .labelSize(0.5)
-                        .onLabelClick((d) => { if (d && d.id) selectSatellite(d.id); })
+                        // 🌟 ULTRA-CLEAR GLOWING HALO DOT MARKERS VIA HTML ELEMENTS 🌟
+                        .htmlElementsData([])
+                        .htmlElement(d => {
+                            const el = document.createElement('div');
+                            el.style.width = '12px';
+                            el.style.height = '12px';
+                            el.style.borderRadius = '50%';
+                            el.style.backgroundColor = d.color;
+                            el.style.boxShadow = `0 0 12px ${d.color}, 0 0 24px ${d.color}, inset 0 0 4px #ffffff`;
+                            el.style.border = '2px solid #ffffff';
+                            el.style.cursor = 'pointer';
+                            el.style.transform = 'translate(-50%, -50%)';
+                            el.title = d.fullName;
+                            el.onclick = () => selectSatellite(d.id);
+                            return el;
+                        })
+                        .htmlLat('lat').htmlLng('lng').htmlAltitude('alt')
                         
                         .pathsData([]);
 
@@ -673,7 +681,7 @@
                         currentLiveSatObjects.forEach(s => { s.alt = VISUAL_ALTITUDE; });
                         
                         const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                        myGlobe.labelsData(unselectedSats); 
+                        myGlobe.htmlElementsData(unselectedSats); 
 
                         updateRings(); 
                     }
