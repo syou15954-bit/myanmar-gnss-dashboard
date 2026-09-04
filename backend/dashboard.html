@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GNSS Mission Control - Advanced Telemetry</title>
 
+    <!-- Required Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.min.js"></script>
     <script src="https://unpkg.com/globe.gl@2.25.3/dist/globe.gl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/satellite.js@4.1.3/dist/satellite.min.js"></script>
@@ -38,16 +39,6 @@
 
         /* GLOBE BACKGROUND */
         #globeViz { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; background: #030712; }
-
-        /* CUSTOM GLOWING SATELLITE MARKER (ZERO SPIKES) */
-        .sat-marker {
-            width: 10px; height: 10px; border-radius: 50%;
-            cursor: pointer; transform: translate(-50%, -50%);
-            transition: transform 0.2s;
-            box-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
-            border: 2px solid #ffffff;
-        }
-        .sat-marker:hover { transform: translate(-50%, -50%) scale(1.6); }
 
         /* MAIN LAYOUT WITH BALANCED SPACING */
         .dashboard-wrapper {
@@ -177,6 +168,7 @@
 
     <div id="globeViz"></div>
 
+    <!-- INFOGRAPHIC LEGEND OVERLAY -->
     <div class="constellation-legend-box mono">
         <div class="legend-badge" style="color: #10b981;"><div class="legend-dot" style="background: #10b981;"></div>GPS</div>
         <div class="legend-badge" style="color: #f43f5e;"><div class="legend-dot" style="background: #f43f5e;"></div>BeiDou</div>
@@ -257,7 +249,7 @@
                 </div>
                 <div class="tel-box">
                     <div class="tel-label">Orbital Period</div>
-                    <div class="tel-val"><span id="tel-period">--</span> <span style="font-size:11px; color:#fff;">MIN</span></div>
+                    <div class="tel-val"><span id="tel-period">--</span> <span style="font-size:11px; color:#fff;">KM</span></div>
                 </div>
                 <div class="tel-box">
                     <div class="tel-label">Orbit Type</div>
@@ -274,6 +266,7 @@
             </div>
         </aside>
 
+        <!-- RINEX ANALYSIS PANEL -->
         <div class="bottom-panel">
             <div class="panel rinex-box">
                 <div class="section-title" style="display:flex; justify-content:space-between; align-items:center;">
@@ -469,8 +462,8 @@
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                // 🌟 USE HTML ELEMENTS DATA AS STABLE GLOWING DOT MARKERS (100% NO SPIKES) 🌟
-                myGlobe.htmlElementsData(unselectedSats); 
+                // 🌟 USE LABELS DATA AS CLEAN GLOWING 3D DOTS (GUARANTEED NO SPIKE CYLINDERS) 🌟
+                myGlobe.labelsData(unselectedSats); 
             }
 
             populateUpcomingPassesList();
@@ -575,7 +568,7 @@
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                myGlobe.htmlElementsData(unselectedSats);
+                myGlobe.labelsData(unselectedSats);
 
                 updateRings();
                 myGlobe.pointOfView({ lat: targetObj.lat, lng: targetObj.lng, altitude: 1.3 }, 1500);
@@ -651,18 +644,15 @@
                         .atmosphereColor('#38bdf8')
                         .atmosphereAltitude(0.25)
                         
-                        // 🌟 USE htmlElementsData WITH CUSTOM CSS MARKERS TO BANISH CYLINDER SPIKES 🌟
-                        .htmlElementsData([])
-                        .htmlElement(d => {
-                            const el = document.createElement('div');
-                            el.className = 'sat-marker';
-                            el.style.backgroundColor = d.color;
-                            el.style.color = d.color;
-                            el.title = d.fullName;
-                            el.onclick = () => selectSatellite(d.id);
-                            return el;
-                        })
-                        .htmlLat('lat').htmlLng('lng').htmlAltitude('alt')
+                        // 🌟 USE LABELS DATA TO RENDER VIVID GLOWING DOTS (ZERO CYLINDER SPIKES) 🌟
+                        .labelsData([])
+                        .labelLat('lat').labelLng('lng').labelAltitude(d => d.alt || VISUAL_ALTITUDE)
+                        .labelDotRadius(0.9)
+                        .labelDotOrientation(() => 'bottom')
+                        .labelColor('color')
+                        .labelText(d => '')
+                        .labelSize(0.5)
+                        .onLabelClick((d) => { if (d && d.id) selectSatellite(d.id); })
                         
                         .pathsData([]);
 
@@ -694,7 +684,7 @@
                         currentLiveSatObjects.forEach(s => { s.alt = VISUAL_ALTITUDE; });
                         
                         const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                        myGlobe.htmlElementsData(unselectedSats); 
+                        myGlobe.labelsData(unselectedSats); 
 
                         updateRings(); 
                     }
