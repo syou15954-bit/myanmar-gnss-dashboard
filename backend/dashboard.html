@@ -462,7 +462,7 @@
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                // 🌟 USE LABELS DATA AS CLEAN GLOWING 3D DOTS (GUARANTEED NO SPIKE CYLINDERS) 🌟
+                // 🌟 INCREASE LABEL DOT RADIUS TO 2.2 FOR LARGE, CLEAR, VIVID SPHERICAL ORBS 🌟
                 myGlobe.labelsData(unselectedSats); 
             }
 
@@ -644,10 +644,10 @@
                         .atmosphereColor('#38bdf8')
                         .atmosphereAltitude(0.25)
                         
-                        // 🌟 USE LABELS DATA TO RENDER VIVID GLOWING DOTS (ZERO CYLINDER SPIKES) 🌟
+                        // 🌟 LARGE VIVID GLOWING DOTS (LABEL DOT RADIUS SET TO 2.2 FOR CLEAR LARGE SPHERES) 🌟
                         .labelsData([])
                         .labelLat('lat').labelLng('lng').labelAltitude(d => d.alt || VISUAL_ALTITUDE)
-                        .labelDotRadius(0.9)
+                        .labelDotRadius(2.2)
                         .labelDotOrientation(() => 'bottom')
                         .labelColor('color')
                         .labelText(d => '')
