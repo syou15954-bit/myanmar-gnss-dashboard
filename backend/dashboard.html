@@ -249,7 +249,7 @@
                 </div>
                 <div class="tel-box">
                     <div class="tel-label">Orbital Period</div>
-                    <div class="tel-val"><span id="tel-period">--</span> <span style="font-size:11px; color:#fff;">KM</span></div>
+                    <div class="tel-val"><span id="tel-period">--</span> <span style="font-size:11px; color:#fff;">MIN</span></div>
                 </div>
                 <div class="tel-box">
                     <div class="tel-label">Orbit Type</div>
@@ -462,7 +462,7 @@
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                // 🌟 USING LABELS AS CLEAN GLOWING DOTS (COMPLETELY NO SPIKES) 🌟
+                // 🌟 USING LARGE GLOWING LABELS AS 3D SATELLITE MARKERS (ZERO SPIKES, HUGE VISIBILITY) 🌟
                 myGlobe.labelsData(unselectedSats); 
             }
 
@@ -633,10 +633,10 @@
                         .atmosphereColor('#38bdf8')
                         .atmosphereAltitude(0.25)
                         
-                        // 🌟 VERIFIED LABELS RENDERING TO GUARANTEE ZERO SPIKES AND PERFECT DISPLAY 🌟
+                        // 🌟 LARGE VIVID LABELS DOTS (RADIOUS 1.5 FOR ULTRA CLEAR VISIBILITY) 🌟
                         .labelsData([])
                         .labelLat('lat').labelLng('lng').labelAltitude(d => d.alt || VISUAL_ALTITUDE)
-                        .labelDotRadius(0.8)
+                        .labelDotRadius(1.5)
                         .labelDotOrientation(() => 'bottom')
                         .labelColor('color')
                         .labelText(d => '')
