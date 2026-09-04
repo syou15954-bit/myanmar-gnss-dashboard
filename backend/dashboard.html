@@ -40,6 +40,16 @@
         /* GLOBE BACKGROUND */
         #globeViz { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; background: #030712; }
 
+        /* 🌟 3D SPHERICAL GLOWING ORB MARKER STYLING 🌟 */
+        .globe-sat-orb {
+            width: 14px; height: 14px; border-radius: 50%;
+            cursor: pointer; transform: translate(-50%, -50%);
+            transition: transform 0.2s;
+            box-shadow: 0 0 12px currentColor, 0 0 24px currentColor, inset -2px -2px 4px rgba(0,0,0,0.6), inset 2px 2px 4px rgba(255,255,255,0.8);
+            border: 2px solid rgba(255, 255, 255, 0.9);
+        }
+        .globe-sat-orb:hover { transform: translate(-50%, -50%) scale(1.6); }
+
         /* MAIN LAYOUT WITH BALANCED SPACING */
         .dashboard-wrapper {
             position: relative; z-index: 10; display: grid;
@@ -277,7 +287,7 @@
                     <div class="rinex-sidebar">
                         <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" style="font-size:10px; color:var(--text-muted);" onchange="handleRinexUpload()">
                         <div id="rinex-metadata" style="color: var(--text-muted); line-height: 1.4; margin-top: 4px;">
-                            📁 <b>Status:</b> Waiting for RINEX file (.obs/.rnx)<br>
+                            📁 <b>Status:</b> Waiting for RINEX file (.obs,.rnx)<br>
                             - Version: --<br>
                             - Receiver: --<br>
                             - Interval: --<br>
@@ -462,8 +472,8 @@
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                // 🌟 INCREASE LABEL DOT RADIUS TO 2.2 FOR LARGE, CLEAR, VIVID SPHERICAL ORBS 🌟
-                myGlobe.labelsData(unselectedSats); 
+                // 🌟 USE HTML ELEMENTS DATA TO RENDER FLAWLESS 3D SPHERICAL ORBS WITH GLOWING HALO 🌟
+                myGlobe.htmlElementsData(unselectedSats); 
             }
 
             populateUpcomingPassesList();
@@ -568,7 +578,7 @@
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                myGlobe.labelsData(unselectedSats);
+                myGlobe.htmlElementsData(unselectedSats);
 
                 updateRings();
                 myGlobe.pointOfView({ lat: targetObj.lat, lng: targetObj.lng, altitude: 1.3 }, 1500);
@@ -644,15 +654,18 @@
                         .atmosphereColor('#38bdf8')
                         .atmosphereAltitude(0.25)
                         
-                        // 🌟 LARGE VIVID GLOWING DOTS (LABEL DOT RADIUS SET TO 2.2 FOR CLEAR LARGE SPHERES) 🌟
-                        .labelsData([])
-                        .labelLat('lat').labelLng('lng').labelAltitude(d => d.alt || VISUAL_ALTITUDE)
-                        .labelDotRadius(2.2)
-                        .labelDotOrientation(() => 'bottom')
-                        .labelColor('color')
-                        .labelText(d => '')
-                        .labelSize(0.5)
-                        .onLabelClick((d) => { if (d && d.id) selectSatellite(d.id); })
+                        // 🌟 USE HTML ELEMENTS DATA WITH 3D SPHERICAL ORB CSS TO MATCH SECOND IMAGE EXACTLY 🌟
+                        .htmlElementsData([])
+                        .htmlElement(d => {
+                            const el = document.createElement('div');
+                            el.className = 'globe-sat-orb';
+                            el.style.backgroundColor = d.color;
+                            el.style.color = d.color;
+                            el.title = d.fullName;
+                            el.onclick = () => selectSatellite(d.id);
+                            return el;
+                        })
+                        .htmlLat('lat').htmlLng('lng').htmlAltitude('alt')
                         
                         .pathsData([]);
 
@@ -684,7 +697,7 @@
                         currentLiveSatObjects.forEach(s => { s.alt = VISUAL_ALTITUDE; });
                         
                         const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                        myGlobe.labelsData(unselectedSats); 
+                        myGlobe.htmlElementsData(unselectedSats); 
 
                         updateRings(); 
                     }
