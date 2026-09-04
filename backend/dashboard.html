@@ -459,8 +459,8 @@
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                // 🌟 USE THREE.JS SPHERE OBJECTS IN customLayerData FOR FLAWLESS 3D ORBS WITHOUT SPIKES 🌟
-                myGlobe.customLayerData(unselectedSats); 
+                // 🌟 USE THREE.JS SPHERE MESHES VIA objectsData TO COMPLETELY ELIMINATE SPIKES AND RENDER CLEAN 3D ORBS 🌟
+                myGlobe.objectsData(unselectedSats); 
             }
 
             populateUpcomingPassesList();
@@ -565,7 +565,7 @@
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                myGlobe.customLayerData(unselectedSats);
+                myGlobe.objectsData(unselectedSats);
 
                 updateRings();
                 myGlobe.pointOfView({ lat: targetObj.lat, lng: targetObj.lng, altitude: 1.3 }, 1500);
@@ -630,17 +630,15 @@
                         .atmosphereColor('#38bdf8')
                         .atmosphereAltitude(0.25)
                         
-                        // 🌟 THREE.JS SPHERE MESHES VIA customLayerData (100% RELIABLE, ZERO SPIKES, BEAUTIFUL ORBS) 🌟
-                        .customLayerData([])
-                        .customThreeObject(d => {
+                        // 🌟 USE OBJECTS DATA WITH THREE.JS SPHERE MESHES (GUARANTEED NO SPIKES, PERFECT 3D SPHERES) 🌟
+                        .objectsData([])
+                        .objectLat('lat').objectLng('lng').objectAltitude('alt')
+                        .objectThreeObject(d => {
                             const geometry = new THREE.SphereGeometry(0.7, 16, 16);
                             const material = new THREE.MeshBasicMaterial({ color: d.color });
                             return new THREE.Mesh(geometry, material);
                         })
-                        .customThreeObjectUpdate((obj, d) => {
-                            const coords = myGlobe.getCoords(d.lat, d.lng, VISUAL_ALTITUDE);
-                            obj.position.set(coords.x, coords.y, coords.z);
-                        })
+                        .onObjectClick((d) => { if (d && d.id) selectSatellite(d.id); })
                         
                         .pathsData([]);
 
@@ -672,7 +670,7 @@
                         currentLiveSatObjects.forEach(s => { s.alt = VISUAL_ALTITUDE; });
                         
                         const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                        myGlobe.customLayerData(unselectedSats); 
+                        myGlobe.objectsData(unselectedSats); 
 
                         updateRings(); 
                     }
