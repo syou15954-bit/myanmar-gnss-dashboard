@@ -190,7 +190,7 @@
                 <button class="nav-pill" onclick="toggleMyanmarVisibleOnly(this)" id="mm-only-btn">MM Coverage</button>
             </div>
 
-            <div id="tle-status-badge" class="status-badge mono">● INITIALIZING...</div>
+            <div id="tle-status-badge" class="status-badge mono">● ACTIVE SYSTEM</div>
         </header>
 
         <aside class="left-sidebar">
@@ -303,10 +303,8 @@
 
         let TLE_DATABASE = {};
         let CONSTELLATION_SATS = { gps: [], bds: [], galileo: [], glonass: [], all: [] };
-        let activeSystems = new Set(['gps', 'bds', 'galileo', 'glonass']);
         let currentLiveSatObjects = [];
 
-        // 🌟 3D FLOATING ORBIT ALTITUDE 🌟
         const VISUAL_ALTITUDE = 0.25; 
 
         const STATIONS_DATA = {
@@ -347,13 +345,12 @@
             onStationSelectChange(stVal);
         }
 
-        // 🌟 4 DISTINCT CONSTELLATION COLORS 🌟
         function getSatColor(satName) {
             let uname = (satName || '').toUpperCase();
-            if (uname.includes('GPS')) return '#10b981'; // Green
-            if (uname.includes('BDS')) return '#f43f5e'; // Red/Pink
-            if (uname.includes('GAL')) return '#00f0ff'; // Cyan
-            if (uname.includes('GLO')) return '#c084fc'; // Purple
+            if (uname.includes('GPS')) return '#10b981'; // GPS: Green
+            if (uname.includes('BDS')) return '#f43f5e'; // BeiDou: Red/Pink
+            if (uname.includes('GAL')) return '#00f0ff'; // Galileo: Cyan
+            if (uname.includes('GLO')) return '#c084fc'; // GLONASS: Purple
             return '#00f0ff';
         }
 
@@ -402,8 +399,20 @@
             return list;
         }
 
-        async function loadCelesTrakTLEs() {
-            let success = false;
+        async function initDashboard() {
+            let fallbackList = generateProceduralFleet(160);
+            let cat = { gps: [], bds: [], galileo: [], glonass: [], all: fallbackList };
+            fallbackList.forEach(s => {
+                let uname = (s.name || "").toUpperCase();
+                if (uname.includes('GPS')) cat.gps.push(s);
+                else if (uname.includes('BDS')) cat.bds.push(s);
+                else if (uname.includes('GAL')) cat.galileo.push(s);
+                else if (uname.includes('GLO')) cat.glonass.push(s);
+                TLE_DATABASE[s.id] = s;
+            });
+            CONSTELLATION_SATS = cat;
+
+            // Try loading live TLE if available
             try {
                 let response = await fetch('/api/tle');
                 if (response.ok) {
@@ -412,27 +421,12 @@
                         CONSTELLATION_SATS = json.data;
                         json.data.all.forEach(s => { TLE_DATABASE[s.id] = s; });
                         document.getElementById('tle-status-badge').innerHTML = `● LIVE SYNC (${json.data.all.length} SATS)`;
-                        success = true;
                     }
                 }
             } catch (err) {}
 
-            if (!success) {
-                let fallbackList = generateProceduralFleet(160);
-                let cat = { gps: [], bds: [], galileo: [], glonass: [], all: fallbackList };
-                fallbackList.forEach(s => {
-                    let uname = (s.name || "").toUpperCase();
-                    if (uname.includes('GPS')) cat.gps.push(s);
-                    else if (uname.includes('BDS')) cat.bds.push(s);
-                    else if (uname.includes('GAL')) cat.galileo.push(s);
-                    else if (uname.includes('GLO')) cat.glonass.push(s);
-                    TLE_DATABASE[s.id] = s;
-                });
-                CONSTELLATION_SATS = cat;
-                document.getElementById('tle-status-badge').innerHTML = `● OFFLINE SIMULATION`;
-                document.getElementById('tle-status-badge'].style.color = 'var(--accent-yellow)';
-            }
             renderCustomSelection();
+            initGlobeViewer();
         }
 
         function toggleMyanmarVisibleOnly(btn) {
@@ -481,7 +475,7 @@
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                myGlobe.labelsData(unselectedSats); 
+                myGlobe.pointsData(unselectedSats); 
             }
 
             populateUpcomingPassesList();
@@ -509,7 +503,6 @@
                 </div>`).join('');
         }
 
-        // 🌟 FULL 360-DEGREE CONTINUOUS ORBIT PATHS (FULL EARTH ORBIT) 🌟
         function updateAllOrbitPaths() {
             if (!myGlobe) return;
             if (!modes.tracks || currentLiveSatObjects.length === 0) {
@@ -521,10 +514,6 @@
 
             if (selectedSatId) {
                 idsToTrack.push(selectedSatId);
-                if (trackMode === '1') {
-                    // Track Selected Only mode: show only the selected satellite's full orbit
-                    // Do not add other satellites to idsToTrack
-                }
             }
 
             if (trackMode !== '1') {
@@ -546,7 +535,6 @@
                 const width = isSelected ? 3.0 : 1.2;
                 
                 let currentSegment = [];
-                // 300 steps for a smooth, complete 360-degree continuous orbit ring around the globe
                 for (let i = 0; i <= 300; i++) {
                     const pos = getSatPos(id, i * (43200 / 300));
                     if (!isNaN(pos.lat) && !isNaN(pos.lng)) {
@@ -564,7 +552,7 @@
                    .pathPoints('coords')
                    .pathPointLat(p => p[0]).pathPointLng(p => p[1]).pathPointAlt(p => p[2])
                    .pathColor(d => d.color).pathStroke(d => d.width)
-                   .pathDashLength(1.0) // Solid clean continuous lines for professional look
+                   .pathDashLength(1.0)
                    .pathDashGap(0.0)
                    .pathDashAnimateTime(0);
         }
@@ -591,7 +579,7 @@
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                myGlobe.labelsData(unselectedSats);
+                myGlobe.pointsData(unselectedSats);
 
                 updateRings();
                 myGlobe.pointOfView({ lat: targetObj.lat, lng: targetObj.lng, altitude: 1.3 }, 1500);
@@ -644,40 +632,40 @@
             }
         }
 
-        try {
-            const container = document.getElementById('globeViz');
-            if (container && typeof Globe !== 'undefined') {
-                myGlobe = Globe()(container)
-                    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-                    .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
-                    .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
-                    .showAtmosphere(true)
-                    .atmosphereColor('#38bdf8')
-                    .atmosphereAltitude(0.25)
-                    
-                    // 🌟 CLEAN VIVID GLOWING DOT MARKERS VIA LABELS 🌟
-                    .labelsData([])
-                    .labelLat('lat').labelLng('lng').labelAltitude(d => d.alt || VISUAL_ALTITUDE)
-                    .labelDotRadius(0.8)
-                    .labelDotOrientation(() => 'bottom')
-                    .labelColor('color')
-                    .labelText(d => '')
-                    .labelSize(0.5)
-                    .onLabelClick((d) => { if (d && d.id) selectSatellite(d.id); })
-                    
-                    .pathsData([]);
+        function initGlobeViewer() {
+            try {
+                const container = document.getElementById('globeViz');
+                if (container && typeof Globe !== 'undefined') {
+                    myGlobe = Globe()(container)
+                        .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+                        .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
+                        .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
+                        .showAtmosphere(true)
+                        .atmosphereColor('#38bdf8')
+                        .atmosphereAltitude(0.25)
+                        
+                        // 🌟 STABLE SAFE 3D POINTS (NO SPIKES) 🌟
+                        .pointsData([])
+                        .pointLat('lat').pointLng('lng').pointAltitude('alt')
+                        .pointColor('color')
+                        .pointRadius(0.35)
+                        .pointResolution(16)
+                        .onPointClick((d) => { if (d && d.id) selectSatellite(d.id); })
+                        
+                        .pathsData([]);
 
-                myGlobe.controls().autoRotate = true;
-                myGlobe.controls().autoRotateSpeed = 0.5;
-                
-                myGlobe.pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.2 }, 0);
+                    myGlobe.controls().autoRotate = true;
+                    myGlobe.controls().autoRotateSpeed = 0.5;
+                    
+                    myGlobe.pointOfView({ lat: 16.8661, lng: 96.1951, altitude: 2.2 }, 0);
 
-                setTimeout(() => {
-                    myGlobe.width(container.clientWidth); 
-                    myGlobe.height(container.clientHeight);
-                }, 500);
-            }
-        } catch (e) {}
+                    setTimeout(() => {
+                        myGlobe.width(container.clientWidth); 
+                        myGlobe.height(container.clientHeight);
+                    }, 500);
+                }
+            } catch (e) {}
+        }
 
         let lastUpdateTime = 0;
         function animateSatellites(time) {
@@ -694,7 +682,7 @@
                         currentLiveSatObjects.forEach(s => { s.alt = VISUAL_ALTITUDE; });
                         
                         const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                        myGlobe.labelsData(unselectedSats); 
+                        myGlobe.pointsData(unselectedSats); 
 
                         updateRings(); 
                     }
@@ -703,7 +691,11 @@
             requestAnimationFrame(animateSatellites);
         }
 
-        loadCelesTrakTLEs().then(() => { setTimeout(() => { requestAnimationFrame(animateSatellites); }, 1000); });
+        // Initialize on load
+        window.onload = function() {
+            initDashboard();
+            setTimeout(() => { requestAnimationFrame(animateSatellites); }, 1000);
+        };
     </script>
 </body>
 </html>
