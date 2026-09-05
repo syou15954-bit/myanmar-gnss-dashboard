@@ -462,7 +462,6 @@
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
-                // 🌟 USE CUSTOM THREE.JS SPHERE OBJECTS VIA customLayerData FOR 3D SPHERICAL ORBS 🌟
                 myGlobe.customLayerData(unselectedSats); 
             }
 
@@ -470,6 +469,7 @@
             updateAllOrbitPaths();
         }
 
+        // 🌟 ADDED COLORED SATELLITE BADGES TO UPCOMING PASSES LIST 🌟
         function populateUpcomingPassesList() {
             const listContainer = document.getElementById('upcoming-passes-list');
             if (!listContainer || currentLiveSatObjects.length === 0) return;
@@ -482,13 +482,19 @@
                 return { sat, timeStr, alt: 20000 + (idNum%3000) };
             });
 
-            listContainer.innerHTML = passes.map(p => `
+            listContainer.innerHTML = passes.map(p => {
+                let sColor = getSatColor(p.sat.name);
+                return `
                 <div class="pass-card" onclick="selectSatellite('${p.sat.id}')">
-                    <div style="font-weight:700; color:#fff; font-size:11px; margin-bottom:6px;">${p.sat.name}</div>
+                    <div style="font-weight:700; color:${sColor}; font-size:11px; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+                        <span style="width:7px; height:7px; background:${sColor}; border-radius:50%; box-shadow:0 0 6px ${sColor}; display:inline-block;"></span>
+                        ${p.sat.name}
+                    </div>
                     <div style="display:flex; justify-content:space-between; font-size:9.5px; color:var(--text-muted);">
                         <span>ALT: ${p.alt}KM</span><span style="color:var(--accent-cyan); font-weight:700;">${p.timeStr}</span>
                     </div>
-                </div>`).join('');
+                </div>`;
+            }).join('');
         }
 
         // 🌟 FULL 360-DEGREE CONTINUOUS ORBIT PATHS 🌟
@@ -644,7 +650,7 @@
                         .atmosphereColor('#38bdf8')
                         .atmosphereAltitude(0.25)
                         
-                        // 🌟 USE THREE.JS CUSTOM SPHERE MESHES VIA customLayerData FOR 3D SPHERICAL ORBS 🌟
+                        // 🌟 TRUE 3D SPHERICAL ORBS VIA customLayerData 🌟
                         .customLayerData([])
                         .customThreeObject(d => {
                             const geometry = new THREE.SphereGeometry(1.0, 24, 24);
