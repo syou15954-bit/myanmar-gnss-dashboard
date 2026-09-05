@@ -178,7 +178,7 @@
         <button class="legend-filter-btn active" id="filter-gal" onclick="toggleConstellationFilter('GAL')">
             <div class="legend-dot" style="color: #00f0ff; background: #00f0ff;"></div>Galileo
         </button>
-        <button class="legend-filter-btn active" id="filter-glo" onclick="toggleConstellationFilter('GLO')">
+        <button class="legend-filter-btn active" id="filter-glo" onclick="toggleConstellationFilter('GLONASS')">
             <div class="legend-dot" style="color: #c084fc; background: #c084fc;"></div>GLONASS
         </button>
     </div>
@@ -326,7 +326,7 @@
 
         function toggleConstellationFilter(sys) {
             activeFilters[sys] = !activeFilters[sys];
-            const btn = document.getElementById(`filter-${sys.toLowerCase()}`);
+            const btn = document.getElementById(`filter-${sys === 'GLONASS' ? 'glo' : sys.toLowerCase()}`);
             if (btn) btn.classList.toggle('active', activeFilters[sys]);
             renderCustomSelection();
         }
