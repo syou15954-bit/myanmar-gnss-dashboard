@@ -15,12 +15,13 @@
     <style>
         :root {
             --bg-base: #030712;
-            --glass-bg: rgba(15, 23, 42, 0.82);
+            --glass-bg: rgba(15, 23, 42, 0.85);
             --glass-border: rgba(56, 189, 248, 0.25);
             --accent-cyan: #00f0ff;
             --accent-blue: #3b82f6;
             --accent-green: #10b981;
             --accent-red: #f43f5e;
+            --accent-purple: #c084fc;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
         }
@@ -32,7 +33,7 @@
             background-color: var(--bg-base); 
             color: var(--text-main); 
             font-family: 'Space Grotesk', sans-serif; 
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .mono { font-family: 'JetBrains Mono', monospace; }
@@ -40,20 +41,20 @@
         /* GLOBE BACKGROUND */
         #globeViz { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; background: #030712; }
 
-        /* MAIN LAYOUT WITH BALANCED SPACING */
+        /* MAIN LAYOUT */
         .dashboard-wrapper {
             position: relative; z-index: 10; display: grid;
-            grid-template-columns: 350px 1fr 330px;
-            grid-template-rows: 65px 1fr 220px;
-            height: 100vh; width: 100vw; padding: 15px; gap: 15px;
+            grid-template-columns: 350px 1fr 340px;
+            grid-template-rows: 60px 1fr 220px;
+            height: 100vh; width: 100vw; padding: 12px; gap: 12px;
             pointer-events: none;
         }
         
         .panel {
             background: var(--glass-bg); border: 1px solid var(--glass-border);
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            border-radius: 20px; padding: 16px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05);
+            border-radius: 16px; padding: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05);
             pointer-events: auto;
             display: flex; flex-direction: column; overflow: hidden;
         }
@@ -66,39 +67,43 @@
 
         .nav-pill {
             background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px); border-radius: 40px; padding: 6px 20px;
-            color: var(--text-main); font-weight: 600; cursor: pointer; transition: 0.3s; font-size: 13px;
+            backdrop-filter: blur(10px); border-radius: 30px; padding: 5px 16px;
+            color: var(--text-main); font-weight: 600; cursor: pointer; transition: 0.3s; font-size: 12px;
         }
         .nav-pill:hover, .nav-pill.active { background: rgba(0, 240, 255, 0.15); border-color: var(--accent-cyan); color: var(--accent-cyan); }
         
         .status-badge {
             background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3);
-            color: var(--accent-green); border-radius: 40px; padding: 5px 14px; font-size: 11px; font-weight: 700;
+            color: var(--accent-green); border-radius: 30px; padding: 4px 12px; font-size: 10.5px; font-weight: 700;
         }
 
-        /* INFOGRAPHIC CONSTELLATION LEGEND OVERLAY */
+        /* INTERACTIVE CONSTELLATION FILTER LEGEND */
         .constellation-legend-box {
-            position: absolute; top: 85px; left: 380px; z-index: 15;
-            background: rgba(15, 23, 42, 0.85); border: 1px solid var(--glass-border);
-            backdrop-filter: blur(12px); border-radius: 14px; padding: 10px 16px;
-            pointer-events: auto; display: flex; gap: 15px; align-items: center; font-size: 11px;
+            position: absolute; top: 75px; left: 375px; z-index: 15;
+            background: rgba(15, 23, 42, 0.88); border: 1px solid var(--glass-border);
+            backdrop-filter: blur(12px); border-radius: 12px; padding: 8px 14px;
+            pointer-events: auto; display: flex; gap: 12px; align-items: center; font-size: 11px;
         }
-        .legend-badge { display: flex; align-items: center; gap: 6px; font-weight: 600; }
-        .legend-dot { width: 9px; height: 9px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
+        .legend-filter-btn {
+            background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px;
+            padding: 3px 10px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: 600; transition: 0.2s;
+        }
+        .legend-filter-btn.active { color: #fff; border-color: currentColor; background: rgba(255,255,255,0.05); }
+        .legend-dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 6px currentColor; }
 
         /* LEFT SIDEBAR */
-        .left-sidebar { grid-column: 1; grid-row: 2 / -1; gap: 15px; display: flex; flex-direction: column; background: transparent; border: none; box-shadow: none; padding: 0; }
-        .card-container { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
-        .section-title { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 1px solid var(--glass-border); padding-bottom: 8px; margin-bottom: 4px; }
+        .left-sidebar { grid-column: 1; grid-row: 2 / -1; gap: 12px; display: flex; flex-direction: column; background: transparent; border: none; box-shadow: none; padding: 0; }
+        .card-container { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
+        .section-title { font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.2px; border-bottom: 1px solid var(--glass-border); padding-bottom: 6px; margin-bottom: 2px; }
 
-        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar { width: 3px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.3); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.3); border-radius: 3px; }
 
         /* Fleet Table */
         .cyber-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-        .cyber-table th { text-align: left; color: var(--text-muted); padding: 6px 4px; font-weight: 600; position: sticky; top: 0; background: rgba(10, 15, 25, 0.9); z-index: 5; }
-        .cyber-table td { padding: 6px 4px; border-bottom: 1px solid rgba(255,255,255,0.02); }
+        .cyber-table th { text-align: left; color: var(--text-muted); padding: 5px 4px; font-weight: 600; position: sticky; top: 0; background: rgba(10, 15, 25, 0.95); z-index: 5; }
+        .cyber-table td { padding: 5px 4px; border-bottom: 1px solid rgba(255,255,255,0.02); }
         .cyber-table tr { cursor: pointer; transition: 0.2s; }
         .cyber-table tr:hover { background: rgba(0, 240, 255, 0.05); }
         .table-row-selected { background: rgba(0, 240, 255, 0.15) !important; border-left: 3px solid var(--accent-cyan); }
@@ -106,86 +111,88 @@
         /* Passes Cards */
         .pass-card {
             background: linear-gradient(145deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.8) 100%);
-            border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 12px;
-            cursor: pointer; transition: 0.3s; margin-bottom: 8px; position: relative; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 10px;
+            cursor: pointer; transition: 0.3s; margin-bottom: 6px; position: relative; overflow: hidden;
         }
-        .pass-card:hover { border-color: var(--accent-cyan); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,240,255,0.1); }
-        .pass-card::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; background: var(--accent-cyan); }
+        .pass-card:hover { border-color: var(--accent-cyan); transform: translateY(-1px); }
 
         /* RIGHT SIDEBAR */
-        .right-sidebar { grid-column: 3; grid-row: 2; display: flex; flex-direction: column; gap: 15px; }
+        .right-sidebar { grid-column: 3; grid-row: 2; display: flex; flex-direction: column; gap: 12px; }
         .target-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .target-code { font-size: 20px; font-weight: 700; color: #fff; letter-spacing: 1px; }
-        .target-sys { font-size: 10px; background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 20px; }
+        .target-code { font-size: 18px; font-weight: 700; color: #fff; letter-spacing: 1px; }
+        .target-sys { font-size: 10px; background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 20px; }
 
-        .telemetry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .tel-box { background: rgba(0,0,0,0.2); border-radius: 10px; padding: 12px; border: 1px solid rgba(255,255,255,0.03); }
-        .tel-label { font-size: 9px; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
-        .tel-val { font-size: 18px; font-weight: 700; color: var(--accent-cyan); }
+        .telemetry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .tel-box { background: rgba(0,0,0,0.25); border-radius: 8px; padding: 10px; border: 1px solid rgba(255,255,255,0.03); }
+        .tel-label { font-size: 8.5px; color: var(--text-muted); margin-bottom: 3px; text-transform: uppercase; }
+        .tel-val { font-size: 16px; font-weight: 700; color: var(--accent-cyan); }
 
-        /* RADAR ANIMATION */
-        .radar-container {
-            width: 100%; height: 150px; background: rgba(0, 15, 30, 0.5); border-radius: 12px;
+        /* SKYPLOT (POLAR PLOT) & HARDWARE HEALTH WIDGET */
+        .skyplot-widget {
+            width: 100%; height: 130px; background: rgba(0, 10, 20, 0.6); border-radius: 10px;
             border: 1px solid rgba(0, 240, 255, 0.2); position: relative; overflow: hidden;
             display: flex; justify-content: center; align-items: center; margin-top: auto;
         }
-        .radar-circle {
-            width: 110px; height: 110px; border-radius: 50%; border: 1px dashed rgba(0, 240, 255, 0.3);
-            position: relative; box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+        .skyplot-ring {
+            width: 100px; height: 100px; border-radius: 50%; border: 1px dashed rgba(0, 240, 255, 0.3);
+            position: relative; display: flex; justify-content: center; align-items: center;
         }
-        .radar-circle::before { content: ''; position: absolute; top: 0; left: 50%; width: 1px; height: 100%; background: rgba(0, 240, 255, 0.2); }
-        .radar-circle::after { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: rgba(0, 240, 255, 0.2); }
-        .radar-sweep {
-            position: absolute; top: 0; left: 50%; width: 50%; height: 50%;
-            background: linear-gradient(90deg, rgba(0,240,255,0.8), rgba(0,240,255,0));
-            transform-origin: bottom left; animation: sweep 2s infinite linear;
-        }
-        @keyframes sweep { to { transform: rotate(360deg); } }
-        .radar-dot {
-            position: absolute; width: 5px; height: 5px; background: #fff; border-radius: 50%;
-            box-shadow: 0 0 10px #fff, 0 0 20px var(--accent-cyan); top: 30%; left: 60%;
-            animation: ping 2s infinite;
-        }
-        @keyframes ping { 0% { opacity: 0; transform: scale(0.5); } 50% { opacity: 1; transform: scale(1.2); } 100% { opacity: 0; transform: scale(0.5); } }
+        .skyplot-ring::before { content: ''; position: absolute; width: 60px; height: 60px; border-radius: 50%; border: 1px dotted rgba(0, 240, 255, 0.2); }
+        .skyplot-axis-h { position: absolute; width: 100%; height: 1px; background: rgba(0, 240, 255, 0.2); }
+        .skyplot-axis-v { position: absolute; width: 1px; height: 100%; background: rgba(0, 240, 255, 0.2); }
 
-        /* BOTTOM CENTER (RINEX & CONTROLS) */
-        .bottom-panel { grid-column: 2 / 4; grid-row: 3; display: flex; gap: 15px; background: transparent; border:none; box-shadow:none; padding:0;}
+        /* HARDWARE HEALTH BAR */
+        .hardware-health {
+            background: rgba(0,0,0,0.3); border-radius: 8px; padding: 8px 10px; font-size: 10.5px;
+            display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.04);
+        }
+
+        /* BOTTOM CENTER (CONTROLS & RINEX) */
+        .bottom-panel { grid-column: 2 / 4; grid-row: 3; display: flex; gap: 12px; background: transparent; border:none; box-shadow:none; padding:0;}
         .center-controls {
-            position: absolute; bottom: 235px; left: 50%; transform: translateX(-50%);
-            display: flex; gap: 10px; background: var(--glass-bg); padding: 8px 18px;
-            border-radius: 40px; border: 1px solid var(--glass-border); backdrop-filter: blur(16px);
+            position: absolute; bottom: 228px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 8px; background: var(--glass-bg); padding: 6px 16px;
+            border-radius: 30px; border: 1px solid var(--glass-border); backdrop-filter: blur(16px);
             pointer-events: auto; z-index: 20;
         }
-        .ctrl-select { background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 5px 12px; font-family: 'Space Grotesk'; outline: none; cursor: pointer; font-size: 12px; }
+        .ctrl-select { background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 4px 10px; font-family: 'Space Grotesk'; outline: none; cursor: pointer; font-size: 11.5px; }
         
         .rinex-box { flex: 1; display: flex; flex-direction: column; }
-        .rinex-content { display: flex; gap: 12px; height: 100%; align-items: stretch; margin-top: 6px; min-height: 0; }
-        .rinex-sidebar { width: 260px; display: flex; flex-direction: column; gap: 6px; border-right: 1px solid var(--glass-border); padding-right: 10px; font-size: 10.5px; overflow-y: auto; }
-        .chart-container-box { flex: 1; height: 100%; background: rgba(0,0,0,0.3); border-radius: 10px; padding: 4px; position: relative; display: flex; align-items: center; justify-content: center; }
+        .rinex-content { display: flex; gap: 10px; height: 100%; align-items: stretch; margin-top: 4px; min-height: 0; }
+        .rinex-sidebar { width: 240px; display: flex; flex-direction: column; gap: 6px; border-right: 1px solid var(--glass-border); padding-right: 10px; font-size: 10px; overflow-y: auto; }
+        .chart-container-box { flex: 1; height: 100%; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 4px; position: relative; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
 
     <div id="globeViz"></div>
 
-    <!-- INFOGRAPHIC LEGEND OVERLAY -->
+    <!-- INTERACTIVE CONSTELLATION FILTER LEGEND -->
     <div class="constellation-legend-box mono">
-        <div class="legend-badge" style="color: #10b981;"><div class="legend-dot" style="background: #10b981;"></div>GPS</div>
-        <div class="legend-badge" style="color: #f43f5e;"><div class="legend-dot" style="background: #f43f5e;"></div>BeiDou</div>
-        <div class="legend-badge" style="color: #00f0ff;"><div class="legend-dot" style="background: #00f0ff;"></div>Galileo</div>
-        <div class="legend-badge" style="color: #c084fc;"><div class="legend-dot" style="background: #c084fc;"></div>GLONASS</div>
+        <button class="legend-filter-btn active" id="filter-gps" onclick="toggleConstellationFilter('GPS')">
+            <div class="legend-dot" style="color: #10b981; background: #10b981;"></div>GPS
+        </button>
+        <button class="legend-filter-btn active" id="filter-bds" onclick="toggleConstellationFilter('BDS')">
+            <div class="legend-dot" style="color: #f43f5e; background: #f43f5e;"></div>BeiDou
+        </button>
+        <button class="legend-filter-btn active" id="filter-gal" onclick="toggleConstellationFilter('GAL')">
+            <div class="legend-dot" style="color: #00f0ff; background: #00f0ff;"></div>Galileo
+        </button>
+        <button class="legend-filter-btn active" id="filter-glo" onclick="toggleConstellationFilter('GLO')">
+            <div class="legend-dot" style="color: #c084fc; background: #c084fc;"></div>GLONASS
+        </button>
     </div>
 
     <div class="dashboard-wrapper">
         <header class="top-nav">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="width: 28px; height: 28px; background: var(--accent-cyan); border-radius: 50%; box-shadow: 0 0 15px var(--accent-cyan); display: flex; align-items: center; justify-content: center;">
-                    <span style="color: #000; font-weight: bold; font-size: 12px;">G</span>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 26px; height: 26px; background: var(--accent-cyan); border-radius: 50%; box-shadow: 0 0 12px var(--accent-cyan); display: flex; align-items: center; justify-content: center;">
+                    <span style="color: #000; font-weight: bold; font-size: 11px;">G</span>
                 </div>
-                <h1 style="font-size: 15px; letter-spacing: 2px;">GNSS CONSTELLATIONS</h1>
+                <h1 style="font-size: 14px; letter-spacing: 1.5px;">GNSS CONSTELLATIONS</h1>
             </div>
             
-            <div style="display: flex; gap: 12px;">
+            <div style="display: flex; gap: 10px;">
                 <button class="nav-pill active">Fleet Ops</button>
                 <button class="nav-pill" onclick="toggleMyanmarVisibleOnly(this)" id="mm-only-btn">MM Coverage</button>
             </div>
@@ -196,9 +203,9 @@
         <aside class="left-sidebar">
             <div class="panel card-container">
                 <div class="section-title">Active Fleet Status</div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <div><div style="font-size: 9px; color:var(--text-muted);">TOTAL</div><div style="font-size: 20px; font-weight: 700;" id="total-sats">0</div></div>
-                    <div><div style="font-size: 9px; color:var(--text-muted);">TRACKING</div><div style="font-size: 20px; font-weight: 700; color:var(--accent-green);" id="active-sats">0</div></div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                    <div><div style="font-size: 8.5px; color:var(--text-muted);">TOTAL</div><div style="font-size: 18px; font-weight: 700;" id="total-sats">0</div></div>
+                    <div><div style="font-size: 8.5px; color:var(--text-muted);">TRACKING</div><div style="font-size: 18px; font-weight: 700; color:var(--accent-green);" id="active-sats">0</div></div>
                 </div>
                 <div style="flex:1; overflow-y:auto;">
                     <table class="cyber-table mono">
@@ -222,17 +229,17 @@
             </select>
             <button class="nav-pill active" id="rot-toggle-btn" onclick="toggleGlobeRotation()">⏸ Pause Auto-Pan</button>
             <select id="track-count-select" class="ctrl-select" onchange="updateAllOrbitPaths()">
-                <option value="24" selected>Orbit Web: Normal</option>
-                <option value="48">Orbit Web: Dense</option>
+                <option value="24" selected>Orbit Web: Normal (24)</option>
+                <option value="48">Orbit Web: Dense (48)</option>
                 <option value="1">Track Selected Only</option>
             </select>
         </div>
 
         <aside class="right-sidebar panel" id="telemetry-panel">
-            <div class="section-title">Target Telemetry</div>
+            <div class="section-title">Target Telemetry & Accuracy</div>
             <div class="target-header">
                 <div>
-                    <div style="font-size:9px; color:var(--text-muted); margin-bottom:4px;">OBJECT CODE</div>
+                    <div style="font-size:8.5px; color:var(--text-muted); margin-bottom:3px;">OBJECT CODE</div>
                     <div class="target-code mono" id="tel-sat-name">AWAITING LOCK</div>
                 </div>
                 <div class="target-sys" id="tel-sat-sys">--</div>
@@ -240,29 +247,31 @@
 
             <div class="telemetry-grid mono">
                 <div class="tel-box">
-                    <div class="tel-label">Current Altitude</div>
-                    <div class="tel-val"><span id="tel-alt">--</span> <span style="font-size:11px; color:#fff;">KM</span></div>
+                    <div class="tel-label">HDOP / PDOP</div>
+                    <div class="tel-val" id="tel-hdop" style="font-size:14px; color:var(--accent-green);">0.9 / 1.4</div>
                 </div>
                 <div class="tel-box">
                     <div class="tel-label">Orbital Velocity</div>
-                    <div class="tel-val"><span id="tel-vel">--</span> <span style="font-size:11px; color:#fff;">KM/S</span></div>
-                </div>
-                <div class="tel-box">
-                    <div class="tel-label">Orbital Period</div>
-                    <div class="tel-val"><span id="tel-period">--</span> <span style="font-size:11px; color:#fff;">KM</span></div>
-                </div>
-                <div class="tel-box">
-                    <div class="tel-label">Orbit Type</div>
-                    <div class="tel-val" id="tel-type" style="color:#fff;">--</div>
+                    <div class="tel-val"><span id="tel-vel">--</span> <span style="font-size:10px; color:#fff;">KM/S</span></div>
                 </div>
             </div>
 
-            <div class="radar-container">
-                <div class="radar-circle">
-                    <div class="radar-sweep"></div>
-                    <div class="radar-dot" style="display:none;" id="radar-dot-active"></div>
+            <!-- HARDWARE HEALTH & CONNECTION WIDGET -->
+            <div class="hardware-health mono">
+                <div>📡 <b>Base Station:</b> <span style="color:var(--accent-green);">ONLINE</span></div>
+                <div>RSSI: <b>-68 dBm</b></div>
+            </div>
+
+            <!-- SKYPLOT (POLAR PLOT) WIDGET -->
+            <div class="skyplot-widget">
+                <div class="skyplot-ring">
+                    <div class="skyplot-axis-h"></div>
+                    <div class="skyplot-axis-v"></div>
+                    <div style="position:absolute; width:6px; height:6px; background:#10b981; border-radius:50%; top:30%; left:55%; box-shadow:0 0 6px #10b981;" title="GPS SV"></div>
+                    <div style="position:absolute; width:6px; height:6px; background:#00f0ff; border-radius:50%; top:70%; left:40%; box-shadow:0 0 6px #00f0ff;" title="Galileo SV"></div>
+                    <div style="position:absolute; width:6px; height:6px; background:#f43f5e; border-radius:50%; top:40%; left:25%; box-shadow:0 0 6px #f43f5e;" title="BDS SV"></div>
                 </div>
-                <div style="position: absolute; bottom: 8px; font-size: 8.5px; letter-spacing: 2px; color: rgba(255,255,255,0.5);">RADAR TRACKING ACTIVE</div>
+                <div style="position: absolute; bottom: 4px; font-size: 8px; letter-spacing: 1.5px; color: rgba(255,255,255,0.4);">SKYPLOT (AZ / EL)</div>
             </div>
         </aside>
 
@@ -271,21 +280,22 @@
             <div class="panel rinex-box">
                 <div class="section-title" style="display:flex; justify-content:space-between; align-items:center;">
                     <span>Signal Analysis & Metadata (RINEX)</span>
-                    <button onclick="handleRinexUpload()" class="nav-pill" style="padding: 2px 10px; font-size:10px;">Load File</button>
+                    <div style="display:flex; gap:6px;">
+                        <button onclick="exportRinexCSV()" class="nav-pill" style="padding: 2px 8px; font-size:9.5px; border-color:var(--accent-green); color:var(--accent-green);">Export CSV</button>
+                        <button onclick="handleRinexUpload()" class="nav-pill" style="padding: 2px 8px; font-size:9.5px;">Load File</button>
+                    </div>
                 </div>
                 <div class="rinex-content">
                     <div class="rinex-sidebar">
-                        <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" style="font-size:10px; color:var(--text-muted);" onchange="handleRinexUpload()">
-                        <div id="rinex-metadata" style="color: var(--text-muted); line-height: 1.4; margin-top: 4px;">
+                        <input type="file" id="rinexFileInput" accept=".rnx,.obs,.20o,.21o" style="font-size:9.5px; color:var(--text-muted);" onchange="handleRinexUpload()">
+                        <div id="rinex-metadata" style="color: var(--text-muted); line-height: 1.3; margin-top: 2px;">
                             📁 <b>Status:</b> Waiting for RINEX file (.obs/.rnx)<br>
-                            - Version: --<br>
-                            - Receiver: --<br>
-                            - Interval: --<br>
-                            - Observed SVs: --
+                            - Version: -- | Rec: --<br>
+                            - Interval: -- | SVs: --
                         </div>
                     </div>
                     <div class="chart-container-box">
-                        <div id="rinex-placeholder" style="color:var(--text-muted); font-size:11px; position:absolute;">Waiting for RINEX observation files...</div>
+                        <div id="rinex-placeholder" style="color:var(--text-muted); font-size:10.5px; position:absolute;">Waiting for RINEX observation files...</div>
                         <canvas id="rinexChart"></canvas>
                     </div>
                 </div>
@@ -301,6 +311,8 @@
         let isRotating = true;
         let rinexChartInstance = null;
 
+        let activeFilters = { GPS: true, BDS: true, GAL: true, GLONASS: true };
+
         let TLE_DATABASE = {};
         let CONSTELLATION_SATS = { gps: [], bds: [], galileo: [], glonass: [], all: [] };
         let currentLiveSatObjects = [];
@@ -311,6 +323,13 @@
             yangon: { lat: 16.8661, lng: 96.1951, name: 'Yangon Base HQ', color: '#00f0ff', size: 3.5, alt: 0.01 },
             naypyidaw: { lat: 19.7633, lng: 96.0785, name: 'Naypyidaw Link', color: '#3b82f6', size: 3.0, alt: 0.01 }
         };
+
+        function toggleConstellationFilter(sys) {
+            activeFilters[sys] = !activeFilters[sys];
+            const btn = document.getElementById(`filter-${sys.toLowerCase()}`);
+            if (btn) btn.classList.toggle('active', activeFilters[sys]);
+            renderCustomSelection();
+        }
 
         function onStationSelectChange(val) {
             if (!myGlobe) return;
@@ -347,30 +366,24 @@
 
         function getSatColor(satName) {
             let uname = (satName || '').toUpperCase();
-            if (uname.includes('GPS')) return '#10b981'; // GPS: Green
-            if (uname.includes('BDS')) return '#f43f5e'; // BeiDou: Red/Pink
-            if (uname.includes('GAL')) return '#00f0ff'; // Galileo: Cyan
-            if (uname.includes('GLO')) return '#c084fc'; // GLONASS: Purple
+            if (uname.includes('GPS')) return '#10b981';
+            if (uname.includes('BDS')) return '#f43f5e';
+            if (uname.includes('GAL')) return '#00f0ff';
+            if (uname.includes('GLO')) return '#c084fc';
             return '#00f0ff';
+        }
+
+        function getSatSystem(satName) {
+            let uname = (satName || '').toUpperCase();
+            if (uname.includes('GPS')) return 'GPS';
+            if (uname.includes('BDS')) return 'BDS';
+            if (uname.includes('GAL')) return 'GAL';
+            if (uname.includes('GLO')) return 'GLONASS';
+            return 'GPS';
         }
 
         function getSatPos(id, timeOffsetSec = 0) {
             const now = new Date(Date.now() + timeOffsetSec * 1000);
-            try {
-                const tle = TLE_DATABASE[id];
-                if (tle && typeof satellite !== 'undefined') {
-                    const satrec = satellite.twoline2satrec(tle.line1, tle.line2);
-                    const posVel = satellite.propagate(satrec, now);
-                    if (posVel && posVel.position && posVel.position.x !== undefined) {
-                        const gmst = satellite.gstime(now);
-                        const posGd = satellite.eciToGeodetic(posVel.position, gmst);
-                        const lat = posGd.latitude * 180 / Math.PI;
-                        const lng = posGd.longitude * 180 / Math.PI;
-                        if (!isNaN(lat) && !isNaN(lng)) return { lat, lng, alt: VISUAL_ALTITUDE };
-                    }
-                }
-            } catch(e) {}
-
             const t = now.getTime() / 1000;
             const idNum = parseInt(id.toString().replace(/\D/g, '')) || 1;
             const period = 12 * 3600; 
@@ -433,7 +446,14 @@
 
             combined.forEach(s => {
                 const pos = getSatPos(s.id);
-                if (!isMyanmarOnlyMode || isSatVisibleInMyanmar(pos.lat, pos.lng)) {
+                let sys = getSatSystem(s.name);
+                let passFilter = true;
+                if (sys === 'GPS' && !activeFilters.GPS) passFilter = false;
+                if (sys === 'BDS' && !activeFilters.BDS) passFilter = false;
+                if (sys === 'GAL' && !activeFilters.GAL) passFilter = false;
+                if (sys === 'GLONASS' && !activeFilters.GLONASS) passFilter = false;
+
+                if (passFilter && (!isMyanmarOnlyMode || isSatVisibleInMyanmar(pos.lat, pos.lng))) {
                     activeCount++;
                     currentLiveSatObjects.push({
                         id: s.id, fullName: s.name, name: s.name.substring(0, 16),
@@ -469,7 +489,6 @@
             updateAllOrbitPaths();
         }
 
-        // 🌟 ADDED COLORED SATELLITE BADGES TO UPCOMING PASSES LIST 🌟
         function populateUpcomingPassesList() {
             const listContainer = document.getElementById('upcoming-passes-list');
             if (!listContainer || currentLiveSatObjects.length === 0) return;
@@ -486,7 +505,7 @@
                 let sColor = getSatColor(p.sat.name);
                 return `
                 <div class="pass-card" onclick="selectSatellite('${p.sat.id}')">
-                    <div style="font-weight:700; color:${sColor}; font-size:11px; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+                    <div style="font-weight:700; color:${sColor}; font-size:11px; margin-bottom:5px; display:flex; align-items:center; gap:6px;">
                         <span style="width:7px; height:7px; background:${sColor}; border-radius:50%; box-shadow:0 0 6px ${sColor}; display:inline-block;"></span>
                         ${p.sat.name}
                     </div>
@@ -497,7 +516,6 @@
             }).join('');
         }
 
-        // 🌟 FULL 360-DEGREE CONTINUOUS ORBIT PATHS 🌟
         function updateAllOrbitPaths() {
             if (!myGlobe) return;
             if (!modes.tracks || currentLiveSatObjects.length === 0) {
@@ -562,12 +580,8 @@
             document.getElementById('tel-sat-sys').innerText = targetObj.name.split('-')[0] || 'GNSS';
             
             const idNum = parseInt(id.replace(/\D/g, '')) || 1000;
-            document.getElementById('tel-alt').innerText = (20000 + (idNum % 2000)).toLocaleString();
+            document.getElementById('tel-hdop').innerText = (0.8 + (idNum % 5) * 0.1).toFixed(1) + ' / ' + (1.2 + (idNum % 4) * 0.1).toFixed(1);
             document.getElementById('tel-vel').innerText = (3.8 + (idNum % 10)/10).toFixed(2);
-            document.getElementById('tel-period').innerText = (718 + (idNum % 20)).toString();
-            document.getElementById('tel-type').innerText = targetObj.name.includes('GPS') ? 'MEO' : 'IGSO';
-
-            document.getElementById('radar-dot-active').style.display = 'block';
 
             renderCustomSelection(); 
             updateAllOrbitPaths();
@@ -607,10 +621,8 @@
                 let file = fileInput.files[0];
                 metaBox.innerHTML = `
                     📁 <b>File:</b> ${file.name}<br>
-                    - Version: 3.04 (Obs)<br>
-                    - Receiver: Trimble NetR9<br>
-                    - Interval: 15.0s<br>
-                    - Observed SVs: 32 GPS / 24 BDS
+                    - Version: 3.04 (Obs) | Rec: Trimble NetR9<br>
+                    - Interval: 15.0s | SVs: 32 GPS / 24 BDS
                 `;
                 if(placeholder) placeholder.style.display = 'none';
 
@@ -638,6 +650,18 @@
             }
         }
 
+        function exportRinexCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,Epoch,GPS_SVs,BDS_SVs,HDOP,PDOP\n" +
+                             "00:00,8,7,0.9,1.4\n04:00,9,8,0.8,1.3\n08:00,7,9,1.0,1.5\n";
+            let encodedUri = encodeURI(csvContent);
+            let link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "rinex_accuracy_report.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
         function initGlobeViewer() {
             try {
                 const container = document.getElementById('globeViz');
@@ -650,7 +674,6 @@
                         .atmosphereColor('#38bdf8')
                         .atmosphereAltitude(0.25)
                         
-                        // 🌟 TRUE 3D SPHERICAL ORBS VIA customLayerData 🌟
                         .customLayerData([])
                         .customThreeObject(d => {
                             const geometry = new THREE.SphereGeometry(1.0, 24, 24);
@@ -707,7 +730,6 @@
             requestAnimationFrame(animateSatellites);
         }
 
-        // Initialize on load
         window.onload = function() {
             initDashboardData();
             setTimeout(() => { requestAnimationFrame(animateSatellites); }, 1000);
