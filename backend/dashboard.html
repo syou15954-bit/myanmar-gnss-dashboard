@@ -36,10 +36,8 @@
 
         .mono { font-family: 'JetBrains Mono', monospace; }
 
-        /* GLOBE BACKGROUND */
         #globeViz { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; background: #030712; }
 
-        /* MAIN LAYOUT */
         .dashboard-wrapper {
             position: relative; z-index: 10; display: grid;
             grid-template-columns: 360px 1fr 340px;
@@ -56,7 +54,6 @@
             pointer-events: auto; display: flex; flex-direction: column; overflow: hidden;
         }
 
-        /* TOP NAVIGATION */
         .top-nav {
             grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center;
             background: transparent; border: none; box-shadow: none; pointer-events: auto; padding: 0;
@@ -87,7 +84,6 @@
         .legend-filter-btn.active { color: #fff; border-color: currentColor; background: rgba(255,255,255,0.05); }
         .legend-dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 6px currentColor; }
 
-        /* LEFT SIDEBAR */
         .left-sidebar { grid-column: 1; grid-row: 2 / 4; gap: 12px; display: flex; flex-direction: column; background: transparent; border: none; box-shadow: none; padding: 0; }
         .card-container { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 6px; }
         .section-title { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.2px; border-bottom: 1px solid var(--glass-border); padding-bottom: 5px; margin-bottom: 2px; }
@@ -110,7 +106,6 @@
         }
         .ia-card:hover { border-color: var(--accent-cyan); transform: translateY(-1px); }
 
-        /* RIGHT SIDEBAR */
         .right-sidebar { grid-column: 3; grid-row: 2 / 4; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
         
         .target-header { display: flex; justify-content: space-between; align-items: flex-start; }
@@ -135,7 +130,6 @@
         .spectrum-bars { display: flex; align-items: flex-end; justify-content: space-between; height: 40px; padding: 0 4px; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .s-bar { width: 8px; background: var(--accent-cyan); border-radius: 2px 2px 0 0; box-shadow: 0 0 6px rgba(0,240,255,0.4); }
 
-        /* 🌟 ENHANCED SKYPLOT / RADAR WIDGET 🌟 */
         .skyplot-widget {
             flex: 1; min-height: 200px; background: rgba(0, 10, 20, 0.6); border-radius: 10px;
             border: 1px solid rgba(0, 240, 255, 0.2); position: relative; overflow: hidden;
@@ -158,7 +152,6 @@
         .skyplot-axis-d1 { position: absolute; width: 100%; height: 1px; background: rgba(0, 240, 255, 0.1); transform: rotate(45deg); }
         .skyplot-axis-d2 { position: absolute; width: 100%; height: 1px; background: rgba(0, 240, 255, 0.1); transform: rotate(-45deg); }
 
-        /* 3D BLUEPRINT SCHEMATIC CARD */
         .sat-3d-model-card {
             background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.7) 100%);
             border: 1px solid var(--accent-cyan); border-radius: 10px; padding: 10px;
@@ -175,7 +168,6 @@
         .sat-panel-right { width: 36px; height: 14px; background: linear-gradient(90deg, #1d4ed8, #60a5fa, #1d4ed8); border: 1px solid #93c5fd; border-radius: 2px; position: absolute; right: 14px; }
         .sat-central-bus { width: 20px; height: 20px; background: linear-gradient(135deg, #cbd5e1, #64748b); border: 1px solid #fff; border-radius: 3px; position: absolute; }
 
-        /* BOTTOM CENTER */
         .bottom-panel { grid-column: 2; grid-row: 3; display: flex; gap: 12px; background: transparent; border:none; box-shadow:none; padding:0; align-items: flex-end;}
         
         .center-controls {
@@ -265,7 +257,7 @@
 
         <div class="center-controls">
             <select id="station-select" class="ctrl-select" onchange="onStationSelectChange(this.value)">
-                <option value="none">Target Station: OFF</option>
+                <option value="none" selected>Target Station: OFF</option>
                 <option value="yangon">📍 Yangon Base HQ</option>
                 <option value="naypyidaw">📍 Naypyidaw Link</option>
             </select>
@@ -290,37 +282,36 @@
             <div class="telemetry-grid mono">
                 <div class="tel-box">
                     <div class="tel-label">HDOP / PDOP</div>
-                    <div class="tel-val" id="tel-hdop" style="font-size:13px; color:var(--accent-green);">0.9 / 1.4</div>
+                    <div class="tel-val" id="tel-hdop" style="font-size:13px; color:var(--text-muted);">-- / --</div>
                 </div>
                 <div class="tel-box">
                     <div class="tel-label">Orbital Velocity</div>
-                    <div class="tel-val"><span id="tel-vel">--</span> <span style="font-size:9px; color:#fff;">KM/S</span></div>
+                    <div class="tel-val"><span id="tel-vel" style="color:var(--text-muted);">--</span> <span style="font-size:9px; color:#fff;">KM/S</span></div>
                 </div>
             </div>
 
             <div class="hardware-health mono">
-                <div>📡 <b>Base Station:</b> <span style="color:var(--accent-green);">ONLINE</span></div>
-                <div>RSSI: <b>-68 dBm</b></div>
+                <div>📡 <b>Base Station:</b> <span id="base-status" style="color:var(--text-muted);">OFFLINE</span></div>
+                <div>RSSI: <b id="base-rssi" style="color:var(--text-muted);">-- dBm</b></div>
             </div>
 
             <div class="signal-spectrum-card mono">
                 <div style="display:flex; justify-content:space-between; font-size:9.5px; color:var(--text-muted);">
                     <span>C/N0 SIGNAL SPECTRUM</span>
-                    <span style="color:var(--accent-green);">42.5 dB-Hz Avg</span>
+                    <span id="spectrum-val" style="color:var(--text-muted);">-- dB-Hz Avg</span>
                 </div>
-                <div class="spectrum-bars">
-                    <div class="s-bar" style="height: 65%;"></div>
-                    <div class="s-bar" style="height: 80%;"></div>
-                    <div class="s-bar" style="height: 50%;"></div>
-                    <div class="s-bar" style="height: 90%;"></div>
-                    <div class="s-bar" style="height: 70%;"></div>
-                    <div class="s-bar" style="height: 85%;"></div>
-                    <div class="s-bar" style="height: 60%;"></div>
-                    <div class="s-bar" style="height: 95%;"></div>
+                <div class="spectrum-bars" id="spectrum-bars-container">
+                    <div class="s-bar" style="height: 10%; background:rgba(255,255,255,0.1);"></div>
+                    <div class="s-bar" style="height: 10%; background:rgba(255,255,255,0.1);"></div>
+                    <div class="s-bar" style="height: 10%; background:rgba(255,255,255,0.1);"></div>
+                    <div class="s-bar" style="height: 10%; background:rgba(255,255,255,0.1);"></div>
+                    <div class="s-bar" style="height: 10%; background:rgba(255,255,255,0.1);"></div>
+                    <div class="s-bar" style="height: 10%; background:rgba(255,255,255,0.1);"></div>
+                    <div class="s-bar" style="height: 10%; background:rgba(255,255,255,0.1);"></div>
+                    <div class="s-bar" style="height: 10%; background:rgba(255,255,255,0.1);"></div>
                 </div>
             </div>
 
-            <!-- 🌟 ENHANCED LARGE SKYPLOT / RADAR WIDGET 🌟 -->
             <div class="skyplot-widget">
                 <div class="skyplot-compass mono">
                     <span class="compass-lbl lbl-n">N</span>
@@ -337,11 +328,9 @@
                         <div class="skyplot-ring ring-inner"></div>
                     </div>
                     
-                    <!-- Satellite Tracking Dots -->
-                    <div style="position:absolute; width:8px; height:8px; background:#10b981; border-radius:50%; top:25%; left:65%; box-shadow:0 0 8px #10b981;" title="GPS SV"></div>
-                    <div style="position:absolute; width:8px; height:8px; background:#00f0ff; border-radius:50%; top:70%; left:30%; box-shadow:0 0 8px #00f0ff;" title="Galileo SV"></div>
-                    <div style="position:absolute; width:8px; height:8px; background:#f43f5e; border-radius:50%; top:45%; left:25%; box-shadow:0 0 8px #f43f5e;" title="BDS SV"></div>
-                    <div style="position:absolute; width:8px; height:8px; background:#c084fc; border-radius:50%; top:55%; left:75%; box-shadow:0 0 8px #c084fc;" title="GLO SV"></div>
+                    <!-- Dynamic Radar Dots Container -->
+                    <div id="radar-container" style="position: absolute; width: 100%; height: 100%;"></div>
+
                 </div>
                 <div style="position: absolute; bottom: 8px; font-size: 8.5px; letter-spacing: 1.5px; color: rgba(255,255,255,0.6); font-weight: bold;">SKYPLOT (AZ / EL)</div>
             </div>
@@ -349,17 +338,17 @@
             <div class="sat-3d-model-card mono" id="sat-model-box">
                 <div class="sat-model-header">
                     <span><b>3D MODEL SCHEMATIC</b></span>
-                    <span style="color:var(--accent-cyan);" id="model-status-tag">ACTIVE LOCK</span>
+                    <span style="color:var(--text-muted);" id="model-status-tag">AWAITING LOCK</span>
                 </div>
-                <div class="sat-model-viewport">
+                <div class="sat-model-viewport" style="opacity: 0.3;">
                     <div class="sat-panel-left"></div>
                     <div class="sat-central-bus"></div>
                     <div class="sat-panel-right"></div>
-                    <div style="position: absolute; bottom: 4px; font-size: 8.5px; color: var(--accent-cyan); letter-spacing: 1px; font-weight: bold;" id="model-label">LOCK: NONE</div>
+                    <div style="position: absolute; bottom: 4px; font-size: 8.5px; color: var(--text-muted); letter-spacing: 1px; font-weight: bold;" id="model-label">LOCK: NONE</div>
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 9.5px; color: var(--text-muted);">
-                    <span>Orbit: <b id="model-orbit" style="color:#fff;">MEO (20,200KM)</b></span>
-                    <span>Status: <b style="color:var(--accent-green);">Nominal</b></span>
+                    <span>Orbit: <b id="model-orbit" style="color:var(--text-muted);">--</b></span>
+                    <span>Status: <b style="color:var(--text-muted);">Standby</b></span>
                 </div>
             </div>
         </aside>
@@ -421,7 +410,72 @@
             renderCustomSelection();
         }
 
+        // 🌟 UPDATE RADAR DYNAMICALLY BASED ON TARGET STATION 🌟
+        function updateRadar() {
+            const container = document.getElementById('radar-container');
+            if (!container) return;
+
+            const stVal = document.getElementById('station-select').value;
+            
+            // If Target Station is OFF, clear Radar and reset visual UI elements
+            if (stVal === 'none') {
+                container.innerHTML = '';
+                document.getElementById('base-status').innerText = "OFFLINE";
+                document.getElementById('base-status').style.color = "var(--text-muted)";
+                document.getElementById('base-rssi').innerText = "-- dBm";
+                document.getElementById('base-rssi').style.color = "var(--text-muted)";
+                document.getElementById('spectrum-val').innerText = "-- dB-Hz Avg";
+                document.getElementById('spectrum-val').style.color = "var(--text-muted)";
+                
+                // Dim spectrum bars
+                let dimBars = '';
+                for(let i=0; i<8; i++){ dimBars += `<div class="s-bar" style="height: 10%; background:rgba(255,255,255,0.1); box-shadow:none;"></div>`; }
+                document.getElementById('spectrum-bars-container').innerHTML = dimBars;
+                return;
+            }
+
+            // If a station is selected, populate dummy radar dots relative to station
+            document.getElementById('base-status').innerText = "ONLINE";
+            document.getElementById('base-status').style.color = "var(--accent-green)";
+            document.getElementById('base-rssi').innerText = "-68 dBm";
+            document.getElementById('base-rssi').style.color = "#fff";
+            document.getElementById('spectrum-val').innerText = "42.5 dB-Hz Avg";
+            document.getElementById('spectrum-val').style.color = "var(--accent-green)";
+
+            // Activate spectrum bars
+            const heights = [65, 80, 50, 90, 70, 85, 60, 95];
+            let activeBars = '';
+            heights.forEach(h => { activeBars += `<div class="s-bar" style="height: ${h}%;"></div>`; });
+            document.getElementById('spectrum-bars-container').innerHTML = activeBars;
+
+            const st = STATIONS_DATA[stVal];
+            let radarHTML = '';
+
+            currentLiveSatObjects.forEach(sat => {
+                 let dLat = sat.lat - st.lat;
+                 let dLng = sat.lng - st.lng;
+                 if (dLng > 180) dLng -= 360;
+                 if (dLng < -180) dLng += 360;
+
+                 let dist = Math.sqrt(dLat*dLat + dLng*dLng);
+
+                 // Draw dot if it is relatively close (simulated visibility)
+                 if (dist < 80) {
+                     let az = Math.atan2(dLng, dLat); // radians
+                     let elRadius = (dist / 80) * 100; // max 100%
+                     let x = 50 + (elRadius * Math.sin(az)) / 2;
+                     let y = 50 - (elRadius * Math.cos(az)) / 2;
+
+                     let glow = (sat.id === selectedSatId) ? `box-shadow: 0 0 10px 2px ${sat.color}; z-index: 10; transform: scale(1.5);` : `box-shadow: 0 0 5px ${sat.color};`;
+
+                     radarHTML += `<div style="position:absolute; width:6px; height:6px; background:${sat.color}; border-radius:50%; top:calc(${y}% - 3px); left:calc(${x}% - 3px); ${glow}" title="${sat.name}"></div>`;
+                 }
+            });
+            container.innerHTML = radarHTML;
+        }
+
         function onStationSelectChange(val) {
+            updateRadar();
             if (!myGlobe) return;
             let currentRings = [];
             
@@ -447,11 +501,6 @@
                 .ringPropagationSpeed(d => d.propagationSpeed || 2.5)
                 .ringRepeatPeriod(d => d.repeatPeriod || 800)
                 .ringAltitude(d => d.alt || 0.01);
-        }
-
-        function updateRings() {
-            const stVal = document.getElementById('station-select').value;
-            onStationSelectChange(stVal);
         }
 
         function getSatColor(satName) {
@@ -516,6 +565,7 @@
             CONSTELLATION_SATS = cat;
 
             renderCustomSelection();
+            updateRadar();
             initGlobeViewer();
         }
 
@@ -576,6 +626,7 @@
             }
 
             updateAllOrbitPaths();
+            updateRadar();
         }
 
         function updateAllOrbitPaths() {
@@ -640,11 +691,21 @@
             document.getElementById('tel-sat-sys').innerText = targetObj.name.split('-')[0] || 'GNSS';
             
             const idNum = parseInt(id.replace(/\D/g, '')) || 1000;
-            document.getElementById('tel-hdop').innerText = (0.8 + (idNum % 5) * 0.1).toFixed(1) + ' / ' + (1.2 + (idNum % 4) * 0.1).toFixed(1);
-            document.getElementById('tel-vel').innerText = (3.8 + (idNum % 10)/10).toFixed(2);
+            
+            // Only show values if a target station is actually selected
+            const stVal = document.getElementById('station-select').value;
+            if (stVal !== 'none') {
+                document.getElementById('tel-hdop').innerText = (0.8 + (idNum % 5) * 0.1).toFixed(1) + ' / ' + (1.2 + (idNum % 4) * 0.1).toFixed(1);
+                document.getElementById('tel-hdop').style.color = "var(--accent-green)";
+                document.getElementById('tel-vel').innerText = (3.8 + (idNum % 10)/10).toFixed(2);
+                document.getElementById('tel-vel').style.color = "var(--accent-cyan)";
+            }
 
             document.getElementById('model-label').innerText = "LOCK: " + targetObj.name;
             document.getElementById('model-orbit').innerText = targetObj.name.includes('GPS') ? 'MEO (20,200KM)' : 'IGSO (21,500KM)';
+            document.getElementById('model-status-tag').innerText = "ACTIVE LOCK";
+            document.getElementById('model-status-tag').style.color = "var(--accent-cyan)";
+            document.querySelector('.sat-model-viewport').style.opacity = "1";
 
             renderCustomSelection(); 
             updateAllOrbitPaths();
@@ -793,6 +854,7 @@
                         });
                         myGlobe.customLayerData(satsToRender); 
                         updateRings(); 
+                        updateRadar(); // Continuously update radar dots
                     }
                 }
             } catch (e) {}
