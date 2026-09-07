@@ -53,7 +53,7 @@
         .panel {
             background: var(--glass-bg); border: 1px solid var(--glass-border);
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            border-radius: 16px; padding: 14px;
+            border-radius: 16px; padding: 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05);
             pointer-events: auto;
             display: flex; flex-direction: column; overflow: hidden;
@@ -94,7 +94,7 @@
         /* LEFT SIDEBAR */
         .left-sidebar { grid-column: 1; grid-row: 2 / -1; gap: 12px; display: flex; flex-direction: column; background: transparent; border: none; box-shadow: none; padding: 0; }
         .card-container { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
-        .section-title { font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.2px; border-bottom: 1px solid var(--glass-border); padding-bottom: 6px; margin-bottom: 2px; }
+        .section-title { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.2px; border-bottom: 1px solid var(--glass-border); padding-bottom: 5px; margin-bottom: 2px; }
 
         ::-webkit-scrollbar { width: 3px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -102,8 +102,8 @@
 
         /* Fleet Table */
         .cyber-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-        .cyber-table th { text-align: left; color: var(--text-muted); padding: 5px 4px; font-weight: 600; position: sticky; top: 0; background: rgba(10, 15, 25, 0.95); z-index: 5; }
-        .cyber-table td { padding: 5px 4px; border-bottom: 1px solid rgba(255,255,255,0.02); }
+        .cyber-table th { text-align: left; color: var(--text-muted); padding: 4px; font-weight: 600; position: sticky; top: 0; background: rgba(10, 15, 25, 0.95); z-index: 5; }
+        .cyber-table td { padding: 4px; border-bottom: 1px solid rgba(255,255,255,0.02); }
         .cyber-table tr { cursor: pointer; transition: 0.2s; }
         .cyber-table tr:hover { background: rgba(0, 240, 255, 0.05); }
         .table-row-selected { background: rgba(0, 240, 255, 0.15) !important; border-left: 3px solid var(--accent-cyan); }
@@ -111,53 +111,57 @@
         /* Passes Cards */
         .pass-card {
             background: linear-gradient(145deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.8) 100%);
-            border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 10px;
-            cursor: pointer; transition: 0.3s; margin-bottom: 6px; position: relative; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 8px;
+            cursor: pointer; transition: 0.3s; margin-bottom: 5px; position: relative; overflow: hidden;
         }
         .pass-card:hover { border-color: var(--accent-cyan); transform: translateY(-1px); }
 
-        /* RIGHT SIDEBAR */
+        /* RIGHT SIDEBAR (OPTIMIZED LAYOUT TO ELIMINATE BLANK SPACES & SHOW RADAR) */
         .right-sidebar { grid-column: 3; grid-row: 2; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
         .target-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .target-code { font-size: 16px; font-weight: 700; color: #fff; letter-spacing: 1px; }
-        .target-sys { font-size: 10px; background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 20px; }
+        .target-code { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: 1px; }
+        .target-sys { font-size: 9.5px; background: rgba(255,255,255,0.1); padding: 2px 7px; border-radius: 20px; }
 
-        .telemetry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 4px; }
-        .tel-box { background: rgba(0,0,0,0.25); border-radius: 8px; padding: 6px 8px; border: 1px solid rgba(255,255,255,0.03); }
-        .tel-label { font-size: 8px; color: var(--text-muted); margin-bottom: 2px; text-transform: uppercase; }
-        .tel-val { font-size: 13px; font-weight: 700; color: var(--accent-cyan); }
+        .telemetry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 3px; }
+        .tel-box { background: rgba(0,0,0,0.25); border-radius: 6px; padding: 6px; border: 1px solid rgba(255,255,255,0.03); }
+        .tel-label { font-size: 7.5px; color: var(--text-muted); margin-bottom: 1px; text-transform: uppercase; }
+        .tel-val { font-size: 12.5px; font-weight: 700; color: var(--accent-cyan); }
 
-        /* HARDWARE HEALTH BAR */
         .hardware-health {
-            background: rgba(0,0,0,0.3); border-radius: 8px; padding: 5px 10px; font-size: 10px;
+            background: rgba(0,0,0,0.3); border-radius: 6px; padding: 5px 8px; font-size: 9.5px;
             display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.04);
         }
 
-        /* SIGNAL STRENGTH SPECTRUM WIDGET */
-        .signal-spectrum-card {
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.6) 100%);
-            border: 1px solid rgba(0, 240, 255, 0.25); border-radius: 10px; padding: 8px 10px;
-            display: flex; flex-direction: column; gap: 4px; margin-top: auto;
+        /* SKYPLOT / RADAR WIDGET (RESTORED AS REQUESTED) */
+        .skyplot-widget {
+            width: 100%; height: 110px; background: rgba(0, 10, 20, 0.6); border-radius: 8px;
+            border: 1px solid rgba(0, 240, 255, 0.2); position: relative; overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
         }
-        .spectrum-bars { display: flex; align-items: flex-end; justify-content: space-between; height: 35px; padding: 0 4px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .s-bar { width: 6px; background: var(--accent-cyan); border-radius: 2px 2px 0 0; box-shadow: 0 0 6px rgba(0,240,255,0.4); }
+        .skyplot-ring {
+            width: 85px; height: 85px; border-radius: 50%; border: 1px dashed rgba(0, 240, 255, 0.3);
+            position: relative; display: flex; justify-content: center; align-items: center;
+        }
+        .skyplot-ring::before { content: ''; position: absolute; width: 45px; height: 45px; border-radius: 50%; border: 1px dotted rgba(0, 240, 255, 0.2); }
+        .skyplot-axis-h { position: absolute; width: 100%; height: 1px; background: rgba(0, 240, 255, 0.2); }
+        .skyplot-axis-v { position: absolute; width: 1px; height: 100%; background: rgba(0, 240, 255, 0.2); }
 
         /* 3D BLUEPRINT SCHEMATIC CARD */
         .sat-3d-model-card {
             background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.7) 100%);
-            border: 1px solid var(--accent-cyan); border-radius: 12px; padding: 8px 10px;
-            display: flex; flex-direction: column; gap: 6px;
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.15); position: relative; overflow: hidden;
+            border: 1px solid var(--accent-cyan); border-radius: 10px; padding: 8px;
+            display: flex; flex-direction: column; gap: 5px; margin-top: auto;
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.15); position: relative; overflow: hidden;
         }
-        .sat-model-header { display: flex; justify-content: space-between; align-items: center; font-size: 9.5px; color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 3px; }
+        .sat-model-header { display: flex; justify-content: space-between; align-items: center; font-size: 9px; color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 2px; }
         .sat-model-viewport {
-            width: 100%; height: 75px; background: radial-gradient(circle, rgba(0,240,255,0.2) 0%, rgba(3,7,18,0.95) 100%);
-            border-radius: 8px; border: 1px solid rgba(0, 240, 255, 0.4);
+            width: 100%; height: 60px; background: radial-gradient(circle, rgba(0,240,255,0.2) 0%, rgba(3,7,18,0.95) 100%);
+            border-radius: 6px; border: 1px solid rgba(0, 240, 255, 0.4);
             display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;
         }
-        .sat-panel-left { width: 34px; height: 14px; background: linear-gradient(90deg, #1d4ed8, #60a5fa, #1d4ed8); border: 1px solid #93c5fd; border-radius: 2px; position: absolute; left: 12px; }
-        .sat-panel-right { width: 34px; height: 14px; background: linear-gradient(90deg, #1d4ed8, #60a5fa, #1d4ed8); border: 1px solid #93c5fd; border-radius: 2px; position: absolute; right: 12px; }
-        .sat-central-bus { width: 20px; height: 20px; background: linear-gradient(135deg, #cbd5e1, #64748b); border: 1px solid #fff; border-radius: 3px; position: absolute; }
+        .sat-panel-left { width: 30px; height: 12px; background: linear-gradient(90deg, #1d4ed8, #60a5fa, #1d4ed8); border: 1px solid #93c5fd; border-radius: 2px; position: absolute; left: 10px; }
+        .sat-panel-right { width: 30px; height: 12px; background: linear-gradient(90deg, #1d4ed8, #60a5fa, #1d4ed8); border: 1px solid #93c5fd; border-radius: 2px; position: absolute; right: 10px; }
+        .sat-central-bus { width: 18px; height: 18px; background: linear-gradient(135deg, #cbd5e1, #64748b); border: 1px solid #fff; border-radius: 3px; position: absolute; }
 
         /* BOTTOM CENTER (CONTROLS & RINEX) */
         .bottom-panel { grid-column: 2 / 4; grid-row: 3; display: flex; gap: 12px; background: transparent; border:none; box-shadow:none; padding:0;}
@@ -215,9 +219,9 @@
         <aside class="left-sidebar">
             <div class="panel card-container">
                 <div class="section-title">Active Fleet Status</div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-                    <div><div style="font-size: 8.5px; color:var(--text-muted);">TOTAL</div><div style="font-size: 18px; font-weight: 700;" id="total-sats">0</div></div>
-                    <div><div style="font-size: 8.5px; color:var(--text-muted);">TRACKING</div><div style="font-size: 18px; font-weight: 700; color:var(--accent-green);" id="active-sats">0</div></div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                    <div><div style="font-size: 8px; color:var(--text-muted);">TOTAL</div><div style="font-size: 16px; font-weight: 700;" id="total-sats">0</div></div>
+                    <div><div style="font-size: 8px; color:var(--text-muted);">TRACKING</div><div style="font-size: 16px; font-weight: 700; color:var(--accent-green);" id="active-sats">0</div></div>
                 </div>
                 <div style="flex:1; overflow-y:auto;">
                     <table class="cyber-table mono">
@@ -247,11 +251,12 @@
             </select>
         </div>
 
+        <!-- 🌟 RIGHT SIDEBAR OPTIMIZED: NO BLANK SPACES, RADAR & 3D MODEL BOTH VISIBLE 🌟 -->
         <aside class="right-sidebar panel" id="telemetry-panel">
             <div class="section-title">Target Telemetry & Accuracy</div>
             <div class="target-header">
                 <div>
-                    <div style="font-size:8px; color:var(--text-muted); margin-bottom:2px;">OBJECT CODE</div>
+                    <div style="font-size:7.5px; color:var(--text-muted); margin-bottom:1px;">OBJECT CODE</div>
                     <div class="target-code mono" id="tel-sat-name">AWAITING LOCK</div>
                 </div>
                 <div class="target-sys" id="tel-sat-sys">--</div>
@@ -260,11 +265,11 @@
             <div class="telemetry-grid mono">
                 <div class="tel-box">
                     <div class="tel-label">HDOP / PDOP</div>
-                    <div class="tel-val" id="tel-hdop" style="font-size:12.5px; color:var(--accent-green);">0.9 / 1.4</div>
+                    <div class="tel-val" id="tel-hdop" style="font-size:12px; color:var(--accent-green);">0.9 / 1.4</div>
                 </div>
                 <div class="tel-box">
                     <div class="tel-label">Orbital Velocity</div>
-                    <div class="tel-val"><span id="tel-vel">--</span> <span style="font-size:9px; color:#fff;">KM/S</span></div>
+                    <div class="tel-val"><span id="tel-vel">--</span> <span style="font-size:8.5px; color:#fff;">KM/S</span></div>
                 </div>
             </div>
 
@@ -273,21 +278,16 @@
                 <div>RSSI: <b>-68 dBm</b></div>
             </div>
 
-            <div class="signal-spectrum-card mono">
-                <div style="display:flex; justify-content:space-between; font-size:9px; color:var(--text-muted);">
-                    <span>C/N0 SIGNAL SPECTRUM</span>
-                    <span style="color:var(--accent-green);">42.5 dB-Hz Avg</span>
+            <!-- SKYPLOT / RADAR WIDGET (RESTORED TO FILL EMPTY SPACE) -->
+            <div class="skyplot-widget">
+                <div class="skyplot-ring">
+                    <div class="skyplot-axis-h"></div>
+                    <div class="skyplot-axis-v"></div>
+                    <div style="position:absolute; width:6px; height:6px; background:#10b981; border-radius:50%; top:30%; left:55%; box-shadow:0 0 6px #10b981;" title="GPS SV"></div>
+                    <div style="position:absolute; width:6px; height:6px; background:#00f0ff; border-radius:50%; top:70%; left:40%; box-shadow:0 0 6px #00f0ff;" title="Galileo SV"></div>
+                    <div style="position:absolute; width:6px; height:6px; background:#f43f5e; border-radius:50%; top:40%; left:25%; box-shadow:0 0 6px #f43f5e;" title="BDS SV"></div>
                 </div>
-                <div class="spectrum-bars">
-                    <div class="s-bar" style="height: 65%;"></div>
-                    <div class="s-bar" style="height: 80%;"></div>
-                    <div class="s-bar" style="height: 50%;"></div>
-                    <div class="s-bar" style="height: 90%;"></div>
-                    <div class="s-bar" style="height: 70%;"></div>
-                    <div class="s-bar" style="height: 85%;"></div>
-                    <div class="s-bar" style="height: 60%;"></div>
-                    <div class="s-bar" style="height: 95%;"></div>
-                </div>
+                <div style="position: absolute; bottom: 3px; font-size: 7.5px; letter-spacing: 1px; color: rgba(255,255,255,0.4);">SKYPLOT (AZ / EL)</div>
             </div>
 
             <div class="sat-3d-model-card mono" id="sat-model-box">
@@ -299,10 +299,10 @@
                     <div class="sat-panel-left"></div>
                     <div class="sat-central-bus"></div>
                     <div class="sat-panel-right"></div>
-                    <div style="position: absolute; bottom: 3px; font-size: 8px; color: var(--accent-cyan); letter-spacing: 1px; font-weight: bold;" id="model-label">LOCK: NONE</div>
+                    <div style="position: absolute; bottom: 2px; font-size: 7.5px; color: var(--accent-cyan); letter-spacing: 1px; font-weight: bold;" id="model-label">LOCK: NONE</div>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-size: 9px; color: var(--text-muted);">
-                    <span>Orbit Type: <b id="model-orbit" style="color:#fff;">MEO (20,200KM)</b></span>
+                <div style="display: flex; justify-content: space-between; font-size: 8.5px; color: var(--text-muted);">
+                    <span>Orbit: <b id="model-orbit" style="color:#fff;">MEO (20,200KM)</b></span>
                     <span>Status: <b style="color:var(--accent-green);">Nominal</b></span>
                 </div>
             </div>
@@ -540,11 +540,11 @@
                 let sColor = getSatColor(p.sat.name);
                 return `
                 <div class="pass-card" onclick="selectSatellite('${p.sat.id}')">
-                    <div style="font-weight:700; color:${sColor}; font-size:11px; margin-bottom:5px; display:flex; align-items:center; gap:6px;">
+                    <div style="font-weight:700; color:${sColor}; font-size:11px; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
                         <span style="width:7px; height:7px; background:${sColor}; border-radius:50%; box-shadow:0 0 6px ${sColor}; display:inline-block;"></span>
                         ${p.sat.name}
                     </div>
-                    <div style="display:flex; justify-content:space-between; font-size:9.5px; color:var(--text-muted);">
+                    <div style="display:flex; justify-content:space-between; font-size:9px; color:var(--text-muted);">
                         <span>ALT: ${p.alt}KM</span><span style="color:var(--accent-cyan); font-weight:700;">${p.timeStr}</span>
                     </div>
                 </div>`;
@@ -579,8 +579,6 @@
                 const isSelected = (id === selectedSatId);
                 const satObj = currentLiveSatObjects.find(s => s.id === id);
                 const baseColor = satObj ? satObj.color : '#3b82f6';
-                
-                // 🌟 FIX: USE ACTUAL CONSTELLATION COLOR FOR SELECTED ORBIT INSTEAD OF OVERRIDING TO CYAN 🌟
                 const color = isSelected ? getSatColor(satObj ? satObj.fullName : '') : baseColor;
                 const width = isSelected ? 3.0 : 1.2;
                 
