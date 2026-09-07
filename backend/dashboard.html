@@ -381,7 +381,7 @@
                 if (targetObj) {
                     currentRings.push({
                         lat: targetObj.lat, lng: targetObj.lng,
-                        color: '#00f0ff', size: 2.5, propagationSpeed: 4, repeatPeriod: 600, alt: VISUAL_ALTITUDE
+                        color: getSatColor(targetObj.fullName), size: 2.5, propagationSpeed: 4, repeatPeriod: 600, alt: VISUAL_ALTITUDE
                     });
                 }
             }
@@ -579,7 +579,9 @@
                 const isSelected = (id === selectedSatId);
                 const satObj = currentLiveSatObjects.find(s => s.id === id);
                 const baseColor = satObj ? satObj.color : '#3b82f6';
-                const color = isSelected ? '#00f0ff' : baseColor;
+                
+                // 🌟 FIX: USE ACTUAL CONSTELLATION COLOR FOR SELECTED ORBIT INSTEAD OF OVERRIDING TO CYAN 🌟
+                const color = isSelected ? getSatColor(satObj ? satObj.fullName : '') : baseColor;
                 const width = isSelected ? 3.0 : 1.2;
                 
                 let currentSegment = [];
@@ -605,7 +607,6 @@
                    .pathDashAnimateTime(0);
         }
 
-        // 🌟 ENHANCED SELECT SATELLITE TO AUTO-CENTER CAMERA & RENDER 3D MESH OBJECT 🌟
         function selectSatellite(id) {
             if (!id) return;
             selectedSatId = id;
@@ -626,19 +627,17 @@
             updateAllOrbitPaths();
 
             if (myGlobe) {
-                // Ensure selected satellite is explicitly included in custom layer with an enlarged glowing highlight mesh
                 const currentPos = getSatPos(id);
-                const highlightedSatList = currentLiveSatObjects.map(s => {
+                const satsToRender = currentLiveSatObjects.map(s => {
                     if (s.id === id) {
-                        return { ...s, color: '#00f0ff', sizeScale: 1.8 };
+                        return { ...s, color: getSatColor(s.fullName), sizeScale: 1.8 };
                     }
                     return s;
                 });
 
-                myGlobe.customLayerData(highlightedSatList);
+                myGlobe.customLayerData(satsToRender);
                 updateRings();
 
-                // 🌟 Smoothly rotate globe camera to center directly on the selected satellite 🌟
                 myGlobe.pointOfView({ lat: currentPos.lat, lng: currentPos.lng, altitude: 1.4 }, 1500);
             }
         }
@@ -775,7 +774,7 @@
                         
                         const satsToRender = currentLiveSatObjects.map(s => {
                             if (s.id === selectedSatId) {
-                                return { ...s, color: '#00f0ff', sizeScale: 1.8 };
+                                return { ...s, color: getSatColor(s.fullName), sizeScale: 1.8 };
                             }
                             return s;
                         });
