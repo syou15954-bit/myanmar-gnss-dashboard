@@ -400,14 +400,12 @@
             renderCustomSelection();
         }
 
-        // 🌟 UPDATE RADAR AND SPECTRUM DYNAMICALLY 🌟
         function updateRadar() {
             const container = document.getElementById('radar-container');
             if (!container) return;
 
             const stVal = document.getElementById('station-select').value;
             
-            // If Target Station is OFF, dim spectrum and radar
             if (stVal === 'none') {
                 container.innerHTML = '';
                 document.getElementById('base-status').innerText = "OFFLINE";
@@ -431,7 +429,6 @@
                 return;
             }
 
-            // Target Station ON -> Populate Values & Colors
             document.getElementById('base-status').innerText = "ONLINE";
             document.getElementById('base-status').style.color = "var(--accent-green)";
             document.getElementById('base-rssi').innerText = "-68 dBm";
@@ -455,7 +452,7 @@
                 let heightPct = Math.min(100, (sig.val / 50) * 100); 
                 let color = 'var(--accent-cyan)';
                 if(sig.val < 30) color = 'var(--accent-red)';
-                else if(sig.val < 40) color = '#eab308'; // Yellow
+                else if(sig.val < 40) color = '#eab308';
 
                 activeBars += `
                 <div style="display:flex; flex-direction:column; align-items:center; flex:1; height:100%; justify-content:flex-end;">
@@ -499,7 +496,11 @@
             if (val !== 'none' && STATIONS_DATA[val]) {
                 let st = STATIONS_DATA[val];
                 currentRings.push(st);
-                myGlobe.pointOfView({ lat: st.lat, lng: st.lng, altitude: 1.4 }, 1500);
+
+                // 🌟 FIX: Pause auto-rotate when a station is selected to allow stable camera zoom 🌟
+                if (isRotating) toggleGlobeRotation();
+                
+                myGlobe.pointOfView({ lat: st.lat, lng: st.lng, altitude: 0.8 }, 1500);
             }
 
             if (selectedSatId) {
@@ -698,6 +699,7 @@
                    .pathDashLength(1.0).pathDashGap(0.0).pathDashAnimateTime(0);
         }
 
+        // 🌟 FIX: Updated Select Satellite Logic to ensure Camera zooms properly 🌟
         function selectSatellite(id) {
             if (!id) return;
             selectedSatId = id;
@@ -730,14 +732,19 @@
                 const currentPos = getSatPos(id);
                 const satsToRender = currentLiveSatObjects.map(s => {
                     if (s.id === id) {
-                        return { ...s, color: getSatColor(s.fullName), sizeScale: 1.8 };
+                        return { ...s, color: getSatColor(s.fullName), sizeScale: 2.5 }; // Makes selected satellite larger
                     }
                     return s;
                 });
 
                 myGlobe.customLayerData(satsToRender);
                 updateRings();
-                myGlobe.pointOfView({ lat: currentPos.lat, lng: currentPos.lng, altitude: 1.4 }, 1500);
+
+                // Stop auto-rotation explicitly to allow the camera transition to succeed
+                if (isRotating) toggleGlobeRotation();
+                
+                // Deep zoom to the selected satellite
+                myGlobe.pointOfView({ lat: currentPos.lat, lng: currentPos.lng, altitude: 0.6 }, 1500);
             }
         }
 
@@ -864,7 +871,7 @@
                         
                         const satsToRender = currentLiveSatObjects.map(s => {
                             if (s.id === selectedSatId) {
-                                return { ...s, color: getSatColor(s.fullName), sizeScale: 1.8 };
+                                return { ...s, color: getSatColor(s.fullName), sizeScale: 2.5 };
                             }
                             return s;
                         });
