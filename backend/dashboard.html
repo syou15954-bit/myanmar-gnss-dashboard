@@ -128,7 +128,7 @@
             display: flex; flex-direction: column; gap: 6px; 
         }
         .spectrum-bars { display: flex; align-items: flex-end; justify-content: space-between; height: 40px; padding: 0 4px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .s-bar { width: 8px; background: var(--accent-cyan); border-radius: 2px 2px 0 0; box-shadow: 0 0 6px rgba(0,240,255,0.4); }
+        .s-bar { width: 8px; background: var(--accent-cyan); border-radius: 2px 2px 0 0; box-shadow: 0 0 6px rgba(0,240,255,0.4); transition: 0.3s ease-in-out; }
 
         .skyplot-widget {
             flex: 1; min-height: 200px; background: rgba(0, 10, 20, 0.6); border-radius: 10px;
@@ -300,15 +300,8 @@
                     <span>C/N0 SIGNAL SPECTRUM</span>
                     <span id="spectrum-val" style="color:var(--text-muted);">-- dB-Hz Avg</span>
                 </div>
-                <div class="spectrum-bars" id="spectrum-bars-container">
-                    <div class="s-bar" style="height: 10%; background:rgba(255,255,255,0.1);"></div>
-                    <div class="s-bar" style="height: 10%; background:rgba(255,255,255,0.1);"></div>
-                    <div class="s-bar" style="height: 10%; background:rgba(255,255,255,0.1);"></div>
-                    <div class="s-bar" style="height: 10%; background:rgba(255,255,255,0.1);"></div>
-                    <div class="s-bar" style="height: 10%; background:rgba(255,255,255,0.1);"></div>
-                    <div class="s-bar" style="height: 10%; background:rgba(255,255,255,0.1);"></div>
-                    <div class="s-bar" style="height: 10%; background:rgba(255,255,255,0.1);"></div>
-                    <div class="s-bar" style="height: 10%; background:rgba(255,255,255,0.1);"></div>
+                <div class="spectrum-bars" id="spectrum-bars-container" style="height: 60px; border-bottom: none; align-items: flex-end; gap: 6px; padding-top: 5px;">
+                    <!-- JS Injects Bar Data Here -->
                 </div>
             </div>
 
@@ -327,10 +320,7 @@
                     <div class="skyplot-ring ring-middle">
                         <div class="skyplot-ring ring-inner"></div>
                     </div>
-                    
-                    <!-- Dynamic Radar Dots Container -->
                     <div id="radar-container" style="position: absolute; width: 100%; height: 100%;"></div>
-
                 </div>
                 <div style="position: absolute; bottom: 8px; font-size: 8.5px; letter-spacing: 1.5px; color: rgba(255,255,255,0.6); font-weight: bold;">SKYPLOT (AZ / EL)</div>
             </div>
@@ -410,14 +400,14 @@
             renderCustomSelection();
         }
 
-        // 🌟 UPDATE RADAR DYNAMICALLY BASED ON TARGET STATION 🌟
+        // 🌟 UPDATE RADAR AND SPECTRUM DYNAMICALLY 🌟
         function updateRadar() {
             const container = document.getElementById('radar-container');
             if (!container) return;
 
             const stVal = document.getElementById('station-select').value;
             
-            // If Target Station is OFF, clear Radar and reset visual UI elements
+            // If Target Station is OFF, dim spectrum and radar
             if (stVal === 'none') {
                 container.innerHTML = '';
                 document.getElementById('base-status').innerText = "OFFLINE";
@@ -427,14 +417,21 @@
                 document.getElementById('spectrum-val').innerText = "-- dB-Hz Avg";
                 document.getElementById('spectrum-val').style.color = "var(--text-muted)";
                 
-                // Dim spectrum bars
                 let dimBars = '';
-                for(let i=0; i<8; i++){ dimBars += `<div class="s-bar" style="height: 10%; background:rgba(255,255,255,0.1); box-shadow:none;"></div>`; }
+                const defaultBands = ['B1I', 'B1C', 'B2a', 'B2b', 'B3I', 'L1', 'L2', 'L5'];
+                defaultBands.forEach(band => {
+                    dimBars += `
+                    <div style="display:flex; flex-direction:column; align-items:center; flex:1; height:100%; justify-content:flex-end;">
+                        <span style="font-size:7.5px; color:transparent; margin-bottom:2px;">00</span>
+                        <div class="s-bar" style="height: 10%; width:100%; background:rgba(255,255,255,0.1); box-shadow:none;"></div>
+                        <span style="font-size:7px; color:var(--text-muted); margin-top:3px;">${band}</span>
+                    </div>`;
+                });
                 document.getElementById('spectrum-bars-container').innerHTML = dimBars;
                 return;
             }
 
-            // If a station is selected, populate dummy radar dots relative to station
+            // Target Station ON -> Populate Values & Colors
             document.getElementById('base-status').innerText = "ONLINE";
             document.getElementById('base-status').style.color = "var(--accent-green)";
             document.getElementById('base-rssi').innerText = "-68 dBm";
@@ -442,10 +439,31 @@
             document.getElementById('spectrum-val').innerText = "42.5 dB-Hz Avg";
             document.getElementById('spectrum-val').style.color = "var(--accent-green)";
 
-            // Activate spectrum bars
-            const heights = [65, 80, 50, 90, 70, 85, 60, 95];
+            const signals = [
+                { val: 45, band: 'B1I' },
+                { val: 42, band: 'B1C' },
+                { val: 28, band: 'B2a' },
+                { val: 38, band: 'B2b' },
+                { val: 47, band: 'B3I' },
+                { val: 44, band: 'L1' },
+                { val: 32, band: 'L2' },
+                { val: 46, band: 'L5' }
+            ];
+            
             let activeBars = '';
-            heights.forEach(h => { activeBars += `<div class="s-bar" style="height: ${h}%;"></div>`; });
+            signals.forEach(sig => {
+                let heightPct = Math.min(100, (sig.val / 50) * 100); 
+                let color = 'var(--accent-cyan)';
+                if(sig.val < 30) color = 'var(--accent-red)';
+                else if(sig.val < 40) color = '#eab308'; // Yellow
+
+                activeBars += `
+                <div style="display:flex; flex-direction:column; align-items:center; flex:1; height:100%; justify-content:flex-end;">
+                    <span style="font-size:7.5px; color:#fff; margin-bottom:2px;">${sig.val}</span>
+                    <div class="s-bar" style="height: ${heightPct}%; width:100%; background:${color}; box-shadow:0 0 5px ${color};"></div>
+                    <span style="font-size:7px; color:var(--text-muted); margin-top:3px;">${sig.band}</span>
+                </div>`;
+            });
             document.getElementById('spectrum-bars-container').innerHTML = activeBars;
 
             const st = STATIONS_DATA[stVal];
@@ -459,10 +477,9 @@
 
                  let dist = Math.sqrt(dLat*dLat + dLng*dLng);
 
-                 // Draw dot if it is relatively close (simulated visibility)
                  if (dist < 80) {
-                     let az = Math.atan2(dLng, dLat); // radians
-                     let elRadius = (dist / 80) * 100; // max 100%
+                     let az = Math.atan2(dLng, dLat); 
+                     let elRadius = (dist / 80) * 100; 
                      let x = 50 + (elRadius * Math.sin(az)) / 2;
                      let y = 50 - (elRadius * Math.cos(az)) / 2;
 
@@ -692,7 +709,6 @@
             
             const idNum = parseInt(id.replace(/\D/g, '')) || 1000;
             
-            // Only show values if a target station is actually selected
             const stVal = document.getElementById('station-select').value;
             if (stVal !== 'none') {
                 document.getElementById('tel-hdop').innerText = (0.8 + (idNum % 5) * 0.1).toFixed(1) + ' / ' + (1.2 + (idNum % 4) * 0.1).toFixed(1);
@@ -854,7 +870,7 @@
                         });
                         myGlobe.customLayerData(satsToRender); 
                         updateRings(); 
-                        updateRadar(); // Continuously update radar dots
+                        updateRadar(); 
                     }
                 }
             } catch (e) {}
