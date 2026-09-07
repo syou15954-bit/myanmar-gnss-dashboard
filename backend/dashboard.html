@@ -39,7 +39,7 @@
         /* GLOBE BACKGROUND */
         #globeViz { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; background: #030712; }
 
-        /* 🌟 ULTIMATE GRID LAYOUT: Sidebars span full height, Bottom Panel restricted to center 🌟 */
+        /* MAIN LAYOUT */
         .dashboard-wrapper {
             position: relative; z-index: 10; display: grid;
             grid-template-columns: 360px 1fr 340px;
@@ -87,7 +87,7 @@
         .legend-filter-btn.active { color: #fff; border-color: currentColor; background: rgba(255,255,255,0.05); }
         .legend-dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 6px currentColor; }
 
-        /* LEFT SIDEBAR (Grid Row 2 to 4 ensures it touches bottom) */
+        /* LEFT SIDEBAR */
         .left-sidebar { grid-column: 1; grid-row: 2 / 4; gap: 12px; display: flex; flex-direction: column; background: transparent; border: none; box-shadow: none; padding: 0; }
         .card-container { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 6px; }
         .section-title { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.2px; border-bottom: 1px solid var(--glass-border); padding-bottom: 5px; margin-bottom: 2px; }
@@ -96,7 +96,6 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.3); border-radius: 3px; }
 
-        /* Fleet Table */
         .cyber-table { width: 100%; border-collapse: collapse; font-size: 11px; }
         .cyber-table th { text-align: left; color: var(--text-muted); padding: 5px 4px; font-weight: 600; position: sticky; top: 0; background: rgba(10, 15, 25, 0.95); z-index: 5; }
         .cyber-table td { padding: 5px 4px; border-bottom: 1px solid rgba(255,255,255,0.02); }
@@ -104,7 +103,6 @@
         .cyber-table tr:hover { background: rgba(0, 240, 255, 0.05); }
         .table-row-selected { background: rgba(0, 240, 255, 0.15) !important; border-left: 3px solid var(--accent-cyan); }
 
-        /* IA Insights Cards */
         .ia-card {
             background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.8) 100%);
             border: 1px solid rgba(56, 189, 248, 0.15); border-radius: 8px; padding: 10px;
@@ -112,7 +110,7 @@
         }
         .ia-card:hover { border-color: var(--accent-cyan); transform: translateY(-1px); }
 
-        /* RIGHT SIDEBAR (Grid Row 2 to 4 ensures it touches bottom) */
+        /* RIGHT SIDEBAR */
         .right-sidebar { grid-column: 3; grid-row: 2 / 4; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
         
         .target-header { display: flex; justify-content: space-between; align-items: flex-start; }
@@ -129,7 +127,6 @@
             display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.04);
         }
 
-        /* SIGNAL STRENGTH SPECTRUM WIDGET */
         .signal-spectrum-card {
             background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.6) 100%);
             border: 1px solid rgba(0, 240, 255, 0.25); border-radius: 10px; padding: 10px;
@@ -138,19 +135,28 @@
         .spectrum-bars { display: flex; align-items: flex-end; justify-content: space-between; height: 40px; padding: 0 4px; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .s-bar { width: 8px; background: var(--accent-cyan); border-radius: 2px 2px 0 0; box-shadow: 0 0 6px rgba(0,240,255,0.4); }
 
-        /* SKYPLOT / RADAR WIDGET */
+        /* 🌟 ENHANCED SKYPLOT / RADAR WIDGET 🌟 */
         .skyplot-widget {
-            flex: 1; min-height: 120px; background: rgba(0, 10, 20, 0.6); border-radius: 10px;
+            flex: 1; min-height: 200px; background: rgba(0, 10, 20, 0.6); border-radius: 10px;
             border: 1px solid rgba(0, 240, 255, 0.2); position: relative; overflow: hidden;
             display: flex; justify-content: center; align-items: center; margin-top: auto;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.5);
         }
-        .skyplot-ring {
-            width: 100px; height: 100px; border-radius: 50%; border: 1px dashed rgba(0, 240, 255, 0.3);
-            position: relative; display: flex; justify-content: center; align-items: center;
-        }
-        .skyplot-ring::before { content: ''; position: absolute; width: 50px; height: 50px; border-radius: 50%; border: 1px dotted rgba(0, 240, 255, 0.2); }
+        .skyplot-compass { position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; }
+        .compass-lbl { position: absolute; font-size: 10.5px; font-weight: 700; color: rgba(255,255,255,0.3); }
+        .lbl-n { top: 8px; left: 50%; transform: translateX(-50%); color: var(--accent-cyan); }
+        .lbl-s { bottom: 25px; left: 50%; transform: translateX(-50%); }
+        .lbl-e { top: 50%; right: 12px; transform: translateY(-50%); }
+        .lbl-w { top: 50%; left: 12px; transform: translateY(-50%); }
+
+        .skyplot-ring { border-radius: 50%; position: absolute; display: flex; justify-content: center; align-items: center; }
+        .ring-outer { width: 220px; height: 220px; border: 1px solid rgba(0, 240, 255, 0.3); background: radial-gradient(circle, rgba(0,240,255,0.02) 0%, rgba(0,240,255,0.08) 100%); box-shadow: 0 0 15px rgba(0,240,255,0.05); }
+        .ring-middle { width: 140px; height: 140px; border: 1px dashed rgba(0, 240, 255, 0.25); }
+        .ring-inner { width: 60px; height: 60px; border: 1px dotted rgba(0, 240, 255, 0.2); }
         .skyplot-axis-h { position: absolute; width: 100%; height: 1px; background: rgba(0, 240, 255, 0.2); }
         .skyplot-axis-v { position: absolute; width: 1px; height: 100%; background: rgba(0, 240, 255, 0.2); }
+        .skyplot-axis-d1 { position: absolute; width: 100%; height: 1px; background: rgba(0, 240, 255, 0.1); transform: rotate(45deg); }
+        .skyplot-axis-d2 { position: absolute; width: 100%; height: 1px; background: rgba(0, 240, 255, 0.1); transform: rotate(-45deg); }
 
         /* 3D BLUEPRINT SCHEMATIC CARD */
         .sat-3d-model-card {
@@ -169,7 +175,7 @@
         .sat-panel-right { width: 36px; height: 14px; background: linear-gradient(90deg, #1d4ed8, #60a5fa, #1d4ed8); border: 1px solid #93c5fd; border-radius: 2px; position: absolute; right: 14px; }
         .sat-central-bus { width: 20px; height: 20px; background: linear-gradient(135deg, #cbd5e1, #64748b); border: 1px solid #fff; border-radius: 3px; position: absolute; }
 
-        /* BOTTOM CENTER (CONTROLS & RINEX - Restricted to center column only) */
+        /* BOTTOM CENTER */
         .bottom-panel { grid-column: 2; grid-row: 3; display: flex; gap: 12px; background: transparent; border:none; box-shadow:none; padding:0; align-items: flex-end;}
         
         .center-controls {
@@ -190,7 +196,6 @@
 
     <div id="globeViz"></div>
 
-    <!-- INTERACTIVE CONSTELLATION FILTER LEGEND -->
     <div class="constellation-legend-box mono">
         <button class="legend-filter-btn active" id="filter-gps" onclick="toggleConstellationFilter('GPS')">
             <div class="legend-dot" style="color: #10b981; background: #10b981;"></div>GPS
@@ -214,16 +219,13 @@
                 </div>
                 <h1 style="font-size: 14px; letter-spacing: 1.5px;">GNSS CONSTELLATIONS</h1>
             </div>
-            
             <div style="display: flex; gap: 10px;">
                 <button class="nav-pill active">Fleet Ops</button>
                 <button class="nav-pill" onclick="toggleMyanmarVisibleOnly(this)" id="mm-only-btn">MM Coverage</button>
             </div>
-
             <div id="tle-status-badge" class="status-badge mono">● MISSION ACTIVE</div>
         </header>
 
-        <!-- 🌟 FULL HEIGHT LEFT SIDEBAR (FLEET STATUS + IA INSIGHTS) 🌟 -->
         <aside class="left-sidebar">
             <div class="panel card-container">
                 <div class="section-title">Active Fleet Status</div>
@@ -275,7 +277,6 @@
             </select>
         </div>
 
-        <!-- 🌟 FULL HEIGHT RIGHT SIDEBAR (ALL WIDGETS PERFECTLY STACKED) 🌟 -->
         <aside class="right-sidebar panel" id="telemetry-panel">
             <div class="section-title">Target Telemetry & Accuracy</div>
             <div class="target-header">
@@ -319,15 +320,30 @@
                 </div>
             </div>
 
+            <!-- 🌟 ENHANCED LARGE SKYPLOT / RADAR WIDGET 🌟 -->
             <div class="skyplot-widget">
-                <div class="skyplot-ring">
+                <div class="skyplot-compass mono">
+                    <span class="compass-lbl lbl-n">N</span>
+                    <span class="compass-lbl lbl-s">S</span>
+                    <span class="compass-lbl lbl-e">E</span>
+                    <span class="compass-lbl lbl-w">W</span>
+                </div>
+                <div class="skyplot-ring ring-outer">
+                    <div class="skyplot-axis-d1"></div>
+                    <div class="skyplot-axis-d2"></div>
                     <div class="skyplot-axis-h"></div>
                     <div class="skyplot-axis-v"></div>
-                    <div style="position:absolute; width:6px; height:6px; background:#10b981; border-radius:50%; top:30%; left:55%; box-shadow:0 0 6px #10b981;" title="GPS SV"></div>
-                    <div style="position:absolute; width:6px; height:6px; background:#00f0ff; border-radius:50%; top:70%; left:40%; box-shadow:0 0 6px #00f0ff;" title="Galileo SV"></div>
-                    <div style="position:absolute; width:6px; height:6px; background:#f43f5e; border-radius:50%; top:40%; left:25%; box-shadow:0 0 6px #f43f5e;" title="BDS SV"></div>
+                    <div class="skyplot-ring ring-middle">
+                        <div class="skyplot-ring ring-inner"></div>
+                    </div>
+                    
+                    <!-- Satellite Tracking Dots -->
+                    <div style="position:absolute; width:8px; height:8px; background:#10b981; border-radius:50%; top:25%; left:65%; box-shadow:0 0 8px #10b981;" title="GPS SV"></div>
+                    <div style="position:absolute; width:8px; height:8px; background:#00f0ff; border-radius:50%; top:70%; left:30%; box-shadow:0 0 8px #00f0ff;" title="Galileo SV"></div>
+                    <div style="position:absolute; width:8px; height:8px; background:#f43f5e; border-radius:50%; top:45%; left:25%; box-shadow:0 0 8px #f43f5e;" title="BDS SV"></div>
+                    <div style="position:absolute; width:8px; height:8px; background:#c084fc; border-radius:50%; top:55%; left:75%; box-shadow:0 0 8px #c084fc;" title="GLO SV"></div>
                 </div>
-                <div style="position: absolute; bottom: 4px; font-size: 8px; letter-spacing: 1px; color: rgba(255,255,255,0.4);">SKYPLOT (AZ / EL)</div>
+                <div style="position: absolute; bottom: 8px; font-size: 8.5px; letter-spacing: 1.5px; color: rgba(255,255,255,0.6); font-weight: bold;">SKYPLOT (AZ / EL)</div>
             </div>
 
             <div class="sat-3d-model-card mono" id="sat-model-box">
@@ -348,7 +364,6 @@
             </div>
         </aside>
 
-        <!-- 🌟 BOTTOM PANEL CENTERED FOR RINEX 🌟 -->
         <div class="bottom-panel">
             <div class="panel rinex-box">
                 <div class="section-title" style="display:flex; justify-content:space-between; align-items:center; position:relative;">
