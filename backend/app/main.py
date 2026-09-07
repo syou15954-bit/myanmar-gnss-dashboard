@@ -27,20 +27,21 @@ from app.analytics.accuracy_evaluator import evaluate_accuracy_and_reliability
 
 def categorize_sat(name):
     uname = name.upper()
-    if 'GPS' in uname:
-        return 'gps'
+    if 'GPS' in uname or 'NAVSTAR' in uname:
+        return 'GPS'
     elif 'BEIDOU' in uname or 'BD' in uname or 'C0' in uname:
-        return 'bds'
+        return 'BDS'
     elif 'GALILEO' in uname or 'GSAT' in uname:
-        return 'galileo'
+        return 'GAL'
     elif 'GLONASS' in uname or 'COSMOS' in uname:
-        return 'glonass'
-    return 'gps'
+        return 'GLONASS'
+    return 'UNK'
 
 def parse_gnss_tle(tle_text):
-    categories = {'gps': [], 'bds': [], 'galileo': [], 'glonass': [], 'all': []}
+    # Frontend ကတောင်းဆိုထားသော Format အတိုင်း ပြင်ဆင်ထားခြင်း
+    all_sats = []
     if not tle_text or '<html' in tle_text.lower():
-        return categories
+        return all_sats
 
     lines = [line.strip() for line in tle_text.strip().split('\n') if line.strip()]
     i = 0
@@ -53,20 +54,22 @@ def parse_gnss_tle(tle_text):
                 if len(line1) >= 7:
                     norad_id = line1[2:7].strip()
                     cat = categorize_sat(sat_name)
+                    
+                    # Frontend မှလိုအပ်သော Keys များ: id, name, sys, tle1, tle2
                     sat_obj = {
                         'id': norad_id,
                         'name': f"{sat_name} ({norad_id})",
-                        'line1': line1,
-                        'line2': line2
+                        'sys': cat,
+                        'tle1': line1,
+                        'tle2': line2
                     }
-                    categories[cat].append(sat_obj)
-                    categories['all'].append(sat_obj)
+                    all_sats.append(sat_obj)
                 i += 3
             else:
                 i += 1
         except Exception:
             i += 1
-    return categories
+    return all_sats
 
 app = FastAPI(title="Myanmar GNSS Dashboard API", version="1.0.0")
 
@@ -76,6 +79,7 @@ app.add_middleware(
         "http://localhost:8000",
         "http://127.0.0.1:8000",
         "https://myanmar-gnss-dashboard.onrender.com",  # Production domain
+        "*" # Allow all for local HTML testing
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -256,39 +260,47 @@ def log_local_gnss_receiver_data(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Logging Error: {str(e)}")
 
-# 🌟 CelesTrak မှ Live Data ဆွဲယူမည့် ပင်မ API
+# 🌟 CelesTrak မှ GNSS သက်သက် (GPS, BeiDou, Galileo, GLONASS) Live Data ဆွဲယူမည့် API 🌟
 @app.get("/api/tle")
 def get_live_tles():
+    all_sats_data = []
+    gnss_groups = ["gps", "beidou", "galileo", "glonass"]
+    
     try:
-        url = "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle"
-        response = requests.get(url, timeout=10)
+        for group in gnss_groups:
+            url = f"https://celestrak.org/NORAD/elements/gp.php?GROUP={group}&FORMAT=tle"
+            response = requests.get(url, timeout=10)
+            if response.status_code == 200:
+                tle_text = response.text
+                parsed_group = parse_gnss_tle(tle_text)
+                all_sats_data.extend(parsed_group)
         
-        if response.status_code == 200:
-            tle_text = response.text
-            parsed = parse_gnss_tle(tle_text)
+        # FLYLAB2 Custom Satellite ထည့်သွင်းခြင်း
+        flylab_sat = {
+            'id': '99999',
+            'name': 'FLYLAB2 (99999)',
+            'sys': 'BDS',
+            'tle1': '1 99999U 20000A   24001.00000000 -.00000000  00000-0  00000-0 0   9999',
+            'tle2': '2 99999  55.0000 150.0000 0100000   0.0000 359.0000  2.00560000100000'
+        }
+        all_sats_data.append(flylab_sat)
+
+        if all_sats_data:
+            return {"all": all_sats_data}
             
-            flylab_sat = {
-                'id': '99999',
-                'name': 'FLYLAB2 (99999)',
-                'line1': '1 99999U 20000A   24001.00000000 -.00000000  00000-0  00000-0 0   9999',
-                'line2': '2 99999  55.0000 150.0000 0100000   0.0000 359.0000  2.00560000100000'
-            }
-            parsed['bds'].append(flylab_sat)
-            parsed['all'].append(flylab_sat)
-
-            return {'status': 'live', 'data': parsed}
     except Exception as e:
-        print(f"Failed to fetch live TLE: {e}")
+        print(f"Failed to fetch live GNSS TLE: {e}")
 
+    # Fallback to local cache if internet fails
     try:
         cache_path = os.path.join(BACKEND_DIR, 'tle_cache.txt')
         if os.path.exists(cache_path):
             with open(cache_path, 'r', encoding='utf-8') as f:
                 tle_text = f.read()
-            parsed = parse_gnss_tle(tle_text)
-            if parsed and parsed.get('all'):
-                return {'status': 'live', 'data': parsed}
+            all_sats_data = parse_gnss_tle(tle_text)
+            if all_sats_data:
+                return {"all": all_sats_data}
     except Exception as e:
         print(f"Failed to read local TLE cache: {e}")
 
-    return {'status': 'fallback', 'data': {'gps': [], 'bds': [], 'galileo': [], 'glonass': [], 'all': []}}
+    return {"all": []}

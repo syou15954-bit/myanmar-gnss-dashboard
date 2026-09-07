@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GNSS Mission Control - Advanced Telemetry</title>
+    <title>GNSS Mission Control - Real TLE Integration</title>
 
-    <!-- Required Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.min.js"></script>
     <script src="https://unpkg.com/globe.gl@2.25.3/dist/globe.gl.min.js"></script>
+    <!-- 🌟 satellite.js - တကယ့်ပတ်လမ်းတွက်ချက်မည့် သင်္ချာ Core Engine 🌟 -->
     <script src="https://cdn.jsdelivr.net/npm/satellite.js@4.1.3/dist/satellite.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -220,7 +220,7 @@
                 <button class="nav-pill active">Fleet Ops</button>
                 <button class="nav-pill" onclick="toggleMyanmarVisibleOnly(this)" id="mm-only-btn">MM Coverage</button>
             </div>
-            <div id="tle-status-badge" class="status-badge mono">● MISSION ACTIVE</div>
+            <div id="tle-status-badge" class="status-badge mono" style="background: rgba(0, 240, 255, 0.15); border: 1px solid rgba(0, 240, 255, 0.3); color: var(--accent-cyan);">● API FETCHING...</div>
         </header>
 
         <aside class="left-sidebar">
@@ -242,29 +242,22 @@
                 <div class="section-title">IA Insights & Predictions</div>
                 <div style="flex:1; overflow-y:auto; padding-right:4px;">
                     <div class="ia-card">
-                        <div style="font-size: 10px; font-weight: 700; color: #fff; margin-bottom: 3px;">🛰️ Prediction: GPS-9</div>
+                        <div style="font-size: 10px; font-weight: 700; color: #fff; margin-bottom: 3px;">🛰️ Prediction: Signal Sync</div>
                         <div style="font-size: 8.5px; color: var(--accent-green); margin-bottom: 3px;">▲ Optimal Dilution of Precision</div>
                         <div style="font-size: 8.5px; color: var(--text-muted);">High elevation angle recorded over Yangon HQ.</div>
                     </div>
-                    <div class="ia-card">
-                        <div style="font-size: 10px; font-weight: 700; color: #fff; margin-bottom: 3px;">⚠️ Warning: Space Debris</div>
-                        <div style="font-size: 8.5px; color: var(--accent-red); margin-bottom: 3px;">▲ Proximity Alert</div>
-                        <div style="font-size: 8.5px; color: var(--text-muted);">Minor intersection predicted in sector 4B.</div>
-                    </div>
                     <div class="ia-card" style="margin-bottom:0;">
                         <div style="font-size: 10px; font-weight: 700; color: #fff; margin-bottom: 3px;">📊 Recommendations Feed</div>
-                        <div style="font-size: 8.5px; color: var(--accent-cyan); margin-bottom: 3px;">ℹ️ Sync Active</div>
-                        <div style="font-size: 8.5px; color: var(--text-muted);">L1/L5 residuals normal for Myanmar.</div>
+                        <div style="font-size: 8.5px; color: var(--accent-cyan); margin-bottom: 3px;">ℹ️ Real-time Tracking Active</div>
+                        <div style="font-size: 8.5px; color: var(--text-muted);">CelesTrak TLE Sync parsing successfully.</div>
                     </div>
                 </div>
             </div>
 
-            <!-- 🌟 RESTORED UPCOMING PASSES SECTION 🌟 -->
             <div class="panel card-container" style="flex: 0.85;">
                 <div class="section-title">Upcoming Passes (MMT)</div>
                 <div id="upcoming-passes-list" style="overflow-y: auto; padding-right: 4px;"></div>
             </div>
-
         </aside>
 
         <div class="center-controls">
@@ -405,6 +398,103 @@
             naypyidaw: { lat: 19.7633, lng: 96.0785, name: 'Naypyidaw Link', color: '#3b82f6', size: 3.0, alt: 0.01 }
         };
 
+        // 🌟 REAL TLE SATELLITE POSITION PROPAGATION (Using satellite.js) 🌟
+        function getSatPos(id, timeOffsetSec = 0) {
+            const satObj = TLE_DATABASE[id];
+            
+            // If we have real TLE data from Backend
+            if (satObj && satObj.tle1 && satObj.tle2) {
+                try {
+                    const satrec = satellite.twoline2satrec(satObj.tle1, satObj.tle2);
+                    const now = new Date(Date.now() + timeOffsetSec * 1000);
+                    const posVel = satellite.propagate(satrec, now);
+                    
+                    if (posVel.position && posVel.position !== true) {
+                        const gmst = satellite.gstime(now);
+                        const posGd = satellite.eciToGeodetic(posVel.position, gmst);
+                        
+                        const lat = satellite.degreesLat(posGd.latitude);
+                        const lng = satellite.degreesLong(posGd.longitude);
+                        const altKm = posGd.height;
+                        
+                        // Calculate True Orbital Velocity
+                        const vel = Math.sqrt(posVel.velocity.x**2 + posVel.velocity.y**2 + posVel.velocity.z**2);
+                        
+                        return { lat, lng, alt: VISUAL_ALTITUDE, realAlt: altKm, velocity: vel };
+                    }
+                } catch(e) { console.warn("TLE Math Error for", id); }
+            }
+
+            // Fallback Dummy Math if Backend Data Missing
+            const now = new Date(Date.now() + timeOffsetSec * 1000);
+            const t = now.getTime() / 1000;
+            const idNum = parseInt(id.toString().replace(/\D/g, '')) || 1;
+            const period = 12 * 3600; 
+            const phase = ((t % period) / period) * Math.PI * 2 + (idNum * 2.4);
+            const inc = (55 + ((idNum * 7) % 25)) * (Math.PI / 180); 
+            const raan = ((idNum * 37) % 360) * (Math.PI / 180);
+            
+            const x = Math.cos(phase) * Math.cos(raan) - Math.sin(phase) * Math.cos(inc) * Math.sin(raan);
+            const y = Math.cos(phase) * Math.sin(raan) + Math.sin(phase) * Math.cos(inc) * Math.cos(raan);
+            const z = Math.sin(phase) * Math.sin(inc);
+            
+            let lat = Math.asin(Math.max(-1, Math.min(1, z))) * (180 / Math.PI);
+            let lng = Math.atan2(y, x) * (180 / Math.PI);
+            lng = (lng - (t / 86400) * 360) % 360;
+            if (lng < -180) lng += 360; if (lng > 180) lng -= 360;
+            return { lat: isNaN(lat)?0:lat, lng: isNaN(lng)?0:lng, alt: VISUAL_ALTITUDE, realAlt: 20000, velocity: 3.9 };
+        }
+
+        // 🌟 FETCH REAL TLE DATA FROM BACKEND API 🌟
+        async function initDashboardData() {
+            document.getElementById('tle-status-badge').innerText = "● FETCHING CelesTrak...";
+            document.getElementById('tle-status-badge').style.color = "#f43f5e";
+            
+            try {
+                // Connect to main.py API
+                const res = await fetch('http://127.0.0.1:8000/api/tle');
+                if (res.ok) {
+                    const data = await res.json();
+                    let cat = { gps: [], bds: [], galileo: [], glonass: [], all: data.all };
+                    
+                    data.all.forEach(s => {
+                        let uname = (s.name || "").toUpperCase();
+                        if (uname.includes('GPS') || uname.includes('NAVSTAR')) cat.gps.push(s);
+                        else if (uname.includes('BDS') || uname.includes('BEIDOU')) cat.bds.push(s);
+                        else if (uname.includes('GAL')) cat.galileo.push(s);
+                        else if (uname.includes('GLONASS') || uname.includes('COSMOS')) cat.glonass.push(s);
+                        TLE_DATABASE[s.id] = s;
+                    });
+                    
+                    CONSTELLATION_SATS = cat;
+                    document.getElementById('tle-status-badge').innerText = "● MISSION ACTIVE (REAL TLE)";
+                    document.getElementById('tle-status-badge').style.color = "var(--accent-green)";
+                    document.getElementById('tle-status-badge').style.borderColor = "var(--accent-green)";
+                } else {
+                    throw new Error("Backend Returned Not OK");
+                }
+            } catch (e) {
+                console.warn("Backend API (main.py) is offline. Using Dummy Procedural Data.", e);
+                document.getElementById('tle-status-badge').innerText = "● LOCAL DEMO MODE";
+                
+                let fallbackList = generateProceduralFleet(160);
+                let cat = { gps: [], bds: [], galileo: [], glonass: [], all: fallbackList };
+                fallbackList.forEach(s => {
+                    let uname = (s.name || "").toUpperCase();
+                    if (uname.includes('GPS')) cat.gps.push(s);
+                    else if (uname.includes('BDS')) cat.bds.push(s);
+                    else if (uname.includes('GAL')) cat.galileo.push(s);
+                    else if (uname.includes('GLO')) cat.glonass.push(s);
+                    TLE_DATABASE[s.id] = s;
+                });
+                CONSTELLATION_SATS = cat;
+            }
+
+            renderCustomSelection();
+            updateRadar();
+            initGlobeViewer();
+        }
+
         function toggleConstellationFilter(sys) {
             activeFilters[sys] = !activeFilters[sys];
             const btn = document.getElementById(`filter-${sys === 'GLONASS' ? 'glo' : sys.toLowerCase()}`);
@@ -543,40 +633,20 @@
 
         function getSatColor(satName) {
             let uname = (satName || '').toUpperCase();
-            if (uname.includes('GPS')) return '#10b981';
-            if (uname.includes('BDS')) return '#f43f5e';
+            if (uname.includes('GPS') || uname.includes('NAVSTAR')) return '#10b981';
+            if (uname.includes('BDS') || uname.includes('BEIDOU')) return '#f43f5e';
             if (uname.includes('GAL')) return '#00f0ff';
-            if (uname.includes('GLO')) return '#c084fc';
-            return '#00f0ff';
+            if (uname.includes('GLO') || uname.includes('COSMOS')) return '#c084fc';
+            return '#3b82f6';
         }
 
         function getSatSystem(satName) {
             let uname = (satName || '').toUpperCase();
-            if (uname.includes('GPS')) return 'GPS';
-            if (uname.includes('BDS')) return 'BDS';
+            if (uname.includes('GPS') || uname.includes('NAVSTAR')) return 'GPS';
+            if (uname.includes('BDS') || uname.includes('BEIDOU')) return 'BDS';
             if (uname.includes('GAL')) return 'GAL';
-            if (uname.includes('GLO')) return 'GLONASS';
-            return 'GPS';
-        }
-
-        function getSatPos(id, timeOffsetSec = 0) {
-            const now = new Date(Date.now() + timeOffsetSec * 1000);
-            const t = now.getTime() / 1000;
-            const idNum = parseInt(id.toString().replace(/\D/g, '')) || 1;
-            const period = 12 * 3600; 
-            const phase = ((t % period) / period) * Math.PI * 2 + (idNum * 2.4);
-            const inc = (55 + ((idNum * 7) % 25)) * (Math.PI / 180); 
-            const raan = ((idNum * 37) % 360) * (Math.PI / 180);
-            
-            const x = Math.cos(phase) * Math.cos(raan) - Math.sin(phase) * Math.cos(inc) * Math.sin(raan);
-            const y = Math.cos(phase) * Math.sin(raan) + Math.sin(phase) * Math.cos(inc) * Math.cos(raan);
-            const z = Math.sin(phase) * Math.sin(inc);
-            
-            let lat = Math.asin(Math.max(-1, Math.min(1, z))) * (180 / Math.PI);
-            let lng = Math.atan2(y, x) * (180 / Math.PI);
-            lng = (lng - (t / 86400) * 360) % 360;
-            if (lng < -180) lng += 360; if (lng > 180) lng -= 360;
-            return { lat: isNaN(lat)?0:lat, lng: isNaN(lng)?0:lng, alt: VISUAL_ALTITUDE };
+            if (uname.includes('GLO') || uname.includes('COSMOS')) return 'GLONASS';
+            return 'UNK';
         }
 
         function generateProceduralFleet(numSats = 160) {
@@ -589,24 +659,6 @@
             return list;
         }
 
-        function initDashboardData() {
-            let fallbackList = generateProceduralFleet(160);
-            let cat = { gps: [], bds: [], galileo: [], glonass: [], all: fallbackList };
-            fallbackList.forEach(s => {
-                let uname = (s.name || "").toUpperCase();
-                if (uname.includes('GPS')) cat.gps.push(s);
-                else if (uname.includes('BDS')) cat.bds.push(s);
-                else if (uname.includes('GAL')) cat.galileo.push(s);
-                else if (uname.includes('GLO')) cat.glonass.push(s);
-                TLE_DATABASE[s.id] = s;
-            });
-            CONSTELLATION_SATS = cat;
-
-            renderCustomSelection();
-            updateRadar();
-            initGlobeViewer();
-        }
-
         function toggleMyanmarVisibleOnly(btn) {
             isMyanmarOnlyMode = !isMyanmarOnlyMode;
             btn.classList.toggle('active', isMyanmarOnlyMode);
@@ -617,7 +669,6 @@
             return (lat >= -25.0 && lat <= 55.0 && lng >= 30.0 && lng <= 160.0);
         }
 
-        // 🌟 RESTORED UPCOMING PASSES POPULATION 🌟
         function populateUpcomingPassesList() {
             const listContainer = document.getElementById('upcoming-passes-list');
             if (!listContainer || currentLiveSatObjects.length === 0) return;
@@ -627,7 +678,7 @@
                 let offset = (idNum % 120) + 5;
                 let t = new Date(now.getTime() + offset * 60000);
                 let timeStr = t.getHours().toString().padStart(2,'0') + ":" + t.getMinutes().toString().padStart(2,'0');
-                return { sat, timeStr, alt: 20000 + (idNum%3000) };
+                return { sat, timeStr, alt: sat.realAlt ? Math.round(sat.realAlt) : 20000 };
             });
 
             listContainer.innerHTML = passes.map(p => {
@@ -663,7 +714,7 @@
                     activeCount++;
                     currentLiveSatObjects.push({
                         id: s.id, fullName: s.name, name: s.name.substring(0, 16),
-                        lat: pos.lat, lng: pos.lng, alt: pos.alt, color: getSatColor(s.name)
+                        lat: pos.lat, lng: pos.lng, alt: pos.alt, realAlt: pos.realAlt, velocity: pos.velocity, color: getSatColor(s.name)
                     });
                 }
             });
@@ -675,7 +726,7 @@
             if (tbody) {
                 tbody.innerHTML = currentLiveSatObjects.slice(0, 100).map(s => {
                     let cColor = getSatColor(s.fullName);
-                    let sysName = s.fullName.split('-')[0] || 'UNK';
+                    let sysName = getSatSystem(s.fullName);
                     let isSel = (s.id === selectedSatId) ? 'table-row-selected' : '';
                     return `
                     <tr class="${isSel}" data-id="${s.id}" onclick="selectSatellite('${s.id}')">
@@ -686,7 +737,7 @@
                 }).join('');
             }
 
-            populateUpcomingPassesList(); // Call to populate the new panel
+            populateUpcomingPassesList();
 
             if (myGlobe) {
                 const unselectedSats = currentLiveSatObjects.filter(s => s.id !== selectedSatId);
@@ -753,10 +804,10 @@
             if (!id) return;
             selectedSatId = id;
             
-            const targetObj = currentLiveSatObjects.find(s => s.id === id) || { name: id, id: id, lat:0, lng:0 };
+            const targetObj = currentLiveSatObjects.find(s => s.id === id) || { name: id, id: id, lat:0, lng:0, velocity: 3.8, realAlt: 20000 };
             
             document.getElementById('tel-sat-name').innerText = targetObj.name;
-            document.getElementById('tel-sat-sys').innerText = targetObj.name.split('-')[0] || 'GNSS';
+            document.getElementById('tel-sat-sys').innerText = getSatSystem(targetObj.name);
             
             const idNum = parseInt(id.replace(/\D/g, '')) || 1000;
             
@@ -764,12 +815,18 @@
             if (stVal !== 'none') {
                 document.getElementById('tel-hdop').innerText = (0.8 + (idNum % 5) * 0.1).toFixed(1) + ' / ' + (1.2 + (idNum % 4) * 0.1).toFixed(1);
                 document.getElementById('tel-hdop').style.color = "var(--accent-green)";
-                document.getElementById('tel-vel').innerText = (3.8 + (idNum % 10)/10).toFixed(2);
+                
+                // 🌟 SHOW REAL ORBITAL VELOCITY 🌟
+                document.getElementById('tel-vel').innerText = targetObj.velocity ? targetObj.velocity.toFixed(2) : '--';
                 document.getElementById('tel-vel').style.color = "var(--accent-cyan)";
             }
 
             document.getElementById('model-label').innerText = "LOCK: " + targetObj.name;
-            document.getElementById('model-orbit').innerText = targetObj.name.includes('GPS') ? 'MEO (20,200KM)' : 'IGSO (21,500KM)';
+            
+            // 🌟 SHOW REAL ALTITUDE ORBIT 🌟
+            const altText = targetObj.realAlt ? Math.round(targetObj.realAlt).toLocaleString() : '20,200';
+            document.getElementById('model-orbit').innerText = `ORBIT (${altText}KM)`;
+            
             document.getElementById('model-status-tag').innerText = "ACTIVE LOCK";
             document.getElementById('model-status-tag').style.color = "var(--accent-cyan)";
             document.querySelector('.sat-model-viewport').style.opacity = "1";
@@ -790,7 +847,6 @@
                 updateRingsOnly();
 
                 if (isRotating) toggleGlobeRotation();
-                
                 myGlobe.pointOfView({ lat: currentPos.lat, lng: currentPos.lng, altitude: 1.2 }, 1500);
             }
         }
@@ -911,7 +967,7 @@
                     if (currentLiveSatObjects.length > 0 && myGlobe) {
                         currentLiveSatObjects.forEach(s => {
                             const pos = getSatPos(s.id);
-                            s.lat = pos.lat; s.lng = pos.lng; s.alt = pos.alt;
+                            s.lat = pos.lat; s.lng = pos.lng; s.alt = pos.alt; 
                         });
                         
                         currentLiveSatObjects.forEach(s => { s.alt = VISUAL_ALTITUDE; });
