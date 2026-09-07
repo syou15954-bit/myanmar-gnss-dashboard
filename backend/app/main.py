@@ -4,7 +4,7 @@ import io
 import requests # CelesTrak မှ Live Data ယူရန် ထည့်သွင်းထားပါသည်
 import numpy as np
 import pandas as pd
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse
 
@@ -188,9 +188,9 @@ async def compare_gps_bds_endpoint(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Data Processing Error: {str(e)}")
 
-# 📊 Phase 7: Data Export Module (CSV Download Endpoint)
+# 📊 Multi-Constellation Data Export Module (CSV Download Endpoint)
 @app.post("/api/v1/gnss/export/csv")
-async def export_gps_bds_csv(file: UploadFile = File(...)):
+async def export_gnss_csv(file: UploadFile = File(...)):
     try:
         contents = await file.read()
         df = parse_rinex_bytes(contents, file.filename)
@@ -199,16 +199,19 @@ async def export_gps_bds_csv(file: UploadFile = File(...)):
         if "error" in results:
             return {"status": "error", "message": results["error"]}
 
+        sat_counts = results.get("sat_count", {})
         summary_df = pd.DataFrame({
-            "Timestamp": results["timestamps"],
-            "GPS_Sats": results["sat_count"]["gps"],
-            "BDS_Sats": results["sat_count"]["bds"]
+            "Timestamp": results.get("timestamps", []),
+            "GPS_Sats": sat_counts.get("gps", []),
+            "BDS_Sats": sat_counts.get("bds", []),
+            "Galileo_Sats": sat_counts.get("galileo", []),
+            "GLONASS_Sats": sat_counts.get("glonass", [])
         })
         
         stream = io.StringIO()
         summary_df.to_csv(stream, index=False)
         response = StreamingResponse(iter([stream.getvalue()]), media_type="text/csv")
-        response.headers["Content-Disposition"] = "attachment; filename=gnss_comparison_report.csv"
+        response.headers["Content-Disposition"] = "attachment; filename=gnss_multiconstellation_report.csv"
         return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -221,10 +224,41 @@ def run_accuracy_verification(data: dict):
     result = evaluate_accuracy_and_reliability(pred, act)
     return result
 
+# 🗄️ Phase 4 & 10: Local GNSS Data Collection & IoT Telemetry Logging Endpoint
+@app.post("/api/v1/gnss/telemetry/log")
+def log_local_gnss_receiver_data(
+    sat_id: str = Form(...),
+    lat: float = Form(...),
+    lng: float = Form(...),
+    alt: float = Form(...),
+    hdop: float = Form(1.0)
+):
+    try:
+        log_entry = {
+            "sat_id": sat_id,
+            "latitude": lat,
+            "longitude": lng,
+            "altitude": alt,
+            "hdop": hdop,
+            "timestamp": pd.Timestamp.now().isoformat()
+        }
+        
+        log_file = os.path.join(BACKEND_DIR, 'local_receiver_logs.csv')
+        file_exists = os.path.exists(log_file)
+        df_log = pd.DataFrame([log_entry])
+        df_log.to_csv(log_file, mode='a', index=False, header=not file_exists)
+
+        return {
+            "status": "success",
+            "message": "Local GNSS telemetry recorded successfully.",
+            "data": log_entry
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Logging Error: {str(e)}")
+
 # 🌟 CelesTrak မှ Live Data ဆွဲယူမည့် ပင်မ API
 @app.get("/api/tle")
 def get_live_tles():
-    # 1. အင်တာနက်မှ CelesTrak Active Satellites များကို လှမ်းယူခြင်း
     try:
         url = "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle"
         response = requests.get(url, timeout=10)
@@ -233,7 +267,6 @@ def get_live_tles():
             tle_text = response.text
             parsed = parse_gnss_tle(tle_text)
             
-            # FLYLAB2 Custom Satellite အား System ထဲသို့ ထည့်သွင်းခြင်း
             flylab_sat = {
                 'id': '99999',
                 'name': 'FLYLAB2 (99999)',
@@ -247,7 +280,6 @@ def get_live_tles():
     except Exception as e:
         print(f"Failed to fetch live TLE: {e}")
 
-    # 2. အင်တာနက်ပြတ်တောက်သွားပါက Local Cache မှ Data အဟောင်းကို ပြန်လည်အသုံးပြုခြင်း
     try:
         cache_path = os.path.join(BACKEND_DIR, 'tle_cache.txt')
         if os.path.exists(cache_path):
@@ -259,5 +291,4 @@ def get_live_tles():
     except Exception as e:
         print(f"Failed to read local TLE cache: {e}")
 
-    # 3. မည်သည့် Data မှ မရရှိပါက Frontend ဘက်တွင် Fallback Math ဖြင့် ဆွဲရန် Empty ပြန်ပို့ခြင်း
     return {'status': 'fallback', 'data': {'gps': [], 'bds': [], 'galileo': [], 'glonass': [], 'all': []}}
