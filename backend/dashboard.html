@@ -488,19 +488,17 @@
             container.innerHTML = radarHTML;
         }
 
-        function onStationSelectChange(val) {
-            updateRadar();
+        // 🌟 FIX: Independent Ring Update Function (Does not reset camera) 🌟
+        function updateRingsOnly() {
             if (!myGlobe) return;
+            const val = document.getElementById('station-select').value;
             let currentRings = [];
             
             if (val !== 'none' && STATIONS_DATA[val]) {
                 let st = STATIONS_DATA[val];
-                currentRings.push(st);
-
-                // 🌟 FIX: Pause auto-rotate when a station is selected to allow stable camera zoom 🌟
-                if (isRotating) toggleGlobeRotation();
-                
-                myGlobe.pointOfView({ lat: st.lat, lng: st.lng, altitude: 0.8 }, 1500);
+                currentRings.push({
+                    lat: st.lat, lng: st.lng, color: st.color, size: st.size, alt: st.alt, propagationSpeed: 2.5, repeatPeriod: 800
+                });
             }
 
             if (selectedSatId) {
@@ -508,7 +506,7 @@
                 if (targetObj) {
                     currentRings.push({
                         lat: targetObj.lat, lng: targetObj.lng,
-                        color: getSatColor(targetObj.fullName), size: 2.5, propagationSpeed: 4, repeatPeriod: 600, alt: VISUAL_ALTITUDE
+                        color: getSatColor(targetObj.fullName), size: 4.0, propagationSpeed: 4, repeatPeriod: 600, alt: VISUAL_ALTITUDE
                     });
                 }
             }
@@ -516,9 +514,21 @@
             myGlobe.ringsData(currentRings)
                 .ringColor(d => d.color)
                 .ringMaxRadius(d => d.size)
-                .ringPropagationSpeed(d => d.propagationSpeed || 2.5)
-                .ringRepeatPeriod(d => d.repeatPeriod || 800)
-                .ringAltitude(d => d.alt || 0.01);
+                .ringPropagationSpeed(d => d.propagationSpeed)
+                .ringRepeatPeriod(d => d.repeatPeriod)
+                .ringAltitude(d => d.alt);
+        }
+
+        // 🌟 FIX: Station selection triggers camera movement only once 🌟
+        function onStationSelectChange(val) {
+            updateRadar();
+            updateRingsOnly();
+            
+            if (val !== 'none' && STATIONS_DATA[val]) {
+                let st = STATIONS_DATA[val];
+                if (isRotating) toggleGlobeRotation();
+                myGlobe.pointOfView({ lat: st.lat, lng: st.lng, altitude: 0.8 }, 1500);
+            }
         }
 
         function getSatColor(satName) {
@@ -699,7 +709,7 @@
                    .pathDashLength(1.0).pathDashGap(0.0).pathDashAnimateTime(0);
         }
 
-        // 🌟 FIX: Updated Select Satellite Logic to ensure Camera zooms properly 🌟
+        // 🌟 FIX: DEEP ZOOM TO SATELLITE 🌟
         function selectSatellite(id) {
             if (!id) return;
             selectedSatId = id;
@@ -732,19 +742,19 @@
                 const currentPos = getSatPos(id);
                 const satsToRender = currentLiveSatObjects.map(s => {
                     if (s.id === id) {
-                        return { ...s, color: getSatColor(s.fullName), sizeScale: 2.5 }; // Makes selected satellite larger
+                        return { ...s, color: getSatColor(s.fullName), sizeScale: 3.5 }; // Makes the specific satellite visually larger
                     }
                     return s;
                 });
 
                 myGlobe.customLayerData(satsToRender);
-                updateRings();
+                updateRingsOnly();
 
-                // Stop auto-rotation explicitly to allow the camera transition to succeed
+                // Stop auto-rotation so the camera zoom isn't interrupted
                 if (isRotating) toggleGlobeRotation();
                 
-                // Deep zoom to the selected satellite
-                myGlobe.pointOfView({ lat: currentPos.lat, lng: currentPos.lng, altitude: 0.6 }, 1500);
+                // Deep zoom directly to the satellite's altitude
+                myGlobe.pointOfView({ lat: currentPos.lat, lng: currentPos.lng, altitude: 0.35 }, 2000);
             }
         }
 
@@ -871,12 +881,12 @@
                         
                         const satsToRender = currentLiveSatObjects.map(s => {
                             if (s.id === selectedSatId) {
-                                return { ...s, color: getSatColor(s.fullName), sizeScale: 2.5 };
+                                return { ...s, color: getSatColor(s.fullName), sizeScale: 3.5 };
                             }
                             return s;
                         });
                         myGlobe.customLayerData(satsToRender); 
-                        updateRings(); 
+                        updateRingsOnly(); 
                         updateRadar(); 
                     }
                 }
